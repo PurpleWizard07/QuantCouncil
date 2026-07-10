@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+
+# Data artifacts (keep directory structure, ignore contents)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/backtests/*
+!data/backtests/.gitkeep
+
+# Analytics caches
+*.duckdb
+*.parquet
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+
+# Logs
+*.log
+*.tsbuildinfo

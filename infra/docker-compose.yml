@@ -1,0 +1,52 @@
+# QuantCouncil local infrastructure.
+#
+# Run from the repo root (after copying .env.example to .env):
+#   docker compose --env-file .env -f infra/docker-compose.yml up --build       # full stack (postgres + api + web)
+#   docker compose --env-file .env -f infra/docker-compose.yml up -d postgres   # database only (typical local dev)
+#
+# --env-file is required because Compose otherwise looks for .env next to this
+# file (infra/), not at the repo root; without it the ${POSTGRES_*} defaults
+# below are used.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-quant}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quant}
+      POSTGRES_DB: ${POSTGRES_DB:-quantcouncil}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quant} -d ${POSTGRES_DB:-quantcouncil}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ".."
+      dockerfile: "apps/api/Dockerfile"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-quant}:${POSTGRES_PASSWORD:-quant}@postgres:5432/${POSTGRES_DB:-quantcouncil}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: "../apps/web"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

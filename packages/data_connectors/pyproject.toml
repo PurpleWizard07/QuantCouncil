@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantcouncil-data-connectors"
+version = "0.1.0"
+description = "Market data connectors for QuantCouncil: OHLCV contract, NIFTY 50 universe, yfinance connector, validation, and a local DuckDB/Parquet cache."
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.0",
+    "yfinance>=0.2",
+    "duckdb>=1.0",
+    "pyarrow",
+]
+
+[tool.setuptools.packages.find]
+include = ["data_connectors*"]

@@ -1,0 +1,13 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+sqlalchemy>=2.0
+alembic>=1.13
+psycopg2-binary>=2.9
+pydantic>=2.7
+pydantic-settings>=2.3
+python-dotenv>=1.0
+# NOTE: the API also requires two monorepo packages at runtime --
+# quantcouncil-data-connectors and quantcouncil-quant-engine -- installed as
+# editable installs via the repo-root requirements-dev.txt. They are NOT
+# listed here with relative paths because that would break the Docker build
+# context; containerizing the data layer is a documented Phase 2 limitation.

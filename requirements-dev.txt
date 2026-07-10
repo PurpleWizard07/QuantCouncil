@@ -1,0 +1,8 @@
+-r apps/api/requirements.txt
+-e packages/quant_engine
+-e packages/risk_engine
+-e packages/agents
+-e packages/data_connectors
+-e packages/mcp_server
+pytest>=8.0
+httpx>=0.27

@@ -1,0 +1,15 @@
+# The api image builds with the repo root as its context (see infra/docker-compose.yml),
+# so this file trims what gets sent to the Docker daemon.
+.git
+.venv
+venv
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+*.egg-info
+node_modules
+apps/web/node_modules
+apps/web/.next
+data
+docs
+.env

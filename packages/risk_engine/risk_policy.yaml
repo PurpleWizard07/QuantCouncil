@@ -1,0 +1,16 @@
+policy_version: "1.0.0"
+minimum_backtest_trades: 30
+max_allowed_drawdown_pct: 15
+minimum_profit_factor: 1.2
+minimum_total_return_pct: 0
+minimum_sharpe_like: 0
+max_position_size_pct: 10
+max_risk_per_trade_pct: 1
+max_open_positions: 10
+max_portfolio_drawdown_pct: 8
+stop_loss_required: true
+reject_if_data_quality_bad: true
+warn_if_exposure_time_pct_above: 80
+warn_if_trade_count_below: 50
+warn_if_profit_factor_below: 1.5
+warn_if_drawdown_pct_above: 10

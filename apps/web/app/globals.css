@@ -1,0 +1,206 @@
+/* ============================================================================
+   QuantCouncil design system — dark-only "AI quant command center".
+   Tailwind v4 CSS-first theme: tokens below become Tailwind utilities
+   automatically (e.g. --color-accent -> bg-accent / text-accent / border-accent).
+   Light mode is NOT implemented by design: one deliberate dark theme reads
+   calmer and more "terminal" than a toggle nobody asked for.
+   ============================================================================ */
+
+@import "tailwindcss";
+
+@theme {
+  /* --- surfaces ------------------------------------------------------- */
+  --color-bg: #070b14; /* near-black, blue-tinted app background */
+  --color-bg-raised: #0b1120; /* sidebar / command bar */
+  --color-panel: #0e1526; /* solid fallback panel (behind glass) */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
+
+  /* --- accent (electric cyan/teal) ------------------------------------- */
+  --color-accent: #22d3ee;
+  --color-accent-2: #2dd4bf;
+  --color-accent-soft: rgba(34, 211, 238, 0.12);
+
+  /* --- semantic status colors ------------------------------------------ */
+  --color-positive: #34d399; /* approved / bullish / filled / open / gains */
+  --color-positive-soft: rgba(52, 211, 153, 0.14);
+  --color-negative: #fb7185; /* rejected / bearish / cancelled / losses */
+  --color-negative-soft: rgba(251, 113, 133, 0.14);
+  --color-warning: #fbbf24; /* needs-review / pending / mixed / risk-off */
+  --color-warning-soft: rgba(251, 191, 36, 0.14);
+  --color-watchlist: #38bdf8; /* watchlist / neutral-informative */
+  --color-watchlist-soft: rgba(56, 189, 248, 0.14);
+
+  /* --- neutral text scale ------------------------------------------------ */
+  --color-text: #e6edf5;
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #5b6b81;
+
+  /* --- typography -------------------------------------------------------- */
+  --font-sans:
+    Inter, "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:
+    ui-monospace, "JetBrains Mono", "Cascadia Code", "SF Mono", Consolas,
+    Menlo, monospace;
+
+  /* --- layout ------------------------------------------------------------ */
+  --sidebar-width: 264px;
+  --sidebar-width-collapsed: 76px;
+  --topbar-height: 64px;
+
+  /* --- animation ---------------------------------------------------------- */
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.4s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    opacity: 0.75;
+    box-shadow: 0 0 8px 2px currentColor;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Base layer
+   ============================================================================ */
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  background-image:
+    radial-gradient(
+      ellipse 900px 500px at 15% -10%,
+      rgba(34, 211, 238, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 700px 500px at 100% 0%,
+      rgba(45, 212, 191, 0.05),
+      transparent 55%
+    );
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+code,
+kbd,
+samp,
+.font-mono-ui {
+  font-family: var(--font-mono);
+}
+
+* {
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ============================================================================
+   Component-layer utilities
+   ============================================================================
+   The "glass" recipe used by GlassCard and friends: translucent surface,
+   backdrop blur, a 1px hairline border, and a faint inner top highlight to
+   sell the glass edge. Kept as real CSS (not just Tailwind utility strings)
+   so every consumer gets exactly the same recipe.
+   ============================================================================ */
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-hover {
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  /* Soft glow ring utilities keyed to the semantic accent colors: a low-alpha
+     box-shadow "bloom" rather than a hard border -- readable, not neon. */
+  .glow-accent {
+    box-shadow:
+      0 0 0 1px rgba(34, 211, 238, 0.35),
+      0 0 24px -4px rgba(34, 211, 238, 0.45);
+  }
+  .glow-positive {
+    box-shadow:
+      0 0 0 1px rgba(52, 211, 153, 0.35),
+      0 0 24px -4px rgba(52, 211, 153, 0.45);
+  }
+  .glow-negative {
+    box-shadow:
+      0 0 0 1px rgba(251, 113, 133, 0.35),
+      0 0 24px -4px rgba(251, 113, 133, 0.45);
+  }
+  .glow-warning {
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.35),
+      0 0 24px -4px rgba(251, 191, 36, 0.45);
+  }
+  .glow-watchlist {
+    box-shadow:
+      0 0 0 1px rgba(56, 189, 248, 0.35),
+      0 0 24px -4px rgba(56, 189, 248, 0.45);
+  }
+
+  .text-glow-accent {
+    text-shadow: 0 0 16px rgba(34, 211, 238, 0.5);
+  }
+}

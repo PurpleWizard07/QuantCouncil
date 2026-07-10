@@ -1,4 +1,4 @@
-# QuantCouncil Paper Portfolio Engine (Phase 5)
+# QuantCouncil Paper Portfolio Engine (Phase 5 + Phase 9)
 
 The authoritative reference for the Phase 5 Paper Portfolio Engine: simulation philosophy,
 portfolio lifecycle, order mechanics, position management, risk enforcement, and API surface.
@@ -458,6 +458,12 @@ a Phase 5 simplification; marking happens on demand, not automatically.
 
 - `POST /paper/portfolios/{id}/mark-to-market` — Revalue positions, check drawdown.
 
+### Daily Operations (Phase 9)
+
+- `POST /paper/portfolios/{id}/daily-cycle` — Stop-loss sweep, mark-to-market, NAV snapshot.
+- `GET /paper/portfolios/{id}/nav-history` — Historical NAV snapshots (oldest-to-newest for charting).
+- `POST /paper/portfolios/{id}/risk-off/reset` — Manual journaled risk-off reset.
+
 ### Trade Journal
 
 - `GET /paper/journal` — List all journal entries (optional `portfolio_id` filter); newest first.
@@ -520,21 +526,149 @@ curl http://localhost:8000/paper/portfolios/550e8400-.../journal
 
 ---
 
-## Limitations (Phase 5)
+## Daily Ops Loop (Phase 9)
+
+The paper engine now supports automated daily operations: stop-loss sweep, mark-to-market, and NAV snapshots.
+
+### POST /paper/portfolios/{id}/daily-cycle
+
+Runs the daily operations sequence: (1) stop-loss sweep (auto-exit any position with latest close ≤ stop_loss); (2) mark-to-market; (3) NAV snapshot upsert.
+
+**Request:** (empty body)
+
+**Processing (strict order):**
+
+1. **Fetch all prices first.** For every open position, fetch the latest cached close via the OHLCV service (~10-day lookback). If any fetch fails: **502 error, zero state change.**
+
+2. **Stop-loss sweep.** For each open position, check if `latest_close ≤ stop_loss_price`. If true, issue a full-quantity SELL via the normal pipeline (immediate fill, slippage, transaction cost, journal entry). The fill price is the breaching close. Risk-off mode never blocks these exits (SELLs are always allowed).
+
+3. **Mark-to-market.** Revalue all positions with the latest closes (same semantics as `POST /mark-to-market`). Check drawdown and set `portfolio.risk_off = true` if ≥ 8% (one-way latch).
+
+4. **NAV snapshot upsert.** Insert or update a single `nav_snapshots` row for `(portfolio_id, date)` with current NAV, cash, drawdown, and risk_off flag. If a row for today already exists, update it (idempotent).
+
+**Response (200):**
+
+```json
+{
+  "portfolio_id": "550e8400-...",
+  "date": "2026-07-11",
+  "stops_triggered": [
+    {
+      "symbol": "RELIANCE",
+      "quantity": 5,
+      "fill_price": 2650.0,
+      "reason": "stop_loss"
+    }
+  ],
+  "mark_to_market": {
+    "current_nav": 980000.0,
+    "current_cash": 884941.0,
+    "drawdown": 0.02,
+    "risk_off": false
+  },
+  "snapshot": {
+    "date": "2026-07-11",
+    "nav": 980000.0,
+    "cash": 884941.0,
+    "drawdown": 0.02,
+    "risk_off": false
+  }
+}
+```
+
+**Errors:**
+
+| Code | Meaning |
+|---|---|
+| `404` | Portfolio not found |
+| `502` | Price unavailable for one or more positions (no state change) |
+| `503` | Database unreachable |
+
+---
+
+### GET /paper/portfolios/{id}/nav-history
+
+Retrieve historical NAV snapshots for a portfolio (for charting).
+
+**Query parameters:**
+
+- `limit` (optional, default 365): max number of snapshots to return.
+
+**Response (200):**
+
+```json
+{
+  "portfolio_id": "550e8400-...",
+  "count": 42,
+  "snapshots": [
+    {
+      "date": "2026-06-01",
+      "nav": 1000000.0,
+      "cash": 1000000.0,
+      "drawdown": 0.0,
+      "risk_off": false
+    },
+    ...
+  ]
+}
+```
+
+Snapshots are ordered oldest-to-newest (suitable for direct charting).
+
+---
+
+### POST /paper/portfolios/{id}/risk-off/reset
+
+Manual, journaled reset of the risk-off flag.
+
+**Request:**
+
+```json
+{
+  "note": "Market stabilized; resuming trading"
+}
+```
+
+**Validation:**
+
+- Portfolio must currently have `risk_off = true` → 400 if not.
+- `note` must be non-empty string → 400 if missing/empty.
+
+**On success (200):**
+
+- Set `portfolio.risk_off = false`.
+- Write a `RISK_EVENT` journal entry: `event_type = "risk_off_reset"`, `description = <note>`.
+
+**Response (200):**
+
+```json
+{
+  "portfolio_id": "550e8400-...",
+  "risk_off": false,
+  "reset_at": "2026-07-11T14:30:00Z",
+  "note": "Market stabilized; resuming trading",
+  "journal_entry_id": "550e8400-..."
+}
+```
+
+---
+
+## Limitations (Phase 5–Phase 9)
 
 1. **Immediate fills (Phase 5 deviation).** Orders fill at the price reference (or latest close)
    immediately upon creation, not at the next trading day's open. This is a Phase 5 simplification
    for rapid prototyping; Phase 6+ may restore next-open-fill semantics. Slippage and costs are
    the same as the backtester for comparability.
 
-2. **Stop-loss stored but not auto-triggered.** The `stop_loss_price` is persisted on the position
-   but not automatically monitored. Stops remain a stored constraint; manual SELL orders are the
-   only way to exit in Phase 5. Phase 6 will add auto-triggered stop monitoring on daily closes.
+2. **Stop-loss auto-triggered on daily closes (Phase 9).** The `stop_loss_price` is now automatically
+   monitored via the daily-cycle endpoint. On each `POST /daily-cycle`, any position with
+   `latest_close ≤ stop_loss_price` exits immediately at the breaching close. This is
+   daily-close granularity only, not intraday; next-open fills remain a future refinement.
 
-3. **Risk-off is one-way without reset endpoint.** When drawdown ≥ 8%, `risk_off` latches true
-   and blocks new BUY entries. No automatic recovery endpoint exists in Phase 5; the flag must be
-   reset manually by a human review (a future endpoint). Documented limitation: risk-off is a
-   defensive brake, not a recoverable state.
+3. **Risk-off reset is manual and journaled (Phase 9).** When drawdown ≥ 8%, `risk_off` latches true
+   and blocks new BUY entries. A new `POST /risk-off/reset` endpoint allows manual, journaled
+   recovery: the flag clears only with an explicit human decision and a logged note in the journal.
+   This replaces the Phase 5 "no reset" limitation.
 
 4. **No partial fills.** All orders are all-or-nothing: either the full quantity fills or the
    order is rejected. No order book, no partial execution.

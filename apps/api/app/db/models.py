@@ -1,8 +1,8 @@
 """SQLAlchemy 2.0 typed models for the QuantCouncil foundation schema.
 
-Exactly ten tables: assets, ohlcv_daily, strategy_definitions, backtest_runs,
-risk_evaluations, agent_decisions, paper_portfolios, paper_orders,
-paper_positions, trade_journal.
+Exactly eleven tables: assets, ohlcv_daily, strategy_definitions,
+backtest_runs, risk_evaluations, agent_decisions, paper_portfolios,
+paper_orders, paper_positions, trade_journal, nav_snapshots.
 
 Design decisions (per project contract, documented as assumptions):
 - Status/enum-ish columns are plain String columns constrained by the Python
@@ -410,6 +410,41 @@ class TradeJournalEntry(Base):
     body: Mapped[str] = mapped_column(Text)
     # Audit refs: backtest_id, risk_evaluation_id, agent_decision_ids.
     refs: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+
+
+class NavSnapshot(Base):
+    """One per (portfolio, day) NAV history record (Phase 9: Daily Ops Loop).
+
+    Written by ``app.services.paper_engine.run_daily_cycle`` at the end of
+    each daily cycle (post stop-loss sweep, post mark-to-market) so the API
+    can serve a NAV/drawdown/risk-off history chart without replaying every
+    order. ``(portfolio_id, date)`` is unique -- re-running the daily cycle
+    for the same portfolio on the same day updates the existing row (see
+    ``repositories.upsert_nav_snapshot``) rather than creating a duplicate.
+    """
+
+    __tablename__ = "nav_snapshots"
+    __table_args__ = (
+        UniqueConstraint(
+            "portfolio_id", "date", name="uq_nav_snapshots_portfolio_date"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    portfolio_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("paper_portfolios.id"), index=True
+    )
+    date: Mapped[dt.date] = mapped_column(Date)
+    nav: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    cash: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    # Fraction from peak NAV (e.g. 0.05 == 5% drawdown); nullable so a
+    # portfolio with no peak yet (should not happen post-creation, but kept
+    # nullable defensively) never blocks a snapshot write.
+    drawdown: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6))
+    risk_off: Mapped[bool] = mapped_column(Boolean)
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow
     )

@@ -3,8 +3,8 @@
 Two guarantees:
 
 1. ``alembic upgrade head`` (via the command API, driven through
-   ``ALEMBIC_DATABASE_URL``) creates exactly the ten foundation tables, and
-   ``downgrade base`` removes them all.
+   ``ALEMBIC_DATABASE_URL``) creates exactly the eleven foundation tables,
+   and ``downgrade base`` removes them all.
 2. Schema equivalence: a database built by ``alembic upgrade head`` matches a
    database built by ``Base.metadata.create_all`` -- same table names, and per
    table the same column names, type strings, and nullability -- so the static
@@ -34,6 +34,7 @@ EXPECTED_TABLES = {
     "paper_orders",
     "paper_positions",
     "trade_journal",
+    "nav_snapshots",
 }
 
 
@@ -83,7 +84,7 @@ def _schema_snapshot(engine: sa.Engine) -> dict[str, dict[str, dict]]:
     return snapshot
 
 
-def test_upgrade_head_creates_all_ten_tables(tmp_path, monkeypatch):
+def test_upgrade_head_creates_all_eleven_tables(tmp_path, monkeypatch):
     db_path = tmp_path / "migrated.db"
     _upgrade_head(db_path, monkeypatch)
 

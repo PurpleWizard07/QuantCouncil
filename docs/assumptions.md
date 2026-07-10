@@ -471,3 +471,44 @@ date; do not rewrite history. Cross-references:
     `packages/mcp_server` directory remains for future work but is not built or shipped. Rationale:
     keeps Phase 7+8 scope focused on the dashboard (the more urgent UX gap); MCP is useful only after
     the dashboard proves the research workflow works end-to-end; can be revisited when ROI is clear.
+
+## 2026-07-11 — Phase 9 (Daily Ops) Decisions
+
+72. **Stop-loss auto-triggered on daily closes, full-quantity exits only (Phase 9).** The daily-cycle
+    endpoint (`POST /paper/portfolios/{id}/daily-cycle`) evaluates every open position's latest cached
+    close against its stop-loss. If `latest_close ≤ stop_loss_price`, the entire position exits
+    immediately at the breaching close via the normal SELL pipeline (slippage, costs, journaled).
+    This is daily-close granularity only — intraday or next-open fills remain future refinements.
+    Full-quantity-only exits simplify accounting; partial-position stops are deferred. Rationale:
+    daily closes are the natural resolution for a daily-bar backtest engine; the v1 model keeps
+    scope tight without an intraday bar or order-scheduling subsystem.
+
+73. **Fetch-all-prices-first atomicity (Phase 9).** The daily-cycle endpoint fetches the latest close
+    for every open position **before** evaluating stops or running mark-to-market. If any fetch fails
+    (price unavailable, OHLCV service 502), the endpoint returns 502 and makes zero state changes —
+    no partial fills, no partial marks, no snapshot. Rationale: preserves consistency; a fetch failure
+    is transient and can be retried idempotently; a half-executed cycle would corrupt audit trails.
+
+74. **One snapshot per portfolio per day, upsertable (Phase 9).** The `nav_snapshots` table has a
+    unique constraint on `(portfolio_id, date)`. The daily-cycle endpoint upserts: if a row for today
+    exists, it updates NAV/cash/drawdown/risk_off; if not, it inserts. Rationale: a portfolio's
+    daily-cycle may be re-run multiple times on the same day for testing or recovery; the idempotent
+    upsert avoids duplicates and permits safe retries.
+
+75. **Risk-off reset is manual and journaled, with required note (Phase 9).** A new endpoint
+    (`POST /paper/portfolios/{id}/risk-off/reset`) allows manual, explicit recovery from risk-off.
+    Request body must include a non-empty `note` field (the reason for reset). The endpoint returns
+    400 if the portfolio is not currently `risk_off=true` or if the note is empty. On success, the
+    flag clears and a RISK_EVENT journal entry records the note. Rationale: risk-off latch is a
+    critical safety feature (prevents new entries during drawdown); manual reset with a logged
+    reason ensures human review and full audit trail before re-entry is permitted.
+
+76. **Min-30-trades gate rejecting real sparse daily data is expected behavior (Phase 9).** The live
+    shakedown seeded 50 assets, ingested 3 years of daily data (1118 bars), and ran 6 backtests on
+    real data. All 6 evaluations were REJECTED by the risk engine's `bt_min_num_trades >= 30` hard
+    gate. This is expected: real NIFTY 50 stock strategies on daily bars naturally produce
+    20–15 trades per 3-year window, falling short of the 30-trade minimum. The gate correctly identifies
+    sparse trading patterns as risky (high estimation error, regime-dependent luck). The live test
+    confirmed the gate functions as designed; lowering the threshold for daily-bar strategies is a
+    future policy refinement, not a bug. Rationale: the policy is conservative by design; tuning gates
+    to historical data will be done when the next tranche of backtests matures.

@@ -76,14 +76,21 @@ quantcouncil/
 
 ## Quickstart (local dev)
 
-1. Copy the environment file:
+1. Clone the repository (or download the repo from GitHub):
+
+   ```
+   git clone https://github.com/PurpleWizard07/QuantCouncil.git
+   cd QuantCouncil
+   ```
+
+2. Copy the environment file:
 
    ```
    copy .env.example .env        # Windows
    cp .env.example .env          # macOS / Linux
    ```
 
-2. Start the database:
+3. Start the database:
 
    ```
    docker compose --env-file .env -f infra/docker-compose.yml up -d postgres
@@ -92,7 +99,7 @@ quantcouncil/
    (`--env-file .env` matters: Compose otherwise looks for `.env` next to the
    compose file in `infra/`, not at the repo root.)
 
-3. Create a virtual environment at the repo root and install dependencies:
+4. Create a virtual environment at the repo root and install dependencies:
 
    ```
    py -3 -m venv .venv
@@ -101,33 +108,33 @@ quantcouncil/
    pip install -r requirements-dev.txt
    ```
 
-4. Run database migrations:
+5. Run database migrations:
 
    ```
    alembic -c infra/alembic.ini upgrade head
    ```
 
-5. Seed assets and ingest historical data (optional; skips if already loaded):
+6. Seed assets and ingest historical data (optional; skips if already loaded):
 
    ```
    python apps/api/scripts/seed_assets.py
    python apps/api/scripts/ingest_ohlcv.py --all --start 2022-01-01 --end 2024-12-31
    ```
 
-6. Run the API (from `apps/api`):
+7. Run the API (from `apps/api`):
 
    ```
    uvicorn app.main:app --reload --port 8000
    ```
 
-7. Run the web app (from `apps/web`):
+8. Run the web app (from `apps/web`):
 
    ```
    npm install
    npm run dev
    ```
 
-8. Open http://localhost:3000 (dashboard) and http://localhost:8000/docs (API docs).
+9. Open http://localhost:3000 (dashboard) and http://localhost:8000/docs (API docs).
 
 ## Quickstart (full Docker)
 
@@ -225,7 +232,7 @@ curl http://localhost:8000/risk/evaluations/550e8400-...
 Full details — policy configuration, engine logic, scoring formula, API surface, persistence —
 in [docs/risk-engine.md](docs/risk-engine.md) and [docs/risk-policy.md](docs/risk-policy.md).
 
-## Paper Fund (Phase 5)
+## Paper Fund (Phase 5 + Phase 9)
 
 The paper portfolio simulates only after risk approval: a BUY requires a persisted backtest
 and a persisted, **approving** risk evaluation — a non-approved evaluation blocks the order
@@ -233,6 +240,8 @@ with HTTP 403 (the persisted row is the sole source of truth). SELLs are always 
 (exits reduce risk). Fills are immediate at a reference price with the backtester's slippage
 and cost defaults; every fill and rejection is journaled. Fully local and deterministic —
 no AI, no broker, no real orders.
+
+Phase 9 adds daily operations: automated stop-loss sweep (on daily closes), mark-to-market, and NAV snapshots for tracking. Risk-off mode now has a manual, journaled reset endpoint.
 
 ```
 POST /paper/portfolios                           # create a paper fund (₹10,00,000 default)
@@ -242,6 +251,9 @@ GET  /paper/orders[/{id}]                        # list / inspect orders
 GET  /paper/positions                            # open/closed positions
 GET  /paper/portfolios/{id}/positions            # positions for one portfolio
 POST /paper/portfolios/{id}/mark-to-market       # revalue, NAV, drawdown, risk-off latch
+POST /paper/portfolios/{id}/daily-cycle          # (Phase 9) stop-loss sweep → mark-to-market → NAV snapshot
+GET  /paper/portfolios/{id}/nav-history          # (Phase 9) NAV snapshots (for charting)
+POST /paper/portfolios/{id}/risk-off/reset       # (Phase 9) manual, journaled risk-off reset
 GET  /paper/journal                              # audit trail (FILL / RISK_EVENT)
 GET  /paper/portfolios/{id}/journal              # journal for one portfolio, newest first
 ```
@@ -365,7 +377,8 @@ Full details in [docs/development-roadmap.md](docs/development-roadmap.md).
 | 5 | Paper trading engine: simulated orders, immediate fills, positions, NAV, risk-off mode, risk-veto enforcement on entries, trade journal | Done |
 | 6 | AI agent committee: six agents, five LLM providers (Anthropic, Gemini, OpenRouter, Ollama, MOCK), manual/auto provider selection, zero-credentials default, dual-layer veto binding, persistence | Done |
 | 7+8 | Dashboard buildout: 10-route dark-only UI with 6-step research pipeline, human-only order creation, veto visualization; removed MCP from near-term roadmap (far-future idea only) | Done |
-| Backlog | Stop-loss auto-monitoring, risk-off reset, provider resilience, Docker completeness, strategy UI, multi-symbol batch, and more | Next |
+| 9 | Daily ops + hardening: daily-cycle endpoint (stop-loss sweep, mark-to-market, NAV snapshot), NAV history for charting, journaled risk-off reset; GitHub publication; live end-to-end shakedown (516 tests, zero product bugs) | Done |
+| Backlog | Provider resilience, Docker completeness, strategy UI, multi-symbol batch, parameter sweeps, walk-forward, overfitting detection, sector rotation, and more | Next |
 
 ## Documentation index
 

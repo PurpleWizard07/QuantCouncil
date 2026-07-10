@@ -14,11 +14,13 @@ import type {
   CommitteeEvaluateResponse,
   CreateOrderResponse,
   CreateStrategyResponse,
+  DailyCycleResponse,
   HealthDbResponse,
   HealthResponse,
   IndicatorsResponse,
   JournalResponse,
   MarkToMarketResponse,
+  NavHistoryResponse,
   OhlcvResponse,
   PaperOrdersResponse,
   PaperPortfolio,
@@ -27,6 +29,7 @@ import type {
   RiskEvaluateResponse,
   RiskEvaluationDetailResponse,
   RiskEvaluationsListResponse,
+  RiskOffResetResponse,
   StrategiesResponse,
 } from "./types";
 
@@ -308,4 +311,26 @@ export function markToMarket(portfolioId: string): Promise<MarkToMarketResponse>
 
 export function getJournal(portfolioId?: string): Promise<JournalResponse> {
   return get<JournalResponse>(`/paper/journal${toQueryString({ portfolio_id: portfolioId })}`);
+}
+
+/** POST /paper/portfolios/{id}/daily-cycle -- stop-loss sweep -> mark-to-market -> NAV snapshot. */
+export function runDailyCycle(portfolioId: string): Promise<DailyCycleResponse> {
+  return post<DailyCycleResponse>(
+    `/paper/portfolios/${encodeURIComponent(portfolioId)}/daily-cycle`,
+  );
+}
+
+/** GET /paper/portfolios/{id}/nav-history -- snapshots ordered oldest -> newest. */
+export function getNavHistory(portfolioId: string, limit?: number): Promise<NavHistoryResponse> {
+  return get<NavHistoryResponse>(
+    `/paper/portfolios/${encodeURIComponent(portfolioId)}/nav-history${toQueryString({ limit })}`,
+  );
+}
+
+/** POST /paper/portfolios/{id}/risk-off/reset -- manual, journaled risk-off clear. */
+export function resetRiskOff(portfolioId: string, note: string): Promise<RiskOffResetResponse> {
+  return post<RiskOffResetResponse>(
+    `/paper/portfolios/${encodeURIComponent(portfolioId)}/risk-off/reset`,
+    { note },
+  );
 }

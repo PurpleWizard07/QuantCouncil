@@ -16,10 +16,11 @@ EXPECTED_TABLES = {
     "paper_orders",
     "paper_positions",
     "trade_journal",
+    "nav_snapshots",
 }
 
 
-def test_metadata_contains_exactly_the_ten_expected_tables():
+def test_metadata_contains_exactly_the_eleven_expected_tables():
     assert set(Base.metadata.tables.keys()) == EXPECTED_TABLES
 
 

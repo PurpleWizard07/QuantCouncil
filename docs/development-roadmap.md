@@ -354,14 +354,36 @@ Phase 2. Persistence now powers strategy storage, backtest runs, and full OHLCV 
 
 ---
 
-## Backlog (Deferred, Phase 8+)
+## Phase 9 — Daily Ops + Hardening (COMPLETED 2026-07-11)
 
-**Not implemented in Phase 7+8; listed for future phases.**
+**Deliverables (as delivered)**
 
-- **Stop-loss auto-monitoring:** Stops stored on positions but not auto-triggered; manual
-  SELLs only.
-- **Risk-off reset flow:** One-way latch; no manual reset endpoint yet (Phase 5 limitation).
-- **Daily NAV snapshots:** No historical NAV table.
+- **Daily operations loop** via `POST /paper/portfolios/{id}/daily-cycle`: (1) fetch all prices first (502 if any missing, zero state change); (2) stop-loss sweep — for each open position, if latest close ≤ stop-loss, exit at the breaching close via normal SELL pipeline (full quantity, immediate fill with slippage/costs, journaled); risk-off never blocks exits; (3) mark-to-market; (4) upsert NAV snapshot (one row per portfolio per day, idempotent).
+- **NAV history for charting** via `GET /paper/portfolios/{id}/nav-history?limit=365` — snapshots oldest-to-newest.
+- **Journaled risk-off reset** via `POST /paper/portfolios/{id}/risk-off/reset` with required note — manual, 400 if not currently risk-off or note empty; on success clears flag and writes RISK_EVENT journal entry.
+- **New `nav_snapshots` table** (id, portfolio_id FK, date, nav, cash, drawdown, risk_off, created_at; unique portfolio_id+date) via Alembic migration `2810b70e4708` (chain: `356085dfc427 → 853ec0ddce66 → 2810b70e4708`).
+- **Dashboard `/paper` route enhancements** (Phase 9): NAV history chart section (empty state until first cycle), "Run daily cycle" action (toast summary, amber card listing triggered stops), risk-off banner with inline journaled reset form.
+- **Live end-to-end shakedown:** clean 3-migration apply on fresh Postgres; 50 assets seeded; 1118 bars × 3 symbols ingested; 6 real backtests persisted (11–15 trades each on 2022→2026 data); all 6 risk evaluations REJECTED by min-30-trades gate (expected, sparse daily data); live veto test (BUY against rejected eval → 403 + REJECTED order + journal entry); daily-cycle snapshot verified; risk-off reset flow verified. **Zero product bugs found.**
+- **GitHub publication** — initial commit (v1 complete) pushed to https://github.com/PurpleWizard07/QuantCouncil; Phase 9 commit follows.
+- **Test suite:** 516 pytest tests passing (up from Phase 7+8: +20 for daily-ops endpoints + nav-history + risk-off reset flows).
+
+**Acceptance criteria (met)**
+
+- Stop-loss sweep fetches all prices first; 502 on any miss with zero state change.
+- Full-quantity exits only; fill at breaching close with standard slippage/costs.
+- One snapshot per portfolio-date; upsert is idempotent.
+- Risk-off reset requires non-empty note and currently-active risk-off flag; on success clears flag and journals the note.
+- Manual browser verification of `/paper` route shows NAV chart loads (empty until first cycle), daily-cycle action works (toast + amber stops card), risk-off reset flow is journaled.
+- All live shakedown tests passed with zero product bugs.
+
+---
+
+## Backlog (Deferred, Phase 9+)
+
+**Not implemented in Phase 7+8 or Phase 9; listed for future phases.**
+
+*Phase 9 completed: stop-loss auto-monitoring (daily-close granularity), risk-off reset flow (manual/journaled), daily NAV snapshots.*
+
 - **Strategy-level P&L:** P&L shown only at portfolio level.
 - **Provider quality improvements:** Real Anthropic/Gemini/OpenRouter/Ollama refinements;
   retry-on-malformed-JSON; resilience logic beyond single-shot Phase 6 plumbing.

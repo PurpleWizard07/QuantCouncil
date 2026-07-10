@@ -2,7 +2,7 @@
 
 Bootstraps ``sys.path`` so ``import app`` resolves to ``apps/api/app``
 regardless of the working directory Alembic is invoked from, registers all
-ten models on ``Base.metadata``, and resolves the database URL at runtime:
+eleven models on ``Base.metadata``, and resolves the database URL at runtime:
 
 1. ``ALEMBIC_DATABASE_URL`` environment variable, if set (used by tests to
    point migrations at a scratch SQLite file).

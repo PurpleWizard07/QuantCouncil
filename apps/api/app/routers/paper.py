@@ -22,11 +22,20 @@ Endpoints:
     POST   /paper/portfolios/{id}/mark-to-market      -- revalue open positions.
     GET    /paper/journal (?portfolio_id=)            -- list journal entries.
     GET    /paper/portfolios/{id}/journal             -- one portfolio's journal.
+    POST   /paper/portfolios/{id}/daily-cycle         -- Phase 9: stop-loss
+        sweep + mark-to-market + NAV snapshot, in that order (see
+        ``paper_engine.run_daily_cycle``).
+    GET    /paper/portfolios/{id}/nav-history (?limit=)-- Phase 9: a
+        portfolio's NAV/cash/drawdown/risk-off history, oldest -> newest.
+    POST   /paper/portfolios/{id}/risk-off/reset      -- Phase 9: manually
+        clear the risk-off latch (see ``paper_engine.reset_risk_off``).
 
 Error mapping:
     400 -- malformed UUID; ValidationFailure (bad input); LimitRejection /
            InsufficientCash / InsufficientPosition (business rejections;
-           detail names the persisted REJECTED order id where one exists).
+           detail names the persisted REJECTED order id where one exists);
+           risk-off reset requested with an empty note or while not in
+           risk-off mode.
     403 -- RiskVetoError (the persisted risk evaluation is not APPROVED;
            detail names the decision, risk_score, and rejected order id).
     404 -- NotFoundError (unknown portfolio/asset/backtest/risk_evaluation,
@@ -160,6 +169,17 @@ class OrderCreateRequest(BaseModel):
     price_reference: float | None = None
     stop_loss_price: float | None = None
     exit_reason: str | None = None
+
+
+class RiskOffResetRequest(BaseModel):
+    """Request body for POST /paper/portfolios/{id}/risk-off/reset.
+
+    Attributes:
+        note: Required, non-empty rationale for the manual reset -- stored
+            verbatim on the resulting RISK_EVENT journal entry.
+    """
+
+    note: str
 
 
 # --- portfolios ----------------------------------------------------------------
@@ -437,3 +457,101 @@ def list_portfolio_journal(portfolio_id: str, db: Session = Depends(get_db)) -> 
         )
     entries = [paper_engine.journal_dict(row) for row in rows]
     return {"count": len(entries), "journal": entries}
+
+
+# --- daily ops loop (Phase 9) --------------------------------------------------------
+
+
+@router.post("/portfolios/{portfolio_id}/daily-cycle")
+def run_daily_cycle(
+    portfolio_id: str,
+    service: OHLCVService = Depends(get_ohlcv_service),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Run one daily cycle: stop-loss sweep, then mark-to-market, then a NAV snapshot.
+
+    See ``paper_engine.run_daily_cycle`` for the exact order of operations and
+    v1 fill semantics. Any exit triggered by the stop-loss sweep is placed
+    through the same order pipeline as ``POST /paper/orders`` (a SELL of the
+    position's full remaining quantity, filled immediately at the breaching
+    close) -- risk-off never blocks it (exits are always allowed).
+    """
+    pid = _parse_uuid(portfolio_id, "portfolio_id")
+    latest_close_fn = _make_latest_close_fn(service)
+
+    try:
+        result = paper_engine.run_daily_cycle(db, pid, latest_close_fn)
+    except paper_engine.NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    except paper_engine.PaperEngineError as exc:
+        raise HTTPException(status_code=400, detail=_detail_with_order_id(exc)) from None
+    except LatestCloseUnavailable as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from None
+    except OperationalError:
+        logger.exception(
+            "POST /paper/portfolios/%s/daily-cycle: database unavailable",
+            portfolio_id,
+        )
+        raise HTTPException(status_code=503, detail=DB_UNAVAILABLE_DETAIL) from None
+
+    return result
+
+
+@router.get("/portfolios/{portfolio_id}/nav-history")
+def get_nav_history(
+    portfolio_id: str,
+    limit: int = Query(default=365),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """A portfolio's NAV/cash/drawdown/risk-off history, oldest -> newest."""
+    pid = _parse_uuid(portfolio_id, "portfolio_id")
+
+    try:
+        portfolio = repositories.get_paper_portfolio(db, pid)
+        rows = (
+            repositories.list_nav_snapshots(db, pid, limit=limit)
+            if portfolio is not None
+            else None
+        )
+    except OperationalError:
+        logger.exception(
+            "GET /paper/portfolios/%s/nav-history: database unavailable", portfolio_id
+        )
+        raise HTTPException(status_code=503, detail=DB_UNAVAILABLE_DETAIL) from None
+
+    if portfolio is None:
+        raise HTTPException(
+            status_code=404, detail=f"No paper portfolio with id {portfolio_id!r}."
+        )
+    snapshots = [paper_engine.nav_snapshot_dict(row) for row in rows]
+    return {"portfolio_id": portfolio_id, "count": len(snapshots), "snapshots": snapshots}
+
+
+@router.post("/portfolios/{portfolio_id}/risk-off/reset")
+def reset_risk_off(
+    portfolio_id: str,
+    request: RiskOffResetRequest,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Manually clear a portfolio's risk-off latch (see ``paper_engine.reset_risk_off``).
+
+    Response is the portfolio's summary dict (same shape as every other
+    portfolio endpoint) plus ``{"journaled": true}`` confirming the RISK_EVENT
+    journal entry was written.
+    """
+    pid = _parse_uuid(portfolio_id, "portfolio_id")
+
+    try:
+        result = paper_engine.reset_risk_off(db, pid, request.note)
+    except paper_engine.NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    except paper_engine.ValidationFailure as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    except OperationalError:
+        logger.exception(
+            "POST /paper/portfolios/%s/risk-off/reset: database unavailable",
+            portfolio_id,
+        )
+        raise HTTPException(status_code=503, detail=DB_UNAVAILABLE_DETAIL) from None
+
+    return {**result, "journaled": True}

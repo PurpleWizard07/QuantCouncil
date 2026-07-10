@@ -84,7 +84,7 @@ development database.
 
 ### Initial Migration
 
-The single migration `356085dfc427_initial_schema` creates:
+The initial migration `356085dfc427_initial_schema` creates:
 
 - All 10 contract tables: `assets`, `ohlcv_daily`, `strategy_definitions`, `backtest_runs`,
   `risk_evaluations`, `agent_decisions`, `paper_portfolios`, `paper_orders`, `paper_positions`,
@@ -94,6 +94,22 @@ The single migration `356085dfc427_initial_schema` creates:
 - Indexes for query efficiency on foreign keys and date ranges.
 
 Downgrade drops all tables FK-safely.
+
+### Phase 9 Migrations
+
+**Migration chain:** `356085dfc427 → 853ec0ddce66 → 2810b70e4708`
+
+- `853ec0ddce66_risk_evaluation_snapshots` — Adds snapshot columns to `risk_evaluations` (Phase 4).
+- `2810b70e4708_nav_snapshots_table` (Phase 9) — Creates the new `nav_snapshots` table:
+  - `id` (UUID primary key)
+  - `portfolio_id` (FK to `paper_portfolios`)
+  - `date` (date, the NAV snapshot date)
+  - `nav` (float, net asset value)
+  - `cash` (float, cash balance)
+  - `drawdown` (float, current drawdown %)
+  - `risk_off` (boolean, risk-off flag state)
+  - `created_at` (datetime, snapshot creation time)
+  - Unique constraint on `(portfolio_id, date)` — one snapshot per portfolio per day (upsertable).
 
 ### Deprecation of `create_all`
 

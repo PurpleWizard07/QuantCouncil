@@ -26,6 +26,7 @@ from app.db.models import (
     AgentDecision,
     Asset,
     BacktestRun,
+    NavSnapshot,
     OhlcvDaily,
     PaperOrder,
     PaperPortfolio,
@@ -677,3 +678,76 @@ def list_journal_entries(
         stmt = stmt.where(TradeJournalEntry.portfolio_id == portfolio_id)
     stmt = stmt.order_by(TradeJournalEntry.created_at.desc())
     return list(db.execute(stmt).scalars())
+
+
+# ---------------------------------------------------------------------------
+# NAV snapshots (Phase 9: Daily Ops Loop)
+# ---------------------------------------------------------------------------
+
+
+def upsert_nav_snapshot(
+    db: Session,
+    *,
+    portfolio_id: uuid.UUID,
+    date: dt.date,
+    nav: float,
+    cash: float,
+    drawdown: Optional[float],
+    risk_off: bool,
+) -> NavSnapshot:
+    """Insert or update the ``(portfolio_id, date)`` NAV snapshot row.
+
+    Portable query-then-insert/update (no dialect-specific upsert, matching
+    this module's convention -- see the module docstring): a second call for
+    the same portfolio/date (e.g. running the daily cycle twice in one day)
+    updates the existing row's nav/cash/drawdown/risk_off in place rather
+    than creating a duplicate (``uq_nav_snapshots_portfolio_date`` is the
+    safety net, not the mechanism).
+    """
+    existing = db.execute(
+        select(NavSnapshot).where(
+            NavSnapshot.portfolio_id == portfolio_id, NavSnapshot.date == date
+        )
+    ).scalar_one_or_none()
+
+    if existing is not None:
+        existing.nav = nav
+        existing.cash = cash
+        existing.drawdown = drawdown
+        existing.risk_off = risk_off
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    row = NavSnapshot(
+        portfolio_id=portfolio_id,
+        date=date,
+        nav=nav,
+        cash=cash,
+        drawdown=drawdown,
+        risk_off=risk_off,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+def list_nav_snapshots(
+    db: Session, portfolio_id: uuid.UUID, limit: int = 365
+) -> list[NavSnapshot]:
+    """A portfolio's NAV history, oldest -> newest, capped at ``limit`` rows.
+
+    Chart-friendly ordering: takes the newest ``limit`` rows (so a capped
+    query still returns the *most recent* history, not the oldest) and then
+    sorts that page ascending by date for direct use as a chart's x-axis.
+    """
+    newest_first = list(
+        db.execute(
+            select(NavSnapshot)
+            .where(NavSnapshot.portfolio_id == portfolio_id)
+            .order_by(NavSnapshot.date.desc())
+            .limit(limit)
+        ).scalars()
+    )
+    return list(reversed(newest_first))

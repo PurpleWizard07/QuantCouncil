@@ -25,7 +25,7 @@ Modern, dark-only dashboard for the complete research and paper-trading pipeline
 | `/backtests` | Persisted Runs | List all stored backtest runs (newest-first, metric subset). Detail view: metrics grid, equity curve chart, trade list, veto status chip |
 | `/risk` | Risk Evaluations | List recent evaluations (newest-first). Console: evaluate-by-backtest_id, score gauge, failed rules, policy/metrics snapshots |
 | `/committee` | Committee Decisions | Run console with provider selector (mock/auto/anthropic/gemini/openrouter/ollama); six-agent debate cards; CIO final decision; override banner when code-level veto fired |
-| `/paper` | Paper Fund Cockpit | NAV/cash/unrealized/realized P&L/risk-mode metrics; RISK_OFF rose banner when active; mark-to-market button; positions table with Open/Closed filters; full order form with veto-aware error handling; recent orders; permanent simulated-only footer |
+| `/paper` | Paper Fund Cockpit | NAV/cash/unrealized/realized P&L/risk-mode metrics; NAV history chart (Phase 9); RISK_OFF rose banner when active with inline reset form (Phase 9); "Run daily cycle" action (Phase 9: stop-loss sweep → mark-to-market → NAV snapshot); mark-to-market button; positions table with Open/Closed filters; full order form with veto-aware error handling; recent orders; permanent simulated-only footer |
 | `/journal` | Trade Journal | Filterable audit timeline: portfolio/type/search filters; per-type badges; refs chips (thesis/rejection reasons/linked ids); expandable JSON; show-more pagination |
 | `/settings` | Configuration (read-only) | API base URL, LLM provider env-var reference table, paper-trading-only safety statement. No broker settings exist. |
 
@@ -150,11 +150,8 @@ Examples:
 
 ## What's Deferred (Backlog)
 
-Explicitly NOT implemented in Phase 7+8:
+Explicitly NOT implemented in Phase 7+8 (note: Phase 9 completed stop-loss auto-monitoring, risk-off reset, and daily NAV snapshots):
 
-- **Stop-loss auto-monitoring:** Stops are stored on positions but not auto-triggered. Manual SELLs only.
-- **Risk-off reset flow:** Risk-off flag is one-way latch; no reset endpoint yet (documented limitation in Phase 5).
-- **Daily NAV snapshots:** No historical NAV table; only current NAV.
 - **Strategy-level P&L:** P&L shown only at portfolio level, not per-strategy.
 - **Provider quality improvements:** Real Anthropic/Gemini/OpenRouter/Ollama refinements, retry-on-malformed-JSON. Phase 6 is single-shot, no auto-retry.
 - **Parameter sweeps:** Manual strategy tweaking only; no grid search or optimization UI.

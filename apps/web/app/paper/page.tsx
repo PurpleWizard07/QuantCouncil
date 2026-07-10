@@ -3,29 +3,43 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/app/components/ui/Button";
+import { CurveChart } from "@/app/components/ui/charts/CurveChart";
 import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ErrorState } from "@/app/components/ui/ErrorState";
 import { GlassCard } from "@/app/components/ui/GlassCard";
+import { Input } from "@/app/components/ui/Input";
 import { Label } from "@/app/components/ui/Label";
 import { MetricCard } from "@/app/components/ui/MetricCard";
 import { MotionPage } from "@/app/components/ui/MotionPage";
 import { PageHeader } from "@/app/components/ui/PageHeader";
+import { Section } from "@/app/components/ui/Section";
 import { Select } from "@/app/components/ui/Select";
-import { SkeletonCard } from "@/app/components/ui/Skeleton";
+import { Skeleton, SkeletonCard } from "@/app/components/ui/Skeleton";
 import { useToast } from "@/app/components/ui/Toast";
 import {
   ApiError,
   createPortfolio,
   getAssets,
   getJournal,
+  getNavHistory,
   getOrders,
   getPortfolios,
   getPositions,
   markToMarket,
+  resetRiskOff,
+  runDailyCycle,
 } from "@/app/lib/api";
-import { fmtInr, fmtInt, fmtPct, PLACEHOLDER } from "@/app/lib/format";
-import type { AssetRecord, JournalEntry, PaperOrder, PaperPortfolio, PaperPosition } from "@/app/lib/types";
+import { fmtDate, fmtInr, fmtInt, fmtPct, PLACEHOLDER, truncateId } from "@/app/lib/format";
+import type {
+  AssetRecord,
+  JournalEntry,
+  NavSnapshot,
+  PaperOrder,
+  PaperPortfolio,
+  PaperPosition,
+  StopTriggered,
+} from "@/app/lib/types";
 
 import { OrderForm } from "./OrderForm";
 import { OrdersTable } from "./OrdersTable";
@@ -129,17 +143,36 @@ export default function PaperPage() {
     }
   }, []);
 
+  const [navHistory, setNavHistory] = useState<NavSnapshot[] | null>(null);
+  const [navHistoryLoading, setNavHistoryLoading] = useState(false);
+  const [navHistoryError, setNavHistoryError] = useState<string | null>(null);
+
+  const loadNavHistory = useCallback(async (pid: string) => {
+    setNavHistoryLoading(true);
+    setNavHistoryError(null);
+    try {
+      const res = await getNavHistory(pid, 365);
+      setNavHistory(res.snapshots);
+    } catch (err) {
+      setNavHistoryError(errMessage(err));
+    } finally {
+      setNavHistoryLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!selectedId) {
       setPositions(null);
       setOrders(null);
       setJournal([]);
+      setNavHistory(null);
       return;
     }
     void loadPositions(selectedId);
     void loadOrders(selectedId);
     void loadJournal(selectedId);
-  }, [selectedId, loadPositions, loadOrders, loadJournal]);
+    void loadNavHistory(selectedId);
+  }, [selectedId, loadPositions, loadOrders, loadJournal, loadNavHistory]);
 
   const symbolMaps = useMemo(() => buildSymbolMaps(journal), [journal]);
 
@@ -168,8 +201,9 @@ export default function PaperPage() {
       void loadPositions(selectedId);
       void loadOrders(selectedId);
       void loadJournal(selectedId);
+      void loadNavHistory(selectedId);
     }
-  }, [loadPortfolios, loadPositions, loadOrders, loadJournal, selectedId]);
+  }, [loadPortfolios, loadPositions, loadOrders, loadJournal, loadNavHistory, selectedId]);
 
   async function handleCreatePortfolio() {
     setCreating(true);
@@ -208,6 +242,75 @@ export default function PaperPage() {
       setMtmLoading(false);
     }
   }, [selectedId, refreshAll, showToast]);
+
+  // --- daily cycle: stop-loss sweep -> mark-to-market -> NAV snapshot -----------
+  const [dailyCycleLoading, setDailyCycleLoading] = useState(false);
+  const [dailyCycleError, setDailyCycleError] = useState<string | null>(null);
+  const [stopsTriggered, setStopsTriggered] = useState<StopTriggered[] | null>(null);
+
+  const handleRunDailyCycle = useCallback(async () => {
+    if (!selectedId) return;
+    setDailyCycleLoading(true);
+    setDailyCycleError(null);
+    try {
+      const res = await runDailyCycle(selectedId);
+      const n = res.stops_triggered.length;
+      showToast(
+        `${n} stop${n === 1 ? "" : "s"} triggered · NAV ${fmtInr(res.mark_to_market.nav)} · snapshot ${fmtDate(res.snapshot.date)}`,
+        "success",
+      );
+      setStopsTriggered(n > 0 ? res.stops_triggered : null);
+      refreshAll();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 502) {
+        setDailyCycleError(`No cached price for an open position — ingest data first. Server detail: ${err.message}`);
+      } else {
+        setDailyCycleError(errMessage(err));
+      }
+    } finally {
+      setDailyCycleLoading(false);
+    }
+  }, [selectedId, refreshAll, showToast]);
+
+  // --- risk-off manual reset ------------------------------------------------------
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetNote, setResetNote] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Any of these are stale once the selected portfolio changes.
+    setStopsTriggered(null);
+    setDailyCycleError(null);
+    setShowResetForm(false);
+    setResetNote("");
+    setResetError(null);
+  }, [selectedId]);
+
+  const handleResetRiskOff = useCallback(async () => {
+    if (!selectedId) return;
+    if (!resetNote.trim()) {
+      setResetError("A note is required to reset risk-off.");
+      return;
+    }
+    setResetLoading(true);
+    setResetError(null);
+    try {
+      await resetRiskOff(selectedId, resetNote.trim());
+      showToast("Risk-off cleared (journaled)", "success");
+      setShowResetForm(false);
+      setResetNote("");
+      refreshAll();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        setResetError(err.message);
+      } else {
+        setResetError(errMessage(err));
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  }, [selectedId, resetNote, refreshAll, showToast]);
 
   const orderPanelRef = useRef<HTMLDivElement>(null);
 
@@ -248,6 +351,9 @@ export default function PaperPage() {
       <Button variant="secondary" loading={mtmLoading} onClick={() => void handleMarkToMarket()}>
         Mark to market
       </Button>
+      <Button variant="primary" loading={dailyCycleLoading} onClick={() => void handleRunDailyCycle()}>
+        Run daily cycle
+      </Button>
       <Button
         variant="primary"
         onClick={() => orderPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -264,6 +370,12 @@ export default function PaperPage() {
         subtitle="Simulated cockpit — NAV, positions, and simulated order flow. No broker, no real money, ever."
         actions={headerActions}
       />
+
+      {portfolio && (
+        <p className="-mt-6 mb-6 text-xs text-text-faint">
+          Daily cycle = stop-loss sweep → mark-to-market → NAV snapshot.
+        </p>
+      )}
 
       {portfoliosError ? (
         <ErrorState message={portfoliosError} onRetry={() => void loadPortfolios()} />
@@ -287,12 +399,52 @@ export default function PaperPage() {
         <>
           {riskOff && (
             <GlassCard variant="negative" padding="sm" className="mb-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <DecisionBadge status="RISK_OFF" pulse />
-                <p className="text-sm text-negative">
-                  Risk-off latched — new BUYs blocked; SELLs still allowed; no auto-reset in v1.
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <DecisionBadge status="RISK_OFF" pulse />
+                  <p className="text-sm text-negative">
+                    Risk-off latched — new BUYs blocked; SELLs still allowed; manual reset available — the reset is
+                    journaled.
+                  </p>
+                </div>
+                {!showResetForm && (
+                  <Button variant="ghost" onClick={() => setShowResetForm(true)}>
+                    Reset risk-off
+                  </Button>
+                )}
               </div>
+
+              {showResetForm && (
+                <div className="mt-4 border-t border-negative/20 pt-4">
+                  <Label htmlFor="risk-off-note">Reset note (required, journaled)</Label>
+                  <Input
+                    id="risk-off-note"
+                    value={resetNote}
+                    onChange={(e) => setResetNote(e.target.value)}
+                    placeholder="Why is risk-off being cleared?"
+                  />
+                  {resetError && (
+                    <div className="mt-2 rounded-lg border border-warning/40 bg-warning-soft px-3 py-2 text-xs text-warning">
+                      {resetError}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-2">
+                    <Button variant="danger" loading={resetLoading} onClick={() => void handleResetRiskOff()}>
+                      Confirm reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setShowResetForm(false);
+                        setResetNote("");
+                        setResetError(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </GlassCard>
           )}
 
@@ -300,6 +452,44 @@ export default function PaperPage() {
             <div className="mb-6">
               <ErrorState message={mtmError} onRetry={() => void handleMarkToMarket()} />
             </div>
+          )}
+
+          {dailyCycleError && (
+            <div className="mb-6">
+              <ErrorState message={dailyCycleError} onRetry={() => void handleRunDailyCycle()} />
+            </div>
+          )}
+
+          {stopsTriggered && stopsTriggered.length > 0 && (
+            <GlassCard variant="warning" padding="sm" className="mb-6">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-warning">
+                  Stop-loss triggered ({stopsTriggered.length})
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStopsTriggered(null)}
+                  className="text-xs text-text-muted transition-colors hover:text-text"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <ul className="space-y-1.5">
+                {stopsTriggered.map((s) => (
+                  <li
+                    key={s.order_id}
+                    className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono-ui text-xs text-text-muted"
+                  >
+                    <span className="font-semibold text-text">{s.symbol}</span>
+                    <span>{fmtInt(s.quantity)} sh</span>
+                    <span>
+                      stop {fmtInr(s.stop_loss)} vs close {fmtInr(s.close)}
+                    </span>
+                    <span className="text-accent">{truncateId(s.order_id)}</span>
+                  </li>
+                ))}
+              </ul>
+            </GlassCard>
           )}
 
           <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -337,6 +527,47 @@ export default function PaperPage() {
               subtext={riskOff ? "New BUYs are vetoed" : "Entries allowed"}
             />
           </div>
+
+          <Section
+            title="NAV history"
+            description={
+              navHistory && navHistory.length > 0
+                ? `Latest snapshot ${fmtDate(navHistory[navHistory.length - 1].date)} · drawdown ${fmtPct(
+                    navHistory[navHistory.length - 1].drawdown,
+                  )}`
+                : undefined
+            }
+          >
+            {navHistoryError ? (
+              <ErrorState
+                message={navHistoryError}
+                onRetry={() => {
+                  if (selectedId) void loadNavHistory(selectedId);
+                }}
+              />
+            ) : navHistoryLoading && navHistory === null ? (
+              <GlassCard padding="md">
+                <Skeleton className="h-[240px] w-full" />
+              </GlassCard>
+            ) : navHistory && navHistory.length > 0 ? (
+              <GlassCard padding="md">
+                <CurveChart
+                  data={navHistory}
+                  xKey="date"
+                  yKey="nav"
+                  height={240}
+                  color="#22d3ee"
+                  variant="area"
+                  valueFormatter={(v) => fmtInr(v)}
+                />
+              </GlassCard>
+            ) : (
+              <EmptyState
+                title="No NAV snapshots yet"
+                hint="Run the daily cycle to record the first one."
+              />
+            )}
+          </Section>
 
           <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_400px]">
             <div className="min-w-0">

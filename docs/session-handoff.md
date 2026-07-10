@@ -3,7 +3,7 @@
 Concise state-of-the-project handoff for the next working session. Deep detail lives in the
 linked docs; this file is the "where were we?" entry point. Update it at the end of each phase.
 
-**Last updated:** 2026-07-09 — Phase 7+8 (Dashboard + End-to-End Research) complete.
+**Last updated:** 2026-07-11 — Phase 9 (Daily Ops + Hardening) complete; 516 tests passing.
 
 ## Current State
 
@@ -53,9 +53,24 @@ linked docs; this file is the "where were we?" entry point. Update it at the end
   and `GET /risk/evaluations?limit=20`. Frontend: `npm run build` passes, 13 routes live, zero TypeScript
   errors. Full design in [dashboard.md](dashboard.md). MCP removed from near-term roadmap (see far-future
   note in [development-roadmap.md](development-roadmap.md)).
-- **Test suite: green.** 508 tests passing from the repo root (62 data_connectors,
-  183 quant_engine incl. integration, 53 risk_engine, 105 apps/api incl. persistence + risk +
-  37 paper tests, +85 agents tests incl. veto binding + 14 committee API tests, +6 new list endpoints tests).
+- **Phase 9 (Daily Ops + Hardening): complete (2026-07-11).** Daily operations loop via
+  `POST /paper/portfolios/{id}/daily-cycle`: (1) fetch all prices first (502 on any miss, zero state change);
+  (2) stop-loss sweep — auto-exit any position with close ≤ stop_loss at the breaching close (full quantity,
+  normal SELL pipeline, journaled); risk-off never blocks exits; (3) mark-to-market; (4) upsert NAV snapshot
+  (one row per portfolio per day). NAV history via `GET /paper/portfolios/{id}/nav-history?limit=365` for
+  charting (oldest-to-newest). Journaled risk-off reset via `POST /paper/portfolios/{id}/risk-off/reset`
+  (manual, required note, clears flag and writes RISK_EVENT). New `nav_snapshots` table (id, portfolio_id FK,
+  date, nav, cash, drawdown, risk_off, created_at; unique portfolio_id+date) via Alembic migration `2810b70e4708`
+  (chain: `356085dfc427 → 853ec0ddce66 → 2810b70e4708`). Dashboard `/paper` route: NAV history chart (empty until
+  first cycle), "Run daily cycle" action (toast summary, amber card listing triggered stops), risk-off banner
+  with inline reset form. Live end-to-end shakedown: clean 3-migration apply on fresh Postgres; 50 assets seeded;
+  1118 bars × 3 symbols ingested; 6 real backtests persisted; all 6 risk evals REJECTED by min-30-trades gate
+  (expected, sparse daily data); live veto test verified; daily-cycle snapshot verified; risk-off reset verified.
+  **Zero product bugs found.** GitHub publication: repo pushed to https://github.com/PurpleWizard07/QuantCouncil.
+  Full design in [development-roadmap.md](development-roadmap.md) and [paper-trading-engine.md](paper-trading-engine.md).
+- **Test suite: green.** 516 tests passing from the repo root (Phase 9 +20 daily-ops tests; prior phases:
+  62 data_connectors, 183 quant_engine incl. integration, 53 risk_engine, 105 apps/api incl. persistence + risk +
+  37 paper tests, +85 agents tests incl. veto binding + 14 committee API tests, +6 list endpoint tests).
   No test touches the network (yfinance and all LLM providers mocked).
 
 ## What Exists Where
@@ -82,13 +97,15 @@ linked docs; this file is the "where were we?" entry point. Update it at the end
 | Strategy persistence | `apps/api/app/db/models.py` (`strategy_definitions` table); immutable builtins + mutable persisted rows | Live (Phase 3.5) |
 | Risk engine | `packages/risk_engine` (policy YAML, engine, Pydantic contract, snapshot columns, repository functions) | Live (Phase 4) |
 | Risk API endpoints | `apps/api/app/routers/risk.py` (`POST /risk/evaluate`, `GET /risk/evaluations/{id}`, `GET /backtests/{id}/risk`) | Live (Phase 4) |
-| Paper engine | `apps/api/app/services/paper_engine.py` (service), `apps/api/app/routers/paper.py` (router, 11 endpoints: portfolios, orders, positions, mark-to-market, journal) | Live (Phase 5) |
+| Paper engine | `apps/api/app/services/paper_engine.py` (service), `apps/api/app/routers/paper.py` (router, 14 endpoints: portfolios, orders, positions, mark-to-market, journal, daily-cycle, nav-history, risk-off-reset) | Live (Phase 5 + Phase 9) |
+| NAV snapshots | `apps/api/app/db/models.py` (`nav_snapshots` table); migration `2810b70e4708` (Phase 9, chain: `356085dfc427 → 853ec0ddce66 → 2810b70e4708`) | Live (Phase 9) |
+| Daily ops endpoints | `apps/api/app/routers/paper.py` (`POST /daily-cycle`, `GET /nav-history`, `POST /risk-off/reset`) | Live (Phase 9) |
 | Agents | `packages/agents/agents/` (six roles + five providers: mock, anthropic, gemini, openrouter, ollama; committee orchestration; dual-layer veto binding) | Live (Phase 6) |
 | Committee API endpoints | `apps/api/app/routers/committee.py` (`POST /committee/evaluate`, `GET /committee/backtests/{id}`) | Live (Phase 6) |
 | Backtest list endpoint | `apps/api/app/routers/backtests.py` (`GET /backtests?limit=20`) | Live (Phase 7+8) |
 | Risk evaluations list endpoint | `apps/api/app/routers/risk.py` (`GET /risk/evaluations?limit=20`) | Live (Phase 7+8) |
-| API | `apps/api` — health, market-data endpoints (`/assets`, `/assets/{symbol}/ohlcv`, `/assets/{symbol}/indicators`), strategy endpoints (`GET /strategies`, `POST /strategies`), backtest endpoints (`POST /backtests/run` with persist flag, `GET /backtests/{id}`, `GET /backtests?limit=20`), risk endpoints (Phase 4), risk evaluations list (Phase 7+8), paper endpoints (`/paper/*`, Phase 5), committee endpoints (`/committee/*`, Phase 6) | Live (Phase 7+8 added list endpoints) |
-| Web dashboard | `apps/web` (10 routes: `/`, `/research`, `/market`, `/strategies`, `/backtests`, `/risk`, `/committee`, `/paper`, `/journal`, `/settings`; dark-only, Next.js 15 App Router, React 19, no shadcn, Tailwind v4 + recharts + motion) | Live (Phase 7+8) |
+| API | `apps/api` — health, market-data endpoints (`/assets`, `/assets/{symbol}/ohlcv`, `/assets/{symbol}/indicators`), strategy endpoints (`GET /strategies`, `POST /strategies`), backtest endpoints (`POST /backtests/run` with persist flag, `GET /backtests/{id}`, `GET /backtests?limit=20`), risk endpoints (Phase 4), risk evaluations list (Phase 7+8), paper endpoints (`/paper/*` including daily-ops: `POST /daily-cycle`, `GET /nav-history`, `POST /risk-off/reset`, Phase 5 + Phase 9), committee endpoints (`/committee/*`, Phase 6) | Live (Phase 9 added daily-ops endpoints) |
+| Web dashboard | `apps/web` (10 routes: `/`, `/research`, `/market`, `/strategies`, `/backtests`, `/risk`, `/committee`, `/paper` with NAV chart + daily-cycle action + risk-off reset, `/journal`, `/settings`; dark-only, Next.js 15 App Router, React 19, no shadcn, Tailwind v4 + recharts + motion) | Live (Phase 9 updated `/paper`) |
 
 ## How to Run Everything
 

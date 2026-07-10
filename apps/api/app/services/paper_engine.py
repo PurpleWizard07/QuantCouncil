@@ -56,10 +56,20 @@ when drawdown >= ``settings["risk_off_drawdown"]``. It NEVER auto-clears
 would clear it via a direct DB update or a later-phase endpoint). Risk-off
 blocks new BUY entries only; SELL orders (risk-reducing) are always allowed,
 including while risk-off is active.
+
+PHASE 9 ADDITION -- the Daily Ops Loop: ``run_daily_cycle`` closes the paper-
+fund loop that Phase 5 left open (stops were stored but never triggered, NAV
+history was never recorded, and risk-off could never be reset). It composes
+three existing/new pieces in a fixed order per call -- a stop-loss sweep (see
+``run_daily_cycle``'s own docstring for the exact v1 fill semantics), the
+existing ``mark_to_market``, and a NAV snapshot upsert -- and ``reset_risk_off``
+finally gives risk-off the human-in-the-loop reset the Phase 5 docstring
+above says does not yet exist.
 """
 
 from __future__ import annotations
 
+import datetime as dt
 import uuid
 from typing import Any, Callable, Optional
 
@@ -70,6 +80,7 @@ from app.db.models import (
     Asset,
     BacktestRun,
     JournalEntryType,
+    NavSnapshot,
     OrderSide,
     OrderStatus,
     PaperOrder,
@@ -224,6 +235,17 @@ def position_dict(position: PaperPosition) -> dict[str, Any]:
         ),
         "opened_at": position.opened_at.isoformat() if position.opened_at else None,
         "closed_at": position.closed_at.isoformat() if position.closed_at else None,
+    }
+
+
+def nav_snapshot_dict(snapshot: NavSnapshot) -> dict[str, Any]:
+    """A NAV snapshot as a JSON-safe API record (date -> ISO string)."""
+    return {
+        "date": snapshot.date.isoformat(),
+        "nav": float(snapshot.nav),
+        "cash": float(snapshot.cash),
+        "drawdown": float(snapshot.drawdown) if snapshot.drawdown is not None else None,
+        "risk_off": snapshot.risk_off,
     }
 
 
@@ -1019,3 +1041,195 @@ def mark_to_market(
         "risk_off": portfolio.risk_off,
         "positions": [position_dict(position) for position in positions],
     }
+
+
+# ---------------------------------------------------------------------------
+# run_daily_cycle (Phase 9: Daily Ops Loop)
+# ---------------------------------------------------------------------------
+
+
+def run_daily_cycle(
+    db: Session, portfolio_id: uuid.UUID, latest_close_fn: LatestCloseFn
+) -> dict[str, Any]:
+    """Run one portfolio's full daily cycle: stop-loss sweep, then MTM, then a NAV snapshot.
+
+    Fixed order of operations (each step commits before the next begins):
+
+    (a) STOP-LOSS SWEEP -- for every OPEN position, resolve its symbol (via
+        the position's ``asset_id``) and fetch its latest close through
+        ``latest_close_fn``. ALL closes are fetched first, before any exit is
+        executed, so that one symbol's price being unavailable raises
+        immediately (propagated to the router as a 502) with NO order
+        created and NO snapshot written -- the cycle either fully runs or
+        leaves the portfolio exactly as it was. For every position whose
+        close is <= its stored ``stop_loss``, this reuses the existing
+        ``create_paper_order`` pipeline to place a SELL of the position's
+        FULL remaining quantity at ``price_reference=close`` -- so the fill,
+        cash flow, realized P&L, and FILL journal entry are computed by the
+        exact same code path as a manually-placed exit order (no duplicate
+        fill logic). Because the sweep always exits the full quantity, a
+        triggered position always ends up CLOSED. SELLs are risk-reducing,
+        so risk-off never blocks a stop-loss exit (see the module
+        docstring's risk-off convention).
+
+        v1 fill semantics (deliberate, matching the module docstring's Phase
+        5 deviation): a stop-loss "triggers" and fills IMMEDIATELY at the
+        breaching close, in the same daily-cycle call -- not at the next
+        trading day's open. The design doc's next-open fill model remains
+        future work; this keeps the daily cycle synchronous and fully
+        deterministic for local/offline testing, exactly like every other
+        fill in this module.
+
+    (b) MARK TO MARKET -- calls the existing ``mark_to_market`` on the
+        POST-EXIT position set (whatever the sweep left OPEN), which updates
+        last_price/unrealized_pnl/nav/peak_nav/risk_off exactly as it always
+        has.
+
+    (c) NAV SNAPSHOT -- upserts today's (``dt.date.today()``) NAV snapshot
+        row (nav/cash/drawdown/risk_off) from the mark-to-market result, via
+        ``repositories.upsert_nav_snapshot`` (idempotent: re-running the
+        cycle again today updates the same row rather than duplicating it).
+
+    Raises:
+        NotFoundError: unknown portfolio_id, or an OPEN position's
+            ``asset_id`` no longer resolves to a persisted ``Asset`` row.
+        Any exception ``latest_close_fn`` raises (e.g. the router's
+            ``LatestCloseUnavailable``) propagates unchanged -- it is raised
+            during step (a)'s fetch-everything-first pass, before any state
+            is mutated.
+
+    Returns:
+        ``{"portfolio_id", "date", "stops_triggered": [...], "mark_to_market":
+        <mark_to_market's own return dict>, "snapshot": {"date", "nav",
+        "cash", "drawdown", "risk_off"}}``. Each ``stops_triggered`` entry is
+        ``{"position_id", "symbol", "quantity", "stop_loss", "close",
+        "order_id"}`` (the quantity/stop_loss/close that triggered the exit,
+        and the resulting FILLED SELL order's id).
+    """
+    portfolio = repositories.get_paper_portfolio(db, portfolio_id)
+    if portfolio is None:
+        raise NotFoundError(f"No paper portfolio with id {portfolio_id!s}.")
+
+    open_positions = repositories.list_positions(
+        db, portfolio_id=portfolio.id, status=PositionStatus.OPEN.value
+    )
+
+    # -- (a) STOP-LOSS SWEEP -- fetch every close BEFORE executing any exit.
+    symbols: dict[uuid.UUID, str] = {}
+    closes: dict[uuid.UUID, float] = {}
+    for position in open_positions:
+        asset = db.get(Asset, position.asset_id)
+        if asset is None:
+            raise NotFoundError(
+                f"No asset with id {position.asset_id!s} referenced by "
+                f"position {position.id!s}."
+            )
+        symbols[position.id] = asset.symbol
+        closes[position.id] = float(latest_close_fn(asset.symbol))
+
+    stops_triggered: list[dict[str, Any]] = []
+    for position in open_positions:
+        close = closes[position.id]
+        stop = float(position.stop_loss)
+        if close > stop:
+            continue
+
+        symbol = symbols[position.id]
+        quantity = position.quantity
+        result = create_paper_order(
+            db,
+            portfolio_id=portfolio.id,
+            symbol=symbol,
+            side=OrderSide.SELL.value,
+            quantity=quantity,
+            thesis=None,
+            price_reference=close,
+            exit_reason=f"Stop-loss triggered: close {close} <= stop {stop}",
+            latest_close_fn=latest_close_fn,
+        )
+        stops_triggered.append(
+            {
+                "position_id": str(position.id),
+                "symbol": symbol,
+                "quantity": quantity,
+                "stop_loss": stop,
+                "close": close,
+                "order_id": result["order"]["id"],
+            }
+        )
+
+    # -- (b) MARK TO MARKET -- on the post-exit OPEN position set.
+    mtm = mark_to_market(db, portfolio.id, latest_close_fn)
+
+    # -- (c) NAV SNAPSHOT --
+    today = dt.date.today()
+    snapshot = repositories.upsert_nav_snapshot(
+        db,
+        portfolio_id=portfolio.id,
+        date=today,
+        nav=mtm["nav"],
+        cash=mtm["cash"],
+        drawdown=mtm["drawdown"],
+        risk_off=mtm["risk_off"],
+    )
+
+    return {
+        "portfolio_id": str(portfolio.id),
+        "date": today.isoformat(),
+        "stops_triggered": stops_triggered,
+        "mark_to_market": mtm,
+        "snapshot": nav_snapshot_dict(snapshot),
+    }
+
+
+# ---------------------------------------------------------------------------
+# reset_risk_off (Phase 9: Daily Ops Loop)
+# ---------------------------------------------------------------------------
+
+
+def reset_risk_off(db: Session, portfolio_id: uuid.UUID, note: str) -> dict[str, Any]:
+    """Manually clear a portfolio's risk-off latch (the reset Phase 5 lacked).
+
+    ``mark_to_market`` only ever turns risk-off ON (a one-way latch, see the
+    module docstring); this is the human-in-the-loop counterpart that turns
+    it back off after a reviewer has looked at the journal and decided the
+    portfolio may resume new entries.
+
+    Args:
+        portfolio_id: Must resolve to a persisted portfolio.
+        note: Required, non-empty rationale for the reset; stored verbatim
+            on the journal entry (both in ``body`` and in ``refs["note"]``).
+
+    Raises:
+        NotFoundError: unknown portfolio_id.
+        ValidationFailure: the portfolio is not currently in risk-off mode,
+            or ``note`` is missing/blank.
+
+    Returns:
+        The portfolio's summary dict (``portfolio_dict`` -- same shape as
+        every other portfolio endpoint), with ``risk_mode`` now "NORMAL".
+    """
+    portfolio = repositories.get_paper_portfolio(db, portfolio_id)
+    if portfolio is None:
+        raise NotFoundError(f"No paper portfolio with id {portfolio_id!s}.")
+
+    if not portfolio.risk_off:
+        raise ValidationFailure("portfolio is not in risk-off mode.")
+
+    if not note or not str(note).strip():
+        raise ValidationFailure("note is required to reset risk-off.")
+
+    portfolio.risk_off = False
+    db.commit()
+    db.refresh(portfolio)
+
+    repositories.create_journal_entry(
+        db,
+        portfolio_id=portfolio.id,
+        entry_type=JournalEntryType.RISK_EVENT.value,
+        title="Risk-off manually reset",
+        body=note,
+        refs={"portfolio_id": str(portfolio.id), "note": note},
+    )
+
+    return portfolio_dict(portfolio)

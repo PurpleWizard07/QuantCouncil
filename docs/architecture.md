@@ -114,7 +114,7 @@ flowchart TD
 
 ## Database Entities
 
-Exactly ten tables (PostgreSQL 16, SQLAlchemy 2.x typed models):
+Exactly eleven tables (PostgreSQL 16, SQLAlchemy 2.x typed models):
 
 | Table | Purpose |
 |---|---|
@@ -128,6 +128,7 @@ Exactly ten tables (PostgreSQL 16, SQLAlchemy 2.x typed models):
 | `paper_orders` | Simulated orders with lifecycle `PENDING -> FILLED / REJECTED / CANCELLED`. |
 | `paper_positions` | Open and closed simulated positions with quantity, entry, stop-loss, P&L. |
 | `trade_journal` | Append-only journal (`DECISION` / `FILL` / `NOTE` / `RISK_EVENT`) with mandatory audit references. |
+| `nav_snapshots` | Daily NAV/cash/drawdown/risk-off snapshots per paper portfolio (Phase 9); unique (portfolio_id, date). |
 
 **Where audit trails live:** `backtest_runs`, `risk_evaluations`, `agent_decisions`, and
 `trade_journal` together form the audit trail. Every paper trade must be traceable via

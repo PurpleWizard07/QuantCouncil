@@ -502,6 +502,45 @@ export interface MarkToMarketResponse {
   positions: PaperPosition[];
 }
 
+export interface NavSnapshot {
+  date: IsoDate;
+  nav: number;
+  cash: number;
+  drawdown: number;
+  risk_off: boolean;
+}
+
+/** Response of GET /paper/portfolios/{id}/nav-history. Ordered oldest -> newest. */
+export interface NavHistoryResponse {
+  portfolio_id: UUID;
+  count: number;
+  snapshots: NavSnapshot[];
+}
+
+/** One stop-loss sweep fill executed inside a daily-cycle run. */
+export interface StopTriggered {
+  position_id: UUID;
+  symbol: string;
+  quantity: number;
+  stop_loss: number;
+  close: number;
+  order_id: UUID;
+}
+
+/** Response of POST /paper/portfolios/{id}/daily-cycle: stop-loss sweep -> mark-to-market -> NAV snapshot. */
+export interface DailyCycleResponse {
+  portfolio_id: UUID;
+  date: IsoDate;
+  stops_triggered: StopTriggered[];
+  mark_to_market: MarkToMarketResponse;
+  snapshot: NavSnapshot;
+}
+
+/** Response of POST /paper/portfolios/{id}/risk-off/reset -- portfolio summary (same shape as PaperPortfolio) plus a journaled flag. */
+export interface RiskOffResetResponse extends PaperPortfolio {
+  journaled: true;
+}
+
 export type JournalEntryType = "DECISION" | "FILL" | "NOTE" | "RISK_EVENT";
 
 export interface JournalEntry {

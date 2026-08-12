@@ -1,0 +1,44 @@
+## 7. "What happens after I press BUY?" — the full lifecycle
+
+Let's trace a single order end-to-end. Say you place a **market order to buy 100 shares of RELIANCE** in your broker's app.
+
+<Pipeline>
+  <Step label="You tap BUY" detail="100 RELIANCE, market order" />
+  <Step label="Broker risk checks" detail="Funds and limits verified" />
+  <Step label="Routed to exchange" detail="NSE/BSE via low-latency link" />
+  <Step label="Matching engine" detail="Price-time priority" />
+  <Step label="Trade executed" detail="Confirmation flows back" />
+  <Step label="Clearing (T day)" detail="CCP nets all obligations" />
+  <Step label="Settlement (T+1)" detail="Cash and shares change hands" />
+  <Step label="In your demat" detail="You are the owner of record" last />
+</Pipeline>
+
+**Step by step, in words:**
+
+1. **Your click → broker.** The app sends the order to your broker's servers. This takes milliseconds.
+2. **Risk & margin checks (broker).** The broker instantly verifies you have the funds/margin, the order passes exchange price bands and position limits, and it's a valid instrument. If not → *rejected* (a common, harmless event). This is why you sometimes see "insufficient funds" or "price out of range."
+3. **Broker → exchange.** The broker forwards the order to NSE/BSE over a fast dedicated connection. Your broker is a *member*; you access the exchange *through* them.
+4. **Matching engine.** The exchange's central computer maintains the [order book](/learn/foundations/order-book-and-order-types#3-the-order-book-bid-ask-and-spread) and matches orders by **price-time priority**: best price first, and among equal prices, whoever was there *earliest* gets filled first ([microstructure](/learn/market-microstructure/order-flow-and-market-impact)). Your market buy is paired with the lowest-priced resting sell orders.
+5. **Execution & confirmation.** A trade is struck. You now *own* the shares in a trade sense, and a confirmation races back: exchange → broker → your app ("order executed, 100 @ ₹1,400.xx"). All of the above typically happens in **well under a second**.
+6. **Clearing (end of T day).** The **clearing corporation** collects every trade, becomes the counterparty to both sides, and performs **netting** — instead of settling thousands of individual trades, it computes each participant's *net* obligation (e.g., "broker X must deliver 12,000 shares net and receive ₹Y net"). This slashes the number of transfers and guarantees completion.
+7. **Settlement (T+1 in India).** On the next business day, **pay-in** and **pay-out** occur: cash moves from buyers to sellers and shares move from sellers to buyers, via the depositories. Your **demat account (NSDL/CDSL)** is credited with the RELIANCE shares; the money leaves your account.
+8. **You are an owner of record.** Only now is the change of ownership *final and irreversible*, recorded in the depository's ledger.
+
+> 💡 **Key takeaway:** "Buying a stock" is really **three distinct events**: *matching* (instant, price is set), *clearing* (netting + guarantee, end of day), and *settlement* (actual transfer of cash and shares, T+1). Most surprises — margin blocks, delivery obligations, short-delivery auctions, why you can't immediately re-sell in some products — come from confusing these three.
+
+> 🤔 **Think about this:** If the exchange matches your trade in under a second, why does *settlement* take a whole day? (Because settlement moves *actual cash and securities* across banks and depositories for millions of netted obligations safely. India has compressed this from T+3 → T+2 → T+1, and is piloting T+0/instant — see below. Faster settlement reduces risk but requires huge operational upgrades.)
+
+## 8. Settlement (T+1 / T+0)
+
+🗓️ *Current as of latest sources; verify against NSE/BSE/SEBI, as India is actively shortening this.*
+
+- **"T"** = trade date. **T+1** = one *business* day later.
+- **India is a global leader here.** The market moved T+2 → **T+1 in early 2023** (fully rolled out by end-January 2023) for all equities, ETFs, REITs, and InvITs. Under T+1, a trade today settles tomorrow — shares and cash finalize on T+1.
+- **T+0 (same-day) settlement** launched as an *optional* beta on **28 March 2024** and has been expanded in phases to the **top 500 stocks** by market cap; it runs *alongside* T+1 (not replacing it). SEBI has also been piloting an even faster **instant settlement** mechanism.
+- **Why it matters to you:** T+1 means funds/shares free up faster (better capital efficiency), but also that you must have **cash available sooner** — a failed pay-in (insufficient funds on settlement) triggers penalties and short-delivery handling.
+
+> 💡 **Key takeaway:** Faster settlement = less counterparty risk and quicker access to your money, but *less float* — you can't rely on a multi-day gap to arrange funds. Know your product's cycle before you trade. Full detail and the current status in [Indian Markets](/learn/indian-markets/regulatory-stack-accounts-settlement#settlement).
+
+### Related
+
+[Order book & order types](/learn/foundations/order-book-and-order-types) · [Market Microstructure](/learn/market-microstructure/order-flow-and-market-impact) · [Indian Markets → regulatory stack, accounts & settlement](/learn/indian-markets/regulatory-stack-accounts-settlement) · [Glossary](/learn/glossary)

@@ -1,0 +1,67 @@
+## 5. Expectancy — the master formula
+
+**Expectancy** is the average profit (or loss) per trade, in rupees or in R. It is the number that actually decides whether a strategy makes money.
+
+$$E = (W \times A_w) - (L \times A_l)$$
+
+- **What it calculates:** expected P&L per trade.
+- **Why it matters:** if `E > 0` and you take enough trades at sane size, you make money; if `E < 0`, no entry technique or "discipline" can save you — you are feeding a negative-sum machine.
+- **Variables:**
+  - `W` = win rate (probability of a win), `L = 1 − W` = loss rate.
+  - `A_w` = average win size (in ₹ or R). `A_l` = average loss size (positive number).
+- **Numerical example:** Win rate 45%, average win ₹8,000, average loss ₹4,000.
+  - `E = (0.45 × 8,000) − (0.55 × 4,000) = 3,600 − 2,200 =` **₹1,400 per trade**.
+  - Over 200 trades that's ~₹2,80,000 *before costs* — but see the cost caveat below.
+- **Limitations:**
+  - **Costs are not optional.** Subtract *average cost per round-trip trade* from `E`. In Indian intraday/F&O, costs per trade can easily be ₹100–₹500+; a strategy with `E = +₹150` gross can be *negative* net. Always compute **net expectancy.**
+  - Expectancy assumes your historical `W`, `A_w`, `A_l` are stable and representative. They drift.
+  - A positive expectancy says nothing about *path* — you still need to think about [drawdown and risk of ruin](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin).
+
+### Expectancy in R (cleaner)
+
+$$E_R = W \times R_{win} - L \times 1$$ where `R_win` = average win in R (since a full loss = 1R).
+
+Example: Win rate 40%, average winner = **2.5R**. `E_R = 0.40 × 2.5 − 0.60 × 1 = 1.0 − 0.6 =` **+0.4R per trade.** You net 0.4R on average every time you press the button. *That* is an edge.
+
+## 6. Why a 40% win rate can win and a 70% win rate can lose
+
+This is the heart of the section. **Win rate alone is meaningless.** What matters is `win rate × reward:risk`.
+
+### Case A — the 40% winner that makes money (trend-following flavour)
+
+- Win rate **40%**, average win **+3R**, average loss **−1R** (you cut losers fast, let winners run).
+- `E_R = 0.40 × 3 − 0.60 × 1 = 1.2 − 0.6 =` **+0.6R per trade.**
+- Over 100 trades at ₹5,000 risk (1R): `100 × 0.6R × ₹5,000 =` **₹3,00,000** expected profit (before costs). You **lose more often than you win** and get richer, because the wins are big.
+
+### Case B — the 70% winner that loses money (naive option-selling / "picking pennies" flavour)
+
+- Win rate **70%**, average win **+0.5R**, average loss **−2R** (small frequent gains, occasional large losses — the classic "selling options / martingale" payoff shape).
+- `E_R = 0.70 × 0.5 − 0.30 × 2 = 0.35 − 0.60 =` **−0.25R per trade.**
+- Over 100 trades at ₹5,000 risk: `100 × (−0.25R) × ₹5,000 =` **−₹1,25,000** expected loss. You **win 7 out of 10 trades** and go broke, because the 3 losses each erase four wins.
+
+### Side-by-side
+
+| | Case A (trend) | Case B (penny-picking) |
+|---|---|---|
+| Win rate | 40% ✅ *feels bad* | 70% ✅ *feels great* |
+| Avg win | +3R | +0.5R |
+| Avg loss | −1R | −2R |
+| **Expectancy** | **+0.6R** ✅ | **−0.25R** 🚩 |
+| Emotional experience | Frequent small losses, rare big wins — *hard to hold* | Frequent small wins, rare big losses — *seductive, then ruinous* |
+
+> 💡 **Key takeaway:** The market pays you for **expectancy**, not for being right. High-win-rate strategies are psychologically pleasant and can be *fine* — **but only if the rare losses stay small relative to the frequent wins.** The danger is a payoff shape where you "win small, win small, win small… lose huge." That shape shows up again in [Options → why selling isn't free money](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money).
+
+> 🤔 **Think about this:** Someone shows you a screenshot: "92% win rate!" What are the *first two numbers* you must ask for before being impressed? (Average win size and average loss size — i.e. the payoff of the 8%.)
+
+> 🔬 **Testable claim:** "This strategy is profitable." The evidence that matters is a large, out-of-sample sample of trades whose **net** expectancy (after realistic Indian costs and slippage) is reliably positive — not a high win rate on a cherry-picked in-sample window. See [Validation](/learn/backtesting-statistics/validation-walkforward-montecarlo).
+
+<Quiz
+  question="A strategy wins 70% of trades, averaging +0.5R on winners and -2R on losers. What's its expectancy per trade, in R?"
+  options={["+0.35R — a solid edge", "-0.25R — it loses money despite the high win rate", "0R — break-even", "Not enough information"]}
+  answerIndex={1}
+  explanation="E_R = 0.70 × 0.5 − 0.30 × 2 = 0.35 − 0.60 = −0.25R. A 70% win rate feels great, but the losses are four times the size of the wins, so the strategy bleeds money on average. Win rate alone tells you nothing without the payoff sizes."
+/>
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Drawdown & Risk of Ruin](/learn/risk-management/drawdown-and-risk-of-ruin) · [Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money) · [Glossary → Expectancy](/learn/glossary#expectancy)

@@ -1,0 +1,44 @@
+## 3. The core statistics
+
+From a series of returns you compute:
+
+| Statistic | Formula (conceptual) | What it tells you |
+|---|---|---|
+| **Mean** ($\mu$) | average return | central tendency / typical period |
+| **Variance** ($\sigma^2$) | average squared deviation from the mean | spread of outcomes |
+| **Std deviation** ($\sigma$) = **volatility** | $\sqrt{\text{variance}}$ | typical size of swings, in return units |
+| **Annualized volatility** | $\sigma_{daily} \times \sqrt{252}$ | volatility scaled to a year (≈252 trading days) |
+| **Expected value** | $\sum (\text{outcome} \times \text{probability})$ | probability-weighted average outcome |
+
+- **Why $\sqrt{252}$?** Under the (idealized) assumption of independent daily returns, variance scales *linearly* with time, so *volatility* scales with the **square root** of time. A daily vol of 1% → annual vol ≈ `1% × √252 ≈ 15.9%`. 🧭 A useful model; real returns aren't perfectly independent.
+- **Expected value / expectancy** is the bridge to [Risk Management](/learn/risk-management/expectancy#5-expectancy--the-master-formula): a strategy's per-trade expectancy is just the expected value of its trade-return distribution.
+
+```python
+import numpy as np
+
+prices = np.array([100, 102, 101, 104, 103, 107, 110.0])
+simple_ret = prices[1:] / prices[:-1] - 1
+log_ret    = np.log(prices[1:] / prices[:-1])
+
+mu_daily    = log_ret.mean()
+sigma_daily = log_ret.std(ddof=1)          # sample std
+ann_return  = mu_daily * 252               # log returns annualize by summing
+ann_vol     = sigma_daily * np.sqrt(252)
+
+print(f"daily mean log-ret: {mu_daily:.4%}")
+print(f"annualized vol:     {ann_vol:.2%}")
+```
+
+## 4. Distributions and fat tails
+
+A **distribution** describes how likely each outcome is. Finance loves the **normal (Gaussian)** distribution because it's mathematically convenient — but real market returns are **not normal**:
+
+- **Fat tails (leptokurtosis):** extreme moves (crashes, gap-ups) happen **far more often** than a normal distribution predicts. A "6-sigma" event should be almost impossible under normality, yet markets deliver them every few years.
+- **Volatility clustering:** big moves follow big moves; calm follows calm (the basis of [ATR](/learn/analysis/ta-indicator-reference#atr-average-true-range) and vol models in [Advanced](/learn/advanced-topics/regimes-volatility-portfolio-optimization)).
+- **Skew:** equity returns are often negatively skewed — crashes are sharper than melt-ups.
+
+> ⚠️ **Common mistake:** Using models (Sharpe, VaR, option pricing) that *assume* normality and being blindsided by the tail. This is the statistical root of [why selling options can ruin you](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money) and why [risk of ruin](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin) is larger than "normal" math suggests. **Respect the tails.**
+
+### Related
+
+[Options → Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money) · [Risk Management → Drawdown & Risk of Ruin](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin) · [Advanced Topics → Regimes, Volatility Modeling & Portfolio Optimization](/learn/advanced-topics/regimes-volatility-portfolio-optimization) · [Glossary → Volatility](/learn/glossary#volatility)

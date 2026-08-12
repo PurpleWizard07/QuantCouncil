@@ -1,0 +1,102 @@
+> 💡 **Key takeaway:** These build directly on the beginner set — expectancy, options payoffs, the Greeks, backtest pitfalls, and the real cost of trading in India. Work them with a calculator, not a vibe.
+
+## 1. Expectancy comparison
+
+Strategy A: 68% win rate, average win ₹800, average loss ₹1,900. Strategy B: 32% win rate, average win ₹3,900, average loss ₹900. Compute expectancy per trade for both (see [Expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula)). Which would you trade, and what single piece of missing information (trade frequency, max drawdown) would most change your answer?
+
+<CollapsibleSection title="Show worked solution">
+
+**Strategy A:** $E = (0.68 \times 800) - (0.32 \times 1900) = 544 - 608 = -64$, i.e. **−₹64 per trade.** Negative expectancy — a 68% win rate that still loses money, because the losses are more than double the wins.
+
+**Strategy B:** $E = (0.32 \times 3900) - (0.68 \times 900) = 1248 - 612 = 636$, i.e. **+₹636 per trade.** Positive expectancy despite winning less than a third of the time.
+
+**Verdict:** trade B, not A — expectancy is the number that decides profitability, and A's is negative regardless of its comfortable-looking win rate.
+
+**The missing piece that matters most: max drawdown, not trade frequency.** B's edge is real, but a 32% win rate means long losing streaks are *normal* — you could easily see 6–8 losses in a row purely by chance. Before committing capital to B you'd want to know the drawdown that produces, and whether your position sizing lets you survive it emotionally and financially. Trade frequency matters for how fast the edge compounds, but it doesn't change *whether* B is worth trading — drawdown tolerance does.
+
+</CollapsibleSection>
+
+## 2. Options payoff
+
+Construct the payoff diagram (by hand or spreadsheet) for a NIFTY iron condor with strikes of your choosing. At three different expiry spot prices, calculate the exact P&L. See [Options strategies](/learn/derivatives/options-strategies-and-payoffs#8-strategies-and-their-payoffs).
+
+<CollapsibleSection title="Show worked solution">
+
+**A concrete construction** (NIFTY spot ≈ 24,150): sell a 24,000/23,800 put spread and a 24,300/24,500 call spread.
+
+- Sell 24,000 PE @ ₹55, buy 23,800 PE @ ₹25 → net credit on the put side: **₹30.**
+- Sell 24,300 CE @ ₹60, buy 24,500 CE @ ₹20 → net credit on the call side: **₹40.**
+- **Total net credit = ₹70/unit.** Both spreads are 200 points wide, so **max loss = 200 − 70 = ₹130/unit** on whichever side gets breached.
+
+**Three expiry scenarios:**
+
+| Expiry spot | What happens | P&L |
+|---|---|---|
+| **24,150** (inside the range) | Both spreads expire worthless | **+₹70** (full credit kept — max gain) |
+| **23,700** (below the put spread) | Put spread hits max loss (−200 width + 30 credit = −170); call spread expires worthless (+40) | **−₹130** |
+| **24,600** (above the call spread) | Call spread hits max loss (−200 width + 40 credit = −160); put spread expires worthless (+30) | **−₹130** |
+
+Per lot (75): max gain = ₹5,250, max loss = ₹9,750. Note the max loss is identical whichever side breaks — that's the defined-risk shape of an iron condor: you know your worst case in both directions before you enter.
+
+</CollapsibleSection>
+
+## 3. Greeks sensitivity
+
+For a near-the-money NIFTY call with 15 days to expiry, rank its Greeks (delta, gamma, theta, vega) by how much they'd change if (a) 5 days pass with no price move, (b) spot moves 2% instantly, (c) India VIX jumps 20%. See [The Greeks](/learn/derivatives/options-building-blocks-and-greeks#4-the-greeks).
+
+<CollapsibleSection title="Show worked solution">
+
+Each scenario primarily excites the Greek that literally measures sensitivity to *that* variable:
+
+- **(a) 5 days pass, price flat:** **Theta dominates** — time decay accelerates as expiry nears, and it's largest for an ATM option. Gamma rises somewhat (less time left concentrates gamma near the strike); vega falls slightly (less time value left to be sensitive to); delta is roughly unchanged since price didn't move.
+- **(b) Spot moves 2% instantly:** **Delta dominates** — an ATM option's delta (~0.5) directly translates the price move into P&L immediately. Gamma matters second-order (delta itself shifts after the move). Theta and vega barely move in an instant with no time passing and no explicit vol shock.
+- **(c) India VIX jumps 20%:** **Vega dominates** — a large IV repricing hits every option's premium directly via vega, especially with 15 days still left (more time value to reprice). Delta and gamma are largely unaffected since spot didn't move.
+
+The exercise is really testing whether you can match "which variable changed" to "which Greek measures sensitivity to that variable" — exactly the discipline the lesson argues most beginners skip when they model only delta.
+
+</CollapsibleSection>
+
+## 4. Backtest pitfall hunt
+
+Take a simple moving-average crossover backtest (write the code, or use provided pseudocode) and deliberately introduce, then detect and fix: (a) look-ahead bias, (b) ignored transaction costs, (c) survivorship bias in the universe selection. See [Backtesting pitfalls](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+
+<CollapsibleSection title="Show worked solution">
+
+**(a) Look-ahead bias.** Introduced by applying today's signal to today's return: `df["strat_ret"] = df["signal"] * df["mkt_ret"]`. **Fix:** shift the position by one bar before applying it, since you can't trade on a close you haven't seen yet: `df["position"] = df["signal"].shift(1)`. This is the single most common backtesting bug, and it's a one-line fix once you know to look for it.
+
+**(b) Ignored costs.** Introduced by computing returns with no cost term: `strat_ret = position * mkt_ret`. **Fix:** subtract a per-trade cost estimate whenever the position changes: `df["trade"] = df["position"].diff().abs(); df["strat_ret"] = df["position"] * df["mkt_ret"] - df["trade"] * COST`. A frequently-trading strategy can have its entire gross edge erased by this one line.
+
+**(c) Survivorship bias.** Introduced by testing only stocks currently in an index today (silently excluding names that were delisted or went bankrupt during your backtest window). **Fix** is structural, not a one-liner: you need a *point-in-time* universe — the actual index membership as it existed on each historical date, including names that later got removed. This is harder to fix than (a) or (b) because it requires better data, not just better code, which is exactly why it's the pitfall most backtests quietly get wrong.
+
+</CollapsibleSection>
+
+## 5. Cost-stack reality check
+
+For 30 intraday round-trip trades in a month, each ₹1,00,000 notional, calculate total costs using the [current cost stack](/learn/indian-markets/cost-stack-and-stt#the-cost-stack) (brokerage + STT + exchange charges + GST + stamp duty). What gross return do you need just to break even?
+
+<CollapsibleSection title="Show worked solution">
+
+Per round trip (₹1,00,000 notional, intraday, discount broker):
+
+| Charge | Basis | Amount |
+|---|---|---|
+| Brokerage | ₹20 flat or 0.03%, whichever lower, per order × 2 orders | ₹40 |
+| STT | 0.025% on sell side only | ₹25 |
+| Exchange transaction charge | ~0.0032% on ₹2,00,000 turnover | ~₹6.4 |
+| SEBI turnover fee | ₹10/crore on ₹2,00,000 turnover | ~₹0.2 |
+| GST | 18% on (brokerage + exchange + SEBI fee) | ~₹8.4 |
+| Stamp duty | 0.003% on buy side | ₹3 |
+| DP charges | Not charged on intraday | ₹0 |
+| **Total per round trip** | | **≈ ₹83** |
+
+**Break-even gross move needed per trade:** ₹83 ÷ ₹1,00,000 ≈ **0.083%** — you need to capture roughly a tenth of a percent, net of nothing else, just to cover costs on each trade.
+
+**Over 30 trades/month:** 30 × ₹83 ≈ **₹2,490/month** in pure friction, before any consideration of whether your actual trading signal has an edge at all. This is precisely why high-frequency retail strategies fight such a strong cost headwind — the friction is proportional to *activity*, not to skill.
+
+*(Exact rates are 🗓️ date-sensitive — verify current brokerage, STT, and exchange charges against your broker's contract note before relying on this for real trading decisions.)*
+
+</CollapsibleSection>
+
+---
+
+**Related:** [Risk Management](/learn/risk-management) · [Derivatives](/learn/derivatives) · [Backtesting & Statistics](/learn/backtesting-statistics) · [Indian Markets](/learn/indian-markets)

@@ -1,0 +1,57 @@
+## The cost stack
+
+🗓️ *Rates below reflect current sources at the time of writing. Brokerage varies by broker; statutory
+charges change via Budget/SEBI/exchange circulars and by state (stamp duty). Verify on your contract note.*
+
+Every Indian trade carries **layers** of charges beyond the price. Knowing them is essential to
+computing your true **breakeven** and **net [expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula)**.
+
+### The charges, one by one
+
+| Charge | Who levies it | Typical current basis 🗓️ |
+|---|---|---|
+| **Brokerage** | Your broker | Discount brokers: **₹0** on equity delivery; **flat ₹20 (or ~0.03%, whichever lower)** per executed order for intraday/F&O; **flat ₹20** per options order. Full-service brokers charge a percentage. |
+| **STT** (Securities Transaction Tax) | Government | See STT table below — a major cost, unavoidable, charged on turnover/premium. |
+| **Exchange transaction charge** | NSE/BSE | Roughly **~0.00297%–0.00345%** of turnover on NSE equity; **BSE varies by scrip group**. (Exchanges moved to flat per-crore style rates around Oct 2024.) F&O has its own rates. |
+| **SEBI turnover fee** | SEBI | **₹10 per crore** (0.0001%) of turnover, both sides. |
+| **GST** | Government | **18%** on **(brokerage + exchange transaction charge + SEBI fee)** — *not* on your profits. |
+| **Stamp duty** | State govts (uniform since 1 Jul 2020) | **Buy side only**: delivery **0.015%**, intraday **0.003%**, futures **0.002%**, options **0.003%**, currency ~**0.0001%**. |
+| **DP charges** | Depository + DP | Flat **~₹13–20 + GST per ISIN per day** on **delivery *sell*** (demat debit). **Not** charged on intraday or F&O. |
+| **Others** | Various | Tiny NSE **IPFT** fee; annual **demat AMC** (~₹300–500 + GST); auction/penalty charges for short delivery. |
+
+### STT — the current rates 🗓️
+
+STT changed again from **1 April 2026** (Budget 2026–27), continuing hikes that began in 2024. Current
+rates (verify before relying on them):
+
+| Segment | STT (current) 🗓️ | Side |
+|---|---|---|
+| **Equity delivery** | **0.1%** | Both buy **and** sell |
+| **Equity intraday** | **0.025%** | **Sell** side only |
+| **Equity futures** | **0.05%** *(raised from 0.02% on 1 Apr 2026)* | **Sell** side only |
+| **Equity options** | **0.15%** on the **premium** *(raised from 0.1%)*; **0.15%** on **intrinsic value** if the option is **exercised** | **Sell** side (and on exercise) |
+| **ETFs (equity)** | ~**0.1%** (treated like delivery) | Both sides |
+| **Equity MF units** | **0.001%** | Sell side |
+
+> ⚠️ **Common mistake #1:** Letting an **ITM option get exercised** rather than squaring off. Exercise
+> triggers STT **on intrinsic value (0.15%)**, which can be a nasty surprise — often square off instead.
+> **Common mistake #2:** Ignoring costs when backtesting or when a strategy has small per-trade edge.
+> For active intraday/F&O trading, **round-trip costs of ₹100–₹500+ per trade** are normal; a strategy
+> with a tiny gross edge is often *net negative*. See [Backtesting → costs](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+
+### Worked example — a ₹1,00,000 delivery round trip
+Buy ₹1,00,000, sell ₹1,00,000 (flat, for illustration), discount broker (₹0 delivery brokerage):
+- STT: 0.1% × 1,00,000 (buy) + 0.1% × 1,00,000 (sell) = ₹100 + ₹100 = **₹200**
+- Stamp duty (buy): 0.015% × 1,00,000 = **₹15**
+- Exchange + SEBI + GST: a few rupees total
+- DP charge (on sell): ~**₹15–20 + GST**
+- **Total ≈ ₹235–₹250** → you need roughly a **~0.25% gain just to break even** on delivery — and much
+  more, proportionally, for small trades or frequent intraday/F&O churn.
+
+> 💡 **Key takeaway:** In India, **STT + the charge stack materially raise your breakeven**, and they
+> scale with *turnover*, not profit — so high-frequency retail strategies fight a strong cost headwind.
+> Always compute costs *before* deciding a strategy is worth trading.
+
+### Related
+
+[Expectancy — the Master Formula](/learn/risk-management/expectancy) · [The Backtest Loop & the Pitfalls That Kill It](/learn/backtesting-statistics/backtest-loop-and-pitfalls) · [Glossary → STT](/learn/glossary#stt-securities-transaction-tax) · [Glossary → DP charges](/learn/glossary#dp-charges)

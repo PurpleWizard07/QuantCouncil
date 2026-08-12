@@ -1,0 +1,66 @@
+## 9. Liquidity
+
+**Liquidity** = how easily you can convert an asset to cash **near its fair price, quickly, without moving the price against you.**
+
+| High liquidity | Low liquidity |
+|---|---|
+| RELIANCE, HDFCBANK, NIFTY futures | An illiquid smallcap, real estate, unlisted shares |
+| Tight [bid-ask spread](/learn/foundations/order-book-and-order-types#3-the-order-book-bid-ask-and-spread) | Wide spread; few buyers/sellers |
+| You can exit large size fast | Selling in size *crashes* the price |
+
+Liquidity is a *hidden risk*. A position can look great on paper but be a trap if you can't exit without a huge haircut. In a panic, liquidity **evaporates precisely when you need it** — spreads blow out, and "market orders" fill at terrible prices ([slippage](/learn/foundations/order-book-and-order-types#6-partial-fills-and-slippage)).
+
+> 💡 **Key takeaway:** Always ask "how will I get *out*?" before you get in. Illiquidity is fine for a patient long-term holder and lethal for a trader who might need to exit fast. It also directly raises your trading costs (see [microstructure](/learn/market-microstructure/order-flow-and-market-impact)).
+
+## 10. Volatility
+
+**Volatility** = how much a price *swings around*, usually measured as the **standard deviation** of returns ([stats](/learn/backtesting-statistics/core-statistics-and-fat-tails)). High volatility = big, frequent moves; low volatility = calm.
+
+- **It is not the same as risk, but it's related.** Volatility measures *variability*; risk is the chance of a *bad outcome*. A wildly volatile asset that always ends higher isn't "risky" in the ruin sense — but volatility raises the odds of hitting a stop, forces smaller position sizes ([vol-adjusted sizing](/learn/risk-management/kelly-criterion#8-volatility-adjusted-sizing)), and creates drawdowns that break compounding and nerve.
+- **Example:** Two stocks both return 12%/year on average. Stock A ranges ±10% around it; Stock B ranges ±40%. Same average, very different *experience* and very different odds of being shaken out at the worst time.
+- India's **India VIX** measures expected NIFTY volatility from option prices — a market-implied "fear gauge" ([Options → IV](/learn/derivatives/volatility-chain-open-interest#5-volatility-implied-vs-historical-smile-skew)).
+
+> 💡 **Key takeaway:** Volatility is the *raw material* of trading (no movement, no opportunity) and simultaneously the thing that must be *managed*. More volatility means you must trade *smaller*, not bigger, to keep rupee risk constant.
+
+## Correlation
+
+**Correlation** measures how two assets' returns move *together*, on a scale from −1 to +1:
+
+| Correlation | Meaning | Example |
+|---|---|---|
+| **+1** | Move perfectly together | Two large private banks in the same selloff |
+| **0** | No linear relationship | Gold and a random midcap (often loosely related) |
+| **−1** | Move perfectly opposite | A stock and a well-designed hedge against it |
+
+Correlation is the hinge of [diversification](#diversification) and portfolio risk. Combining assets that *don't* move together smooths your equity curve; combining assets that *do* just concentrates one bet ([Risk Management → correlation](/learn/risk-management/portfolio-risk-correlation-leverage#10-portfolio-level-risk-correlation-exposure-leverage)).
+
+> ⚠️ **Common mistake:** Assuming correlations are stable. In a crisis, *everything* tends to fall together — correlations "go to 1" exactly when you were counting on diversification to protect you. Historical correlation is a 🧭 useful model, not a guarantee.
+
+## Diversification
+
+**Diversification** = spreading capital across assets whose risks are *not the same*, so that no single bad event sinks you. It is often called "the only free lunch in finance" because, done right, it reduces risk **without** proportionally reducing expected return.
+
+- **Why it works:** if you hold many *uncorrelated* positions, their random ups and downs partly cancel, so the *portfolio* is steadier than any single holding. The average return is preserved; the *variability* shrinks.
+- **Example:** Ten uncorrelated bets each with the same edge produce a far smoother equity curve than putting everything on one — the same total return with smaller drawdowns.
+- **The catch (and it's a big one):** diversification only works to the extent holdings are genuinely **uncorrelated** ([correlation](#correlation)). Ten Indian bank stocks are *not* diversified — they are one leveraged bet on banking. True diversification spans sectors, asset classes, and strategies.
+
+> 💡 **Key takeaway:** Don't count *positions*; count *bets*. Five correlated trades are one bet plus five brokerages. Diversify across things that fail for *different reasons.*
+
+## 13. Risk-adjusted returns
+
+The final, unifying idea of this section: **returns must always be judged relative to the risk taken to earn them.** A 30% return by betting the account on one option is *not* better than a 15% return earned steadily — the first was a coin flip that happened to land well.
+
+The standard tool is the **Sharpe ratio** (full treatment in [Backtesting & Statistics](/learn/backtesting-statistics/performance-metrics#the-sharpe-ratio)):
+
+$$\text{Sharpe} = \frac{R_p - R_f}{\sigma_p}$$
+
+- **What it calculates:** excess return (above the risk-free rate) *per unit of volatility.*
+- **Variables:** `R_p` = portfolio return, `R_f` = risk-free rate (e.g. Indian T-bill/G-Sec yield), `σ_p` = volatility of the portfolio's returns.
+- **Example:** Strategy A returns 20% with 25% volatility; Strategy B returns 14% with 8% volatility; `R_f = 6%`. Sharpe(A) = `(20−6)/25 = 0.56`; Sharpe(B) = `(14−6)/8 = 1.0`. **B is the better strategy** on a risk-adjusted basis, despite the lower headline return — you could even *leverage* B to match A's return at lower risk.
+- **Limitations:** Sharpe penalizes upside and downside volatility equally (the [Sortino ratio](/learn/backtesting-statistics/performance-metrics) fixes this), assumes returns are well-behaved (they have [fat tails](/learn/foundations/investing-trading-speculation#5-risk-vs-uncertainty)), and can be gamed by strategies that hide risk in rare tail losses (like [naked option selling](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money)).
+
+> 💡 **Key takeaway:** "How much did you make?" is the wrong first question. "How much did you make *per unit of risk*, and could you survive the bad path?" is the right one. This mindset — return *relative to risk* — is the thread connecting every later section.
+
+### Related
+
+[Order book & order types](/learn/foundations/order-book-and-order-types) · [Portfolio risk, correlation & leverage](/learn/risk-management/portfolio-risk-correlation-leverage) · [Performance metrics](/learn/backtesting-statistics/performance-metrics) · [Glossary](/learn/glossary)

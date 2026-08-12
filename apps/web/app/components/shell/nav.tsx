@@ -29,6 +29,16 @@ export const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    label: "Learn",
+    href: "/learn",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" {...stroke}>
+        <path d="M3 5.5c2.3-1.1 5.4-1 8 .4v13.1c-2.6-1.4-5.7-1.5-8-.4z" />
+        <path d="M21 5.5c-2.3-1.1-5.4-1-8 .4v13.1c2.6-1.4 5.7-1.5 8-.4z" />
+      </svg>
+    ),
+  },
+  {
     label: "Research",
     href: "/research",
     icon: (
@@ -126,7 +136,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 /** The nav label for a pathname, used by the command-bar breadcrumb. */
 export function labelForPathname(pathname: string): string {
-  if (pathname === "/") return "Dashboard";
+  if (pathname === "/" || pathname === "/dashboard") return "Dashboard";
   const match = NAV_ITEMS.filter((item) => item.href !== "/").find(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );

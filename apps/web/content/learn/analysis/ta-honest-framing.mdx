@@ -1,0 +1,100 @@
+> 💡 **Key takeaway:** Technical analysis (TA) is the study of **price and volume behavior**. Used
+> honestly, indicators are *compressed summaries of past price* that encode a **hypothesis** about
+> what tends to happen next. Used dishonestly (the way most social media presents them), they're sold
+> as magic predictors. This section teaches TA as a set of **testable bets**, each with a mechanism, a
+> failure mode, and a way to check it.
+
+> ⚔️ **Where TA stands, epistemically:** That markets *trend* and *mean-revert* in some regimes is
+> supported by evidence (momentum and reversal are documented — see [Quant](/learn/quantitative-trading/factor-investing)).
+> That *specific chart patterns reliably predict specific moves* is far weaker and often fails
+> out-of-sample. Treat the **broad ideas** as 🧭 useful models and the **precise pattern claims** as
+> 🔬 testable-and-usually-disappointing.
+
+## 1. The honest framing: indicators as hypotheses
+
+Every indicator is a **function of past price/volume**. It cannot contain information that isn't
+already in the price. So the right question is never "does this indicator predict the future?" but:
+
+> For **every** indicator, ask the four questions:
+> 1. **What hypothesis does it represent?** (What belief about market behavior is it a bet on?)
+> 2. **Why might it work?** (What real mechanism — behavioral, structural — could make that true?)
+> 3. **When does it fail?** (What regime breaks the hypothesis?)
+> 4. **How could we test it?** (What out-of-sample, cost-adjusted evidence would confirm/refute it?)
+
+If you can't answer these, you're not doing analysis — you're doing astrology with candlesticks.
+
+> ⚠️ **Common mistake:** Stacking ten indicators and waiting for them to "align." Since most are
+> different transformations of the *same* price series, they're highly correlated — ten of them is not
+> ten independent votes, it's one signal wearing ten costumes. More indicators ≠ more information.
+
+## 2. Price representation: OHLC, candlesticks, timeframes, gaps
+
+- **OHLC:** each time period is summarised by four numbers — **O**pen, **H**igh, **L**ow, **C**lose.
+- **Candlestick:** a visual OHLC. The **body** spans open→close (filled/red if down, hollow/green if
+  up); the **wicks/shadows** reach to the high and low. Candles show, at a glance, where price *went*
+  vs where it *settled* — a long upper wick means buyers pushed up but sellers rejected the highs.
+- **Timeframe:** the period per candle (1-min, 5-min, daily, weekly). The *same* price looks trending
+  on one timeframe and choppy on another. Your timeframe should match your [trading style](/learn/analysis/trading-styles).
+- **Gaps:** when a period *opens* far from the previous *close* (no trading in between) — common
+  overnight after news/results/budget. Gaps are why
+  [stops can slip](/learn/risk-management/stops-and-r-multiple#3-stop-losses-done-properly) and why holding through
+  events is risky.
+
+> 🚩 **Myth:** Individual candlestick patterns (doji, hammer, engulfing) are reliable predictors. In
+> isolation and out-of-sample, most single-candle signals have weak, inconsistent edges. They are, at
+> best, *context* (a long rejection wick at a key level is more meaningful than one in the middle of
+> nowhere), not standalone signals. 🔬 Easy to test; usually underwhelms.
+
+## 3. Market structure
+
+"Market structure" is simply describing price as a sequence of swings:
+
+- **Uptrend:** successive **higher highs (HH)** and **higher lows (HL)**.
+- **Downtrend:** successive **lower highs (LH)** and **lower lows (LL)**.
+- **Range/consolidation:** highs and lows oscillate within a band — no net direction.
+- **Breakout:** price exits a range/level with force. **Pullback:** a temporary counter-move within a
+  trend (a chance to enter "with the trend" at a better price).
+
+**Hypothesis:** trends *persist* (today's direction predicts tomorrow's) more often than chance — i.e.
+returns have some **positive autocorrelation** in trending regimes. **Why it might work:** slow
+diffusion of information, herding, and institutional accumulation take time. **When it fails:** in
+choppy/mean-reverting regimes, "breakouts" are false and trend-followers get whipsawed. This is the
+core bet of [trend following](/learn/analysis/trading-styles) and momentum ([Quant](/learn/quantitative-trading/factor-investing)).
+
+> 💡 **Key takeaway:** Structure (HH/HL vs LH/LL) is the most *robust* piece of TA because it's a
+> direct description of behavior, not a derived oscillator. But even "the trend" is a bet on
+> autocorrelation that fails in ranges — which is why you pair it with [risk management](/learn/risk-management).
+
+## 4. Support and resistance
+
+**Support** = a price zone where buying has previously been strong enough to halt declines.
+**Resistance** = a zone where selling has halted advances.
+
+- **Hypothesis:** prices "remember" levels — round numbers, prior highs/lows, and heavily-traded
+  prices act as barriers where orders cluster. **Why it might work:** (a) *memory/anchoring* — traders
+  place orders at salient prices ([Psychology](/learn/psychology/bias-catalogue-and-discipline-systems)); (b) *structural* —
+  real resting limit orders and [option strikes](/learn/derivatives/volatility-chain-open-interest#6-reading-an-option-chain-nifty-example)
+  sit at these levels, so they genuinely absorb flow. **When it fails:** on strong trends/news, levels
+  break cleanly; and "obvious" levels get front-run or become self-defeating once everyone watches them.
+
+> ⚠️ **Common mistake:** Drawing a level *after the fact* through the exact tops/bottoms and marvelling
+> at how well it "worked." Levels are **zones**, not lines, and hindsight makes any line look
+> predictive. The test is whether a level defined *in advance* has edge — often modest at best.
+
+## 5. Volume
+
+**Volume** = quantity traded in a period. It's the closest TA gets to a *second* data dimension beyond
+price.
+
+- **Hypothesis:** moves *on high volume* are more "conviction-backed" and durable than moves on thin
+  volume; volume *confirms* breakouts. **Why it might work:** large participation reflects real
+  institutional flow rather than a few trades drifting a thin book. **When it fails:** volume can be
+  driven by index rebalancing, expiry, or algos with no directional meaning; and in an era of
+  fragmented liquidity, "volume" is noisier than the folklore assumes.
+- **Note the subtlety from [Price behavior](/learn/foundations/why-buyers-vs-sellers-is-wrong#2-why-buyers-vs-sellers-is-a-bad-explanation):**
+  volume alone doesn't tell direction — every unit traded had a buyer *and* a seller. "Buying volume"
+  vs "selling volume" requires inferring *aggressor* side (who crossed the spread), which basic charts
+  don't show — that's [order flow](/learn/analysis/chart-patterns-and-testing#8-advanced-multi-timeframe-volume-profile-order-flow).
+
+### Related
+[Indicator Reference](/learn/analysis/ta-indicator-reference) · [Chart Patterns & How to Test Any TA Idea](/learn/analysis/chart-patterns-and-testing) · [What Actually Moves Price; How Efficient Are Markets](/learn/foundations/price-drivers-and-market-efficiency) · [Choosing a Trading Style](/learn/analysis/trading-styles) · [Risk Management — module overview](/learn/risk-management)

@@ -1,0 +1,68 @@
+## 4. The real drivers of price
+
+Underneath the mechanics, *why* do buyers and sellers change their aggression and their resting orders? Because their **estimate of value, or their need to transact, changed.** The main drivers:
+
+| Driver | How it moves price |
+|---|---|
+| **Information / news** | New facts (earnings, orders, scandals) change perceived value → orders re-price |
+| **Expectations** | Prices reflect the *future*; a "good" result that's *worse than expected* falls ([§6](#6-information-and-expectations)) |
+| **Earnings & fundamentals** | Cash-flow reality over time anchors long-run value ([Fundamentals](/learn/analysis/fundamental-analysis)) |
+| **Interest rates** | Higher rates lower the present value of future cash flows → valuations compress ([Advanced](/learn/advanced-topics/regimes-volatility-portfolio-optimization)) |
+| **Liquidity** | Thin books move more per order; abundant liquidity absorbs flow ([§1 of microstructure](/learn/market-microstructure/order-flow-and-market-impact)) |
+| **Sentiment** | Fear/greed shift how aggressively people chase or dump ([Psychology](/learn/psychology/bias-catalogue-and-discipline-systems)) |
+| **Positioning** | Who is already long/short and how leveraged → sets up forced flows ([§7](#7-forced-flows-and-positioning)) |
+| **Institutional flows** | Large funds entering/exiting create sustained pressure |
+| **Forced buying/selling** | Margin calls, redemptions, index rebalancing → price-insensitive orders ([§7](#7-forced-flows-and-positioning)) |
+| **Arbitrage** | Keeps related prices (spot/futures, dual listings) aligned ([§5](#5-price-discovery-arbitrage-and-market-makers)) |
+
+> 💡 **Key takeaway:** Price is the market's *running estimate of value plus the pressure of who needs to trade*. Long-run, fundamentals dominate; short-run, flows, liquidity, and sentiment can dominate — which is exactly why short-term trading is hard and [risk management](/learn/risk-management) is essential.
+
+## 5. Price discovery, arbitrage, and market makers
+
+- **Price discovery** is the *process* by which all this buying and selling converges on a price that reflects available information. A market's core social function ([Foundations](/learn/foundations/money-assets-markets#3-what-is-a-financial-market-and-why-do-they-exist)).
+- **Market makers / liquidity providers** continuously post both bids and asks, earning the [spread](/learn/foundations/order-book-and-order-types#3-the-order-book-bid-ask-and-spread) for providing liquidity. They make trading smoother — but they *withdraw* when risk spikes, which is why spreads blow out in a panic. See [microstructure](/learn/market-microstructure/order-flow-and-market-impact).
+- **Arbitrage** is the force that keeps *related* prices consistent. If NIFTY futures drift too far from the NIFTY spot basket, arbitrageurs buy the cheap one and sell the dear one until the gap closes ([Futures → basis](/learn/derivatives/futures-mechanics)). Arbitrage is *why* you can usually trust that a future, an ETF, and its underlying stay tethered.
+
+> 🚩 **Myth:** "Markets are pushed around freely by whoever has the most money." Arbitrage and competition constrain how far prices can stray from fair value *for related instruments and liquid assets* — though thin/illiquid names are far easier to move. See [§8](#8-how-efficient-are-markets-really).
+
+## 6. Information and expectations
+
+Markets are **forward-looking**. Today's price already embeds the *consensus expectation* of the future. This produces the single most counter-intuitive fact for beginners:
+
+> **"Good news" can make a price *fall*, and "bad news" can make it *rise* — if the news is better or worse than what was already priced in.**
+
+- **Example:** A company reports **25% profit growth** — sounds great — but analysts *expected 35%*. The stock *drops*, because the price had already assumed 35%; the report was a *disappointment relative to expectations.*
+- **Example:** A struggling firm reports a loss, but a *smaller* loss than feared, plus signs of a turnaround → the stock *jumps*. Reality beat a very low bar.
+
+This is why "buy the rumour, sell the news" exists: expectations build into the price *ahead* of the event, and the event itself resolves the uncertainty — often triggering the *opposite* of the naive reaction. It's also why an [options buyer can be directionally right and still lose](/learn/derivatives/options-building-blocks-and-greeks#4-the-greeks) (the move was already priced; IV collapses after the event).
+
+> ⚠️ **Common mistake:** Trading the *headline* instead of the *surprise*. What moves price is the **delta between reality and expectation**, not whether the news is "good" in absolute terms.
+
+## 7. Forced flows and positioning
+
+Some of the sharpest moves come from traders who are **not choosing** to trade — they are *forced*:
+
+- **Margin calls / stop cascades:** leveraged longs get liquidated as price falls, and their forced *selling* pushes price lower, triggering *more* liquidations — a self-reinforcing cascade (and the mirror image in a short squeeze, where forced *buying* spikes price). See [Risk → margin](/learn/risk-management/portfolio-risk-correlation-leverage#10-portfolio-level-risk-correlation-exposure-leverage).
+- **Fund redemptions:** investors pull money → the fund must sell holdings regardless of value.
+- **Index rebalancing:** when a stock is added to/removed from an index, index funds must buy/sell it *because of the rule*, not because of value — creating predictable, price-insensitive flow.
+
+**Positioning** (who is already long/short, and how crowded/leveraged) sets up these dynamics. A market where "everyone" is already long has few new buyers and lots of potential forced sellers — it is *fragile to the downside* even on modest bad news.
+
+> 💡 **Key takeaway:** Price is not always about value or fresh information — sometimes it's about **who is trapped**. Understanding positioning explains "unexplained" violent moves and why crowded trades unwind painfully.
+
+## 8. How efficient are markets, really?
+
+The **Efficient Market Hypothesis (EMH)** says prices already reflect available information, so consistently beating the market is very hard. The honest, skeptical view:
+
+- ✅ **Established:** Markets are *hard to beat*. Most active managers underperform simple index funds after fees over long horizons. Obvious, liquid mispricings are quickly arbitraged away.
+- 🧭 **Useful model:** Treating liquid markets as "mostly efficient" keeps you humble and cost-aware — a good default that prevents a lot of overconfidence.
+- ⚔️ **Contested:** Whether *some* persistent inefficiencies exist (factor premia like value/momentum, behavioral biases, microstructure edges) is genuinely debated — and some appear real but *decay* as they're discovered and crowded ([Quant](/learn/quantitative-trading/factor-investing)).
+- 🚩 **Myth (both extremes):** "Markets are perfectly efficient, edges are impossible" **and** "markets are totally irrational, easily beaten by chart patterns" are *both* wrong. Reality is in between and regime-dependent.
+
+> 💡 **Key takeaway:** Assume markets are **efficient enough that easy money is gone**, but not so perfect that disciplined edges are impossible. This posture makes you skeptical of get-rich schemes *and* open to rigorously-tested, risk-managed strategies. It's the whole spirit of this knowledge base.
+
+> 🔬 **Testable claim:** "This pattern predicts price." The evidence needed is a large, out-of-sample, cost-and-slippage-adjusted test showing reliably positive [expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula) — because in a *mostly* efficient market, most apparent patterns are noise or already arbitraged. See [Backtesting](/learn/backtesting-statistics/validation-walkforward-montecarlo).
+
+### Related
+
+[Why "buyers vs sellers" is wrong](/learn/foundations/why-buyers-vs-sellers-is-wrong) · [Market Microstructure](/learn/market-microstructure/order-flow-and-market-impact) · [Quantitative Trading → Factor investing](/learn/quantitative-trading/factor-investing) · [Backtesting & Statistics → Validation](/learn/backtesting-statistics/validation-walkforward-montecarlo) · [Glossary](/learn/glossary)

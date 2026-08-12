@@ -1,0 +1,112 @@
+> 💡 **Key takeaway:** Fundamental analysis asks *"what is this business actually worth?"* by studying
+> its cash flows, balance sheet, competitive position, and price. Every ratio is a **useful shortcut
+> that can mislead** — the skill is knowing *when* each one lies.
+
+**Learning objectives:** read the three financial statements; compute and *critique* the key ratios;
+assess business quality (moats, management); value a company two ways (DCF and multiples).
+
+## The three financial statements
+
+### Income statement (profitability over a period)
+The waterfall from sales to profit:
+
+`Revenue − COGS = Gross profit − Operating expenses = EBIT(≈Operating profit); EBIT − Interest − Taxes = Net income; Net income ÷ shares = EPS`
+
+- **EBITDA** = EBIT + Depreciation & Amortization (a rough cash-earnings proxy — but 🚩 it *ignores*
+  real capex and can flatter capital-heavy businesses; "EBITDA is not cash flow").
+- **EPS** (earnings per share) drives the [P/E](#key-ratios-and-when-they-mislead).
+
+### Balance sheet (a snapshot of what's owned/owed)
+`Assets = Liabilities + Equity`. Key items: **working capital** (current assets − current liabilities;
+short-term liquidity), **debt** (leverage), **equity** (owners' stake).
+
+### Cash-flow statement (where cash actually moved)
+- **CFO** (operating) — cash from the core business (the most important; profits without CFO are
+  suspicious). **CFI** (investing) — capex, acquisitions. **CFF** (financing) — debt/equity raised or
+  repaid, dividends.
+- **Free cash flow (FCF)** ≈ CFO − capex — cash left for owners/debt after keeping the business
+  running. The lifeblood of [valuation](#valuing-a-business).
+
+> ⚠️ **Common mistake:** Trusting reported *net income* over *cash flow*. Earnings can be managed with
+> accounting choices; **cash is harder to fake.** Persistent gaps between profit and CFO are a red flag.
+
+## Key ratios (and when they mislead)
+
+| Ratio | Measures | Misleads when… |
+|---|---|---|
+| **P/E** = Price ÷ EPS | How much you pay per ₹ of earnings | Earnings are cyclical, one-off, negative, or low-quality; ignores growth/debt |
+| **P/B** = Price ÷ Book value | Price vs accounting net worth | Book value is meaningless for asset-light/IP-heavy firms |
+| **EV/EBITDA** | Enterprise value vs cash-ish earnings | EBITDA ignores capex; flatters capital-intensive firms |
+| **EV/Sales** | Value vs revenue | Sales ≠ profit; used when there are no earnings (risky) |
+| **PEG** = P/E ÷ growth | P/E adjusted for growth | Growth estimates are guesses; garbage-in |
+| **ROE** = Net income ÷ Equity | Return on shareholder capital | Inflated by **leverage** — high debt boosts ROE |
+| **ROCE / ROIC** | Return on *all* capital / invested capital | Better than ROE (less debt-distorted); definitions vary |
+| **Debt/Equity** | Leverage | Ignores debt *cost/quality* and cash on hand |
+| **Interest coverage** = EBIT ÷ Interest | Ability to service debt | Uses EBIT, not cash; one bad year can flip it |
+| **Current ratio** | Short-term liquidity | Can be gamed at period-end |
+| **Asset turnover** | Sales per ₹ of assets | Sector-dependent; compare like-for-like |
+| **FCF yield** = FCF ÷ Market cap | Cash return to owners | Lumpy capex makes single-year FCF noisy |
+
+> 💡 **Key takeaway:** **Ratios are comparative, not absolute** — meaningful only vs the same company's
+> history and *close peers in the same industry*. A "cheap" P/E is often cheap for a reason. Prefer
+> **ROIC/ROCE over ROE** (less distorted by debt) and **cash flow over earnings**.
+
+## Business quality: the qualitative core
+
+Numbers tell you the *past*; quality tells you the *durability* of the future.
+
+- **Business model:** how it makes money, unit economics, scalability.
+- **Competitive advantage (moat):** what stops competitors from eroding profits — network effects,
+  switching costs, brand, cost advantage, patents/regulation. A durable moat lets high **ROIC**
+  persist (which is *why* it matters for [valuation](#valuing-a-business)).
+- **Management quality & capital allocation:** do they reinvest wisely, avoid value-destroying
+  acquisitions, treat minority shareholders fairly? (Especially important in India — scrutinize
+  promoter behavior, related-party transactions, pledging.)
+- **Industry & sector cycles:** is the whole sector expanding or contracting? Cyclicals (metals, autos)
+  look "cheap" at peak earnings and "expensive" at trough — the P/E trap.
+
+## Earnings analysis
+- **Guidance:** management's forecast — matters because [price reflects expectations](/learn/foundations/price-drivers-and-market-efficiency#6-information-and-expectations),
+  so *beats/misses vs guidance* move stocks more than the absolute numbers.
+- **Quality of earnings:** recurring vs one-off, cash-backed vs accrual, organic vs acquired.
+
+## Valuing a business
+
+Two complementary approaches:
+
+### 1. Discounted Cash Flow (DCF) — intrinsic value
+Value = present value of expected future **free cash flows**, discounted at a rate reflecting risk:
+
+$$\text{Value} = \sum_{t=1}^{N} \frac{FCF_t}{(1+r)^t} + \frac{\text{Terminal value}}{(1+r)^N}$$
+
+- **What it calculates:** what the business is worth today given its future cash and the time value of
+  money. **Why it matters:** ties price to *fundamentals*, not sentiment.
+- **Variables:** `FCF_t` = forecast free cash flow; `r` = discount rate (often WACC — reflects risk and
+  interest rates, which is *why* [rising rates compress valuations](/learn/foundations/price-drivers-and-market-efficiency#4-the-real-drivers-of-price));
+  terminal value = the bulk of the estimate, from a perpetual-growth or exit-multiple assumption.
+- **Limitations (severe):** wildly sensitive to inputs — small changes in `r` or growth swing the
+  answer massively. 🚩 "A DCF can justify almost any price." Use ranges and scenarios; treat the output
+  as a *framework*, not a precise number.
+
+### 2. Relative (comparable-company) valuation
+Value the company by peers' multiples (P/E, EV/EBITDA): e.g. if comparable firms trade at 15× earnings
+and this one earns ₹50 EPS, a rough value ≈ ₹750. Fast and market-anchored, but inherits whatever
+mispricing the peer group has, and "comparables" are rarely truly comparable.
+
+> 💡 **Key takeaway:** DCF grounds you in cash flows and forces explicit assumptions; multiples ground
+> you in what the market pays *now*. Use **both**, in **ranges**, and remember the punchline of
+> [price behavior](/learn/foundations/price-drivers-and-market-efficiency): a great business at a terrible price is a
+> bad investment, and vice versa. **Price paid determines return.**
+
+🤔 **Think about this:** Two companies both grow earnings 15%/yr. One trades at 15× earnings, the other
+at 60×. Why might the "expensive" one still be the better *investment* — and why might it not?
+(Quality/moat/durability vs the risk that 60× already prices in perfection.)
+
+**✅ Ready to move on when you can:** read all three statements, compute and *critique* the core ratios,
+and value a simple business by DCF *and* multiples, explaining the key assumptions.
+
+*Outline — ask to expand into full worked examples (a complete DCF on an Indian company, a peer-multiple
+valuation, and a red-flags-in-the-financials checklist).*
+
+### Related
+[Foundations](/learn/foundations) · [What Actually Moves Price; How Efficient Are Markets](/learn/foundations/price-drivers-and-market-efficiency) · [Advanced Topics](/learn/advanced-topics/regimes-volatility-portfolio-optimization) · [Intermediate Exercises](/learn/exercises/intermediate) · [Glossary](/learn/glossary)

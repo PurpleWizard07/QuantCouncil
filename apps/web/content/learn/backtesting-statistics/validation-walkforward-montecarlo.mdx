@@ -1,0 +1,70 @@
+## 8. Validation: train/test, walk-forward, out-of-sample
+
+- **Train/test split:** design/optimize on an **in-sample** slice; evaluate *once* on a held-out **out-of-sample** slice you never peeked at. If it collapses out-of-sample, it was overfit.
+- **Out-of-sample (OOS):** the sacred principle — **never let evaluation data influence design.** Peek once and it's contaminated.
+- **Walk-forward analysis:** the gold standard for time series. Roll a window forward: optimize on months 1–12, test on month 13; slide to 2–13, test on 14; and so on. This mimics *actually re-fitting a live system over time* and produces a *stitched* out-of-sample curve — a far more honest estimate than a single split.
+
+```text
+Walk-forward:
+[--- train 1 ---][test1]
+      [--- train 2 ---][test2]
+            [--- train 3 ---][test3]  ...
+Concatenate test1+test2+test3+... = out-of-sample performance
+```
+
+> 💡 **Key takeaway:** In-sample results are a *hypothesis*; out-of-sample (ideally walk-forward) results are the closest you get to *evidence*. If a strategy only shines in-sample, it is overfit — full stop.
+
+## 9. Monte Carlo and the bootstrap
+
+Even a valid backtest shows just **one** historical path. You care about the *distribution* of paths you might face:
+
+- **Monte Carlo on trade order:** shuffle the sequence of your trade results many times to see the range of equity curves and **drawdowns** you *could* have experienced. Your actual max drawdown might have been −18%, but the simulation may show −35% was well within the realm of luck — informing your [position sizing](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing) and nerve.
+- **Bootstrap:** resample returns *with replacement* to build confidence intervals around metrics (Sharpe, CAGR) — quantifying how *uncertain* your estimates are given a finite sample.
+
+```python
+# Monte Carlo: distribution of max drawdown by reshuffling trade returns
+trade_returns = df["strat_ret"].dropna().values
+rng = np.random.default_rng(42)
+dds = []
+for _ in range(5000):
+    shuffled = rng.permutation(trade_returns)
+    eq = np.cumprod(1 + shuffled)
+    dds.append(max_drawdown(eq))
+print(f"median MDD: {np.median(dds):.1%}, 5th percentile MDD: {np.percentile(dds,5):.1%}")
+```
+
+> 💡 **Key takeaway:** Your realized history is one sample from a distribution. Monte Carlo/bootstrap reveal the **worse paths luck could have dealt you** — size for *those*, not for the comfortable path you happened to get.
+
+## 10. Statistical significance and overfitting
+
+- A result is **statistically significant** if it's unlikely under the "no edge" null hypothesis. But significance is **not** the same as *real, tradeable, persistent* edge — especially after [data snooping](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls) and costs.
+- **Sample size matters enormously.** A strategy with 30 trades tells you almost nothing; you need *hundreds* of independent trades before expectancy estimates stabilize. Beware "great" results built on a handful of trades (or a handful of *huge* winners doing all the work).
+- **Multiplicity:** if you test many things, adjust your bar for significance (the more you look, the more flukes you find). The honest defenses are **fewer trials, more out-of-sample data, simpler models, and a plausible economic mechanism.**
+
+> 🔬 **The mindset:** treat every backtest as **guilty until proven innocent.** Ask: enough trades? out of sample? costs modeled? robust across regimes/periods? is there a *reason* the edge exists and would persist? If any answer is shaky, don't bet real money — this is the discipline that separates [quant trading](/learn/quantitative-trading) from curve-fitting.
+
+## 11. Checklist & common mistakes
+
+### ✅ Before trusting any backtest
+- [ ] Data is **adjusted** for corporate actions and **free of survivorship** bias.
+- [ ] No **look-ahead** (decisions use only past-available data; `shift`/as-of timestamps).
+- [ ] **Costs and slippage** modeled to Indian reality; liquidity/size caps applied.
+- [ ] Evaluated **out-of-sample** (ideally walk-forward), not just in-sample.
+- [ ] Judged on **expectancy, Sharpe/Sortino, and drawdown** — not headline return or win rate.
+- [ ] **Enough trades** (hundreds) and not driven by a few outliers.
+- [ ] **Monte Carlo/bootstrap** run to see the range of possible drawdowns.
+- [ ] I can name a **mechanism** for why the edge exists and might persist.
+
+### ⚠️ The classic statistical sins
+| Sin | Consequence |
+|---|---|
+| Optimizing and evaluating on the same data | Overfit; beautiful past, useless future |
+| Ignoring costs/slippage | Phantom edge that evaporates live |
+| Survivorship in the dataset | Systematically inflated results |
+| Judging by win rate or headline return | Misses expectancy and tail/drawdown risk |
+| Tiny sample / outlier-driven | Illusory significance |
+| Assuming normality | Blindsided by fat tails |
+
+### Related
+
+[The Backtest Loop & the Pitfalls That Kill It](/learn/backtesting-statistics/backtest-loop-and-pitfalls) · [Analysis → Chart Patterns & How to Test Any TA Idea](/learn/analysis/chart-patterns-and-testing#9-how-to-test-any-ta-idea) · [Algorithmic Trading → Automating a Strategy](/learn/algorithmic-trading/automating-a-strategy) · [Glossary → Walk-Forward Analysis](/learn/glossary#walk-forward-analysis)

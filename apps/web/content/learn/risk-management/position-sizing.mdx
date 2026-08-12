@@ -1,0 +1,67 @@
+> 💡 **Key takeaway (read this even if you read nothing else):** Trading is not a game of being
+> right. It is a game of **staying solvent while a positive edge plays out over many trades.** You
+> can be right often and still go broke; you can be wrong often and still get rich. This section
+> shows you the arithmetic of why.
+
+## 1. Why risk management comes first
+
+Consider two facts that sound contradictory but are both true:
+
+- A strategy with a **genuine positive edge** can still wipe you out if you size positions too big,
+  because bad luck clusters.
+- A strategy with **no edge at all** can look brilliant for months, then give it all back.
+
+The job of risk management is to keep you in the game long enough for a real edge (if you have one)
+to express itself, and to lose *slowly and survivably* if you don't. Everything else — entries,
+indicators, patterns — is secondary. This is not a motivational slogan; the rest of the section is
+the math that makes it literally true.
+
+> ⚠️ **Common mistake:** Beginners obsess over *entries* ("what's the best indicator to buy?") and
+> ignore *sizing* and *exits*, which dominate long-run results. Two traders with the **same entries**
+> but different position sizing can have opposite outcomes.
+
+## 2. Risk per trade & position sizing
+
+The single most important habit: **decide how much money you are willing to lose on a trade
+*before* you enter, and size the position so that hitting your stop loses exactly that amount.**
+
+### The core position-sizing formula
+
+$$\text{Quantity} = \frac{\text{Account} \times \text{Risk per trade (\%)}}{\text{Entry price} - \text{Stop price}}$$
+
+- **What it calculates:** how many shares/contracts to buy so that a stop-out costs a fixed
+  fraction of your account.
+- **Why it matters:** it decouples *how much you risk* from *the price of the stock*. A ₹3,000 stock
+  and a ₹30 stock can carry the *same* rupee risk.
+- **Variables:**
+  - *Account* — your total trading capital (₹).
+  - *Risk per trade* — the fraction you'll lose if stopped (commonly **0.5%–2%**; see below).
+  - *Entry − Stop* — the per-share loss if the stop triggers (the "risk per share").
+- **Numerical example (Indian):**
+  - Account = **₹5,00,000**. Risk per trade = **1%** → you will risk **₹5,000**.
+  - You buy RELIANCE at **₹1,400** with a stop at **₹1,370** → risk per share = **₹30**.
+  - Quantity = ₹5,000 ÷ ₹30 = **166 shares** (round down to be safe).
+  - Position value = 166 × ₹1,400 = **₹2,32,400** — notice this is ~46% of your account, yet you
+    only risk 1% of it, because the stop is close.
+- **Limitations:** Stops are not guaranteed fills — **gaps and slippage** can make the realized loss
+  larger than planned (see [stop losses done properly](/learn/risk-management/stops-and-r-multiple#3-stop-losses-done-properly)).
+  The formula also ignores costs; in India, STT/brokerage/GST/stamp duty widen your true breakeven
+  (see [Indian Markets → cost stack](/learn/indian-markets/cost-stack-and-stt#the-cost-stack)).
+
+### How much should "risk per trade" be?
+
+| Risk/trade | Trades to a 20% drawdown (roughly, if you lose every one) | Character |
+|---|---|---|
+| 0.25% | ~90 | Very conservative; slow but hard to blow up. |
+| 0.5%  | ~45 | Conservative. A common professional choice. |
+| 1%    | ~22 | Standard "aggressive but sane" retail level. |
+| 2%    | ~11 | Aggressive; a 10-loss streak already hurts a lot. |
+| 5%+   | ~4  | 🚩 Reckless. A normal losing streak can end you. |
+
+> 💡 **Key takeaway:** Small, *consistent* risk per trade is what lets you survive the losing
+> streaks that **every** strategy produces. The goal of sizing is not to maximize this trade's
+> profit — it is to guarantee you are still here for trade #500.
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Stop Losses & the R Multiple](/learn/risk-management/stops-and-r-multiple) · [Indian Markets → Cost Stack & STT](/learn/indian-markets/cost-stack-and-stt) · [Glossary → Position Sizing](/learn/glossary#position-sizing)

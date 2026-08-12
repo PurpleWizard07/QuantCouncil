@@ -1,0 +1,59 @@
+> 💡 **Key takeaway:** A price is not a fact about an asset — it is the **most recent point of agreement between a buyer and a seller**, and it moves because *expectations* and *the order book* change, not because "there were more buyers than sellers." That last phrase is one of the most repeated and least accurate ideas in retail trading.
+
+## 1. What a price actually is
+
+The "price" of a stock you see on a screen is simply the **price of the last trade** — the last moment a buyer and a seller agreed. It is history, not a promise. The *tradeable* prices right now are the **bid** (best buyer) and **ask** (best seller) in the [order book](/learn/foundations/order-book-and-order-types#3-the-order-book-bid-ask-and-spread); the "price" lives *between* them and only updates when a new trade prints.
+
+> 💡 **Key takeaway:** There is no single "true price" sitting inside a stock. There is a *book of intentions* (bids and asks) and a *record of past agreements* (trades). Price is the trail those agreements leave behind.
+
+## 2. Why "buyers vs sellers" is a bad explanation
+
+Social media loves "price went up because there were more buyers than sellers." This is **logically incoherent** as stated: **every trade has exactly one buyer and one seller for the same quantity.** Shares are not created or destroyed by trading — for every share bought, a share is sold. So there can never be "more buyers than sellers" in the count-the-people sense.
+
+What people *mean* (and should say) is about **urgency and price, not counts**:
+
+- Price rises when **buyers are more *aggressive*** — willing to pay *higher* prices to get filled — so they lift the ask and consume sell orders at rising prices.
+- Price falls when **sellers are more *aggressive*** — willing to accept *lower* prices to exit — so they hit the bid and consume buy orders at falling prices.
+
+It is a contest of **who is more willing to cross the spread and at what price**, not a headcount.
+
+| Sloppy claim | Precise reality |
+|---|---|
+| "More buyers than sellers" | Impossible — every trade is one buyer + one seller |
+| "Buying pressure pushed it up" | *Aggressive* buyers lifted the ask, consuming resting sell liquidity at higher prices |
+| "Everyone's selling" | Sellers are *hitting bids*; each sale still has a buyer taking the other side |
+
+> ⚠️ **Common mistake:** Building a mental model where "buying volume" mechanically raises price. High volume can occur with price flat, up, *or* down. What moves price is the **imbalance in aggression/urgency** relative to the liquidity resting in the book — [order-flow imbalance](/learn/market-microstructure/order-flow-and-market-impact).
+
+## 3. "If a stock is ₹500, why does the next trade happen at ₹501?"
+
+This is the concrete version of the whole section. Walk through the [order book](/learn/foundations/order-book-and-order-types#3-the-order-book-bid-ask-and-spread):
+
+```text
+        BUYERS (bids)                 SELLERS (asks)
+   Qty     Price                 Price     Qty
+   1,200   499.90   <- best bid  500.10    400    <- best ask
+     900   499.80                500.50    700
+   1,500   499.60                501.00    2,000
+```
+
+Last trade was ₹500. Now suppose a piece of good news hits, or a big buyer simply *needs* shares. Here is *mechanically* how the next print becomes ₹501:
+
+1. An **aggressive buyer** sends a market (or aggressive limit) buy for **1,500** shares.
+2. It **consumes the ask ladder**: 400 @ ₹500.10, then 700 @ ₹500.50, then 400 of the 2,000 @ **₹501.00**.
+3. The **last of those fills prints at ₹501.00** — so the "price" is now ₹501. The buyer *walked the book* up because there wasn't enough size at ₹500 to satisfy their demand.
+
+The price didn't rise because "more people wanted to buy." It rose because **one buyer's demand exceeded the sell liquidity available at ₹500**, forcing fills at successively higher offers until the order was filled. Equivalently, sellers at ₹500.10–500.50 got taken out and the *next available seller* was at ₹501.
+
+Two deeper reasons the ₹500 sellers weren't replaced instantly at ₹500:
+
+- **New information** may have made resting sellers *cancel* their ₹500 offers and re-post higher (they now think the stock is worth more) — the ask ladder *lifts* even before big trades occur.
+- **Prices move in ticks:** exchanges quote in a minimum increment (**tick size**), so ₹500 → ₹500.05 → ₹500.10 … the "next" price is the next tick where a trade clears, not a continuous slide.
+
+> 💡 **Key takeaway:** The next trade prints at ₹501 when **demand at ₹500 exhausts the supply at ₹500** (and/or sellers re-price higher on new information). Price is discovered *level by level* as aggressive orders consume, or fail to consume, the liquidity resting in the book.
+
+> 🤔 **Think about this:** If a giant buyer wants 10 lakh shares *right now* in a stock that only shows 50,000 for sale nearby, what happens to the price — and why might a smart buyer *hide* their size or trade slowly instead? (They'd push the price up against themselves; hence [execution algorithms](/learn/algorithmic-trading/automating-a-strategy) and [microstructure](/learn/market-microstructure/order-flow-and-market-impact) exist to minimise this *market impact*.)
+
+### Related
+
+[Order book & order types](/learn/foundations/order-book-and-order-types) · [Price drivers & market efficiency](/learn/foundations/price-drivers-and-market-efficiency) · [Market Microstructure](/learn/market-microstructure/order-flow-and-market-impact) · [Glossary](/learn/glossary)

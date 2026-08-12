@@ -1,0 +1,88 @@
+## 7. Chart patterns
+
+Classic patterns and the (skeptical) reality:
+
+| Pattern | Folklore | Honest view |
+|---|---|---|
+| **Double top/bottom** | Reversal after two failed highs/lows | Sometimes; often noise. Test in advance, not hindsight |
+| **Head & shoulders** | Major reversal | The most famous pattern; 🔬 evidence for reliable, tradeable edge is weak and inconsistent |
+| **Triangles** (asc/desc/sym) | Continuation/breakout | Describe consolidation; breakout *direction* is closer to a coin flip than folklore admits |
+| **Flags / pennants** | Brief pause then continuation | Reasonable *description* of a pullback in a trend; edge modest |
+| **Wedges** | Reversal/continuation | Highly interpretive |
+| **Channels** | Trend within parallel lines | A structure description; useful for framing, not prophecy |
+
+**The core problem with patterns:** they are **defined loosely and identified in hindsight**, which
+makes them look far more predictive than a *pre-committed, mechanical* definition tested out-of-sample
+ever delivers. This is textbook [data snooping / overfitting](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+
+> ⚠️ **Common mistake:** "This is a perfect head-and-shoulders!" — said while the right shoulder is
+> still forming, i.e. before you know if it completes. Survivorship (you remember the ones that
+> "worked") + hindsight make patterns feel reliable. Demand a *mechanical* definition and a *forward*
+> test before trusting one.
+
+> 🧭 **Where patterns *are* useful:** as a shared *language* for describing price and for framing
+> risk/entries ("if it breaks *this* level, thesis is wrong → stop *here*"). That framing value is real
+> even if the predictive value is oversold.
+
+## 8. Advanced: multi-timeframe, volume profile, order flow
+
+- **Multi-timeframe analysis:** align a higher timeframe (trend/context) with a lower one (entry
+  timing) — e.g. trade *with* the daily trend using 15-min entries. **Hypothesis:** the dominant trend
+  is set on the higher timeframe; lower timeframes offer better entries in its direction. Guards against
+  fighting the bigger flow — but adds interpretive degrees of freedom (more ways to fool yourself).
+- **Volume profile:** shows volume traded *at each price* (rather than over time), revealing
+  **high-volume nodes** (prices where lots of business happened → potential support/resistance) and
+  **low-volume gaps** (prices that tend to be traversed quickly). More structurally grounded than most
+  oscillators because it maps *where real trading occurred*.
+- **VWAP** (revisited): institutional benchmark and intraday reference ([above](/learn/analysis/ta-indicator-reference#vwap)).
+- **Order-flow concepts:** reading the *aggressor* side — who is crossing the spread — via the tape,
+  footprint charts, or [order-book imbalance](/learn/market-microstructure/order-flow-and-market-impact). This is the
+  closest TA gets to *cause* rather than *effect*, but it's data-intensive, fast, and dominated by
+  professionals/HFT ([microstructure](/learn/market-microstructure/order-flow-and-market-impact)).
+
+> 💡 **Key takeaway:** The more *structural* the tool (real volume-at-price, real order flow), the more
+> defensible; the more it's a *derived oscillator of past price*, the more it's just repackaging
+> information already in the chart. Prefer tools tied to *where real orders are*.
+
+## 9. How to test any TA idea
+
+This is the payoff of the whole skeptical framing. Before trusting *any* indicator, pattern, or setup:
+
+1. **State the hypothesis precisely** (e.g. "buying RSI < 30 on NIFTY stocks in a *ranging* regime yields
+   positive 5-day returns net of costs").
+2. **Define it mechanically** — no discretion, no hindsight. A rule a computer could execute.
+3. **Backtest with realistic costs and slippage** ([Indian cost stack](/learn/indian-markets/cost-stack-and-stt#the-cost-stack)) —
+   TA signals trade often, so costs matter enormously.
+4. **Split data:** in-sample to design, **out-of-sample** to validate; ideally
+   [walk-forward](/learn/backtesting-statistics/validation-walkforward-montecarlo). If it only works in-sample, it's overfit.
+5. **Check [expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula), not win
+   rate**, and the **drawdown** you'd have suffered.
+6. **Ask "why would this edge exist and persist?"** If you can't name a mechanism, be extra suspicious —
+   and expect it to decay as others find it.
+
+> 🔬 If you do this honestly, you'll discover most indicator "signals" have little to no edge after
+> costs — and the few that survive are usually simple, regime-aware, and modest. That discovery *is*
+> the education. See [Backtesting & Statistics](/learn/backtesting-statistics).
+
+## 10. Checklist & common mistakes
+
+### ✅ Using TA responsibly
+- [ ] For each tool, I can state its **hypothesis, mechanism, failure mode, and test**.
+- [ ] I know whether I'm in a **trending or ranging** regime and use the matching tool ([ADX](/learn/analysis/ta-indicator-reference#adx)).
+- [ ] I'm not stacking correlated indicators and calling it "confirmation."
+- [ ] My levels/patterns were defined **in advance**, not drawn in hindsight.
+- [ ] Any setup I trade has been **tested out-of-sample with costs**, judged on expectancy.
+- [ ] TA feeds my **risk management** (ATR stops/sizing), not just entries.
+
+### ⚠️ Classic TA mistakes
+| Mistake | Reality |
+|---|---|
+| Treating indicators as predictors | They're transformations of *past* price; no hidden info |
+| Selling every "overbought" RSI | In trends, overbought stays overbought |
+| Ten indicators = ten confirmations | They're correlated; often one signal in ten costumes |
+| Drawing levels/patterns in hindsight | Looks predictive; isn't, until forward-tested |
+| Using a trend tool in a range (or vice versa) | The #1 source of indicator losses — wrong regime |
+| Ignoring costs on frequent signals | TA trades a lot; costs can erase the entire edge |
+
+### Related
+[Technical Analysis: The Honest Framing](/learn/analysis/ta-honest-framing) · [Indicator Reference](/learn/analysis/ta-indicator-reference) · [The Backtest Loop & the Pitfalls That Kill It](/learn/backtesting-statistics/backtest-loop-and-pitfalls) · [Validation: Walk-Forward, Monte Carlo & Significance](/learn/backtesting-statistics/validation-walkforward-montecarlo) · [Expectancy — the Master Formula](/learn/risk-management/expectancy)

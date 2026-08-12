@@ -1,0 +1,99 @@
+## 6. Indicators — mechanics *and* limitations
+
+For each: the formula/idea, the **hypothesis**, why it might work, when it fails.
+
+### SMA/EMA — trend and smoothing
+- **Mechanics:** **Simple Moving Average** = mean of the last *n* closes. **Exponential Moving
+  Average** weights recent prices more (reacts faster). Formula (SMA): $\text{SMA}_n = \frac{1}{n}\sum_{i=0}^{n-1} P_{t-i}$.
+- **Hypothesis:** smoothing filters noise to reveal the trend; a **crossover** (price/short-MA above
+  long-MA) signals a trend has begun. This is a bet on **autocorrelation / momentum**.
+- **Why it might work:** trends persist for the reasons in [§3](/learn/analysis/ta-honest-framing#3-market-structure).
+- **When it fails:** MAs **lag** by construction (they average the *past*), so they enter late and exit
+  late; in ranges they generate constant whipsaw — buy high, sell low, repeat. 🔬 A moving-average
+  crossover is one of the *most-tested* systems ever; results are regime-dependent and heavily eroded
+  by costs.
+
+### VWAP
+- **Mechanics:** **Volume-Weighted Average Price** = the average price over the day *weighted by
+  volume*: $\text{VWAP} = \frac{\sum (P_i \times V_i)}{\sum V_i}$. Resets each session.
+- **Hypothesis / use:** VWAP marks the "fair" average traded price of the day; institutions benchmark
+  executions against it, so it can act as an intraday magnet/reference. Price above VWAP = intraday
+  buyers in control; below = sellers.
+- **Why it might work:** it's a *real* institutional benchmark (algos literally target it), giving it
+  structural relevance rather than being an arbitrary curve.
+- **When it fails:** it's an *average of the past intraday* — no predictive magic; trending days barely
+  touch it, and it's meaningless across multiple days.
+
+### RSI
+- **Mechanics:** **Relative Strength Index** (0–100) compares average recent gains to average recent
+  losses over *n* periods (usually 14). $\text{RSI} = 100 - \frac{100}{1 + RS}$, where
+  $RS = \frac{\text{avg gain}}{\text{avg loss}}$. Convention: > 70 "overbought," < 30 "oversold."
+- **Hypothesis:** after an extreme run, price tends to **revert** — a bet on **mean reversion** /
+  negative short-term autocorrelation. **Why it might work:** short-term overreactions get corrected;
+  liquidity providers fade extremes.
+- **When it fails (crucially):** in a **strong trend**, RSI can stay "overbought" for a *long* time
+  while price keeps rising — "overbought" is not "about to fall." Mechanically selling every RSI>70 in
+  an uptrend is a classic way to lose. RSI is a mean-reversion tool used wrongly in trending regimes.
+
+> ⚠️ **Common mistake:** Treating "overbought/oversold" as "sell/buy now." They mean "stretched," and
+> stretched things can stretch further. RSI's edge (if any) is *conditional on a ranging regime.*
+
+### MACD
+- **Mechanics:** **Moving Average Convergence Divergence** = (fast EMA − slow EMA), plotted with a
+  **signal line** (EMA of the MACD) and a **histogram** (MACD − signal). Common: 12/26/9.
+- **Hypothesis:** momentum shifts show up as the fast EMA pulling away from/toward the slow EMA; signal
+  crossovers flag momentum turns. A **momentum/trend** bet.
+- **Why it might work:** same trend-persistence logic as MAs, with a momentum overlay.
+- **When it fails:** it's **two lagging averages of a lagging average** — even later than a plain MA
+  crossover; whipsaws in ranges; "divergences" (price makes a new high, MACD doesn't) are seductive but
+  🔬 unreliable as standalone signals.
+
+### Bollinger Bands
+- **Mechanics:** a middle **SMA** with an upper/lower band at ±*k* **standard deviations** (usually
+  20-period, k=2). Bands **widen** with volatility and **contract** when calm ("squeeze").
+- **Hypothesis (two competing uses!):** (a) *mean reversion* — price tends to return toward the middle
+  band; (b) *breakout* — a "squeeze" precedes a big directional move. These are **opposite** bets, which
+  is a warning sign about interpretive flexibility.
+- **Why it might work:** volatility clusters (calm follows calm, storms follow storms — see
+  [ATR](#atr-average-true-range)), so squeezes/expansions carry *some* information about volatility (not
+  direction).
+- **When it fails:** in a trend, price "rides the band" without reverting; treating band touches as
+  reversal signals in a trend loses. The bands measure *volatility*, not *direction* — don't confuse
+  the two.
+
+### ATR (Average True Range)
+- **Mechanics:** **ATR** = average of the **True Range** over *n* periods, where True Range = the
+  greatest of (high−low), |high−prev close|, |low−prev close| (it accounts for gaps). It's a pure
+  **volatility** measure in *price units* (e.g. "₹25 average daily range").
+- **Hypothesis / use:** volatility is **persistent and clusters**, so recent ATR estimates near-term
+  range. This is one of TA's most *defensible* ideas (volatility clustering is well-documented).
+- **Why it matters for you:** ATR is the backbone of **[volatility-adjusted position sizing and
+  stops](/learn/risk-management/kelly-criterion#8-volatility-adjusted-sizing)** — set stops a multiple of ATR
+  away so risk is normalized across instruments. This is arguably the *most useful* single indicator in
+  TA precisely because it feeds risk management rather than trying to predict direction.
+- **When it's misused:** ATR says nothing about *direction* — it's a magnitude, not a signal.
+
+### Stochastic
+- **Mechanics:** the **Stochastic oscillator** (%K, %D) places the current close within the recent
+  high–low range (0–100). Near 100 = closing near the top of the range; near 0 = near the bottom.
+- **Hypothesis:** like RSI, a **mean-reversion** bet on overbought/oversold extremes.
+- **When it fails:** identical caveat to RSI — stays pinned at extremes during trends. It's another
+  ranging-regime tool.
+
+### ADX
+- **Mechanics:** **Average Directional Index** (0–100) measures **trend *strength*** (not direction).
+  High ADX (> 25) = strong trend (up or down); low ADX (< 20) = weak/ranging.
+- **Hypothesis / use:** a **regime filter** — *when* to trust trend tools vs mean-reversion tools. Use
+  MAs/MACD when ADX is high; use RSI/Stochastic when ADX is low.
+- **Why it's valuable:** it directly addresses the biggest TA failure mode — **using the wrong tool for
+  the regime.** Most indicator losses come from applying a trend tool in a range or a reversion tool in
+  a trend; ADX tries to tell them apart.
+- **When it fails:** it also lags, and transitions between regimes are exactly when it's least reliable.
+
+> 💡 **Key takeaway:** Indicators cluster into two camps — **trend/momentum** (MA, MACD, ADX-high) and
+> **mean-reversion** (RSI, Stochastic, Bollinger-as-reversion). They give *opposite* signals, and each
+> only "works" in its matching regime. The hard part isn't the indicator; it's knowing which regime
+> you're in — and that's genuinely difficult ([regime detection](/learn/advanced-topics/regimes-volatility-portfolio-optimization)).
+
+### Related
+[Technical Analysis: The Honest Framing](/learn/analysis/ta-honest-framing) · [Chart Patterns & How to Test Any TA Idea](/learn/analysis/chart-patterns-and-testing) · [Volatility-Adjusted Sizing & the Kelly Criterion](/learn/risk-management/kelly-criterion) · [Advanced Topics](/learn/advanced-topics/regimes-volatility-portfolio-optimization)

@@ -1,0 +1,34 @@
+> 💡 **Key takeaway:** Quant trading systematizes an *edge* — a repeatable statistical relationship —
+> into rules that don't depend on a human's gut feel. It borrows the rigor of
+> [12 Backtesting & Statistics](/learn/backtesting-statistics) and the machinery of
+> [13 Algorithmic Trading](/learn/algorithmic-trading/automating-a-strategy), but its core question is
+> different: **"what is the mechanism that makes this pattern persist, and why hasn't it been
+> arbitraged away?"**
+
+## 1. What makes something a "quant" strategy
+
+Not "uses math" (all trading uses math) — it's: **systematic** (rules, not judgment-per-trade),
+**testable** (falsifiable on historical data, see [12 Backtesting & Statistics](/learn/backtesting-statistics/validation-walkforward-montecarlo#10-statistical-significance-and-overfitting)),
+and ideally has a **stated economic mechanism**, not just a pattern that happened to work in a backtest.
+
+> 🔬 **Testable claim vs. curve-fit:** "Momentum works because winners attract slow-moving capital
+> inflows and losers face forced selling" is a mechanism. "This worked because I found parameters that
+> fit 5 years of data" is not — see [overfitting](/learn/backtesting-statistics/validation-walkforward-montecarlo#10-statistical-significance-and-overfitting).
+
+## 2. Factor investing
+
+| Factor | Idea | Proposed mechanism | Status |
+|---|---|---|---|
+| **Value** | Cheap (low P/E, P/B) stocks outperform | Compensation for risk / behavioral mispricing of unglamorous stocks | ✅ Long-documented, 🧭 decayed & crowded in recent decades |
+| **Momentum** | Recent winners keep winning (3–12mo) | Slow information diffusion, herding, disposition effect (see [11 Trading Psychology](/learn/psychology/bias-catalogue-and-discipline-systems)) | ✅ One of the most replicated anomalies, ⚔️ crash risk in reversals |
+| **Size** | Small-caps outperform large-caps | Illiquidity premium, less analyst coverage | 🧭 Weaker/inconsistent post-2000s |
+| **Low volatility** | Lower-vol stocks have better risk-adjusted (sometimes absolute) returns | Leverage-constrained investors bid up high-beta names | 🧭 Contested, mechanism debated |
+| **Quality** | Profitable, low-debt, stable-earnings companies outperform | Market underprices durability of quality | 🧭 Reasonably robust but factor definitions vary |
+
+> ⚠️ **Common mistake:** Treating a factor as a guarantee rather than a *tilt with a risk premium*.
+> Value can underperform for over a decade (it did, globally, through much of the 2010s) before
+> "working" again — see [Drawdowns](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin).
+
+### Related
+
+[14 Quantitative Trading — module overview](/learn/quantitative-trading) · [Pairs Trading, Cointegration & Why "AI Trading" Deserves Skepticism](/learn/quantitative-trading/pairs-trading-and-cointegration) · [Chart Patterns & How to Test Any TA Idea](/learn/analysis/chart-patterns-and-testing) · [The Bias Catalogue & Building Discipline as a System](/learn/psychology/bias-catalogue-and-discipline-systems)

@@ -1,0 +1,46 @@
+## 3. Pairs trading & cointegration
+
+**Idea:** find two instruments whose prices move together long-run (e.g., two similar banks, or a
+stock vs. its sector ETF). When the spread between them diverges abnormally, bet on convergence.
+
+- **Correlation is not enough** — two series can be correlated but drift apart permanently.
+  **Cointegration** is the stronger property: a *linear combination* of the two series is mean-reverting,
+  even if each series individually is not.
+- **Basic test flow:** (1) check both series are non-stationary individually (e.g., Augmented
+  Dickey-Fuller test), (2) regress one on the other, (3) test the *residual* for stationarity
+  (Engle-Granger) — if stationary, the pair is cointegrated.
+- **Z-score entry:** standardize the spread; enter when it's, say, 2 standard deviations from its mean;
+  exit at 0 (or use a stop if it keeps diverging — see [Stop losses](/learn/risk-management/stops-and-r-multiple#3-stop-losses-done-properly)).
+
+> 🚩 **Red flag:** Cointegration relationships can break permanently (a merger, a regulatory change, a
+> business-model divergence). "Mean reversion" is a statistical description of the past, not a law of
+> physics — always risk-manage the trade as if the relationship could fail.
+
+## 4. Machine learning in trading — a skeptical take
+
+| Claim | Reality check |
+|---|---|
+| "Feed price data into a neural net and it finds patterns humans can't" | Financial time series are extremely low signal-to-noise; models overfit noise easily — see [Overfitting](/learn/backtesting-statistics/validation-walkforward-montecarlo#10-statistical-significance-and-overfitting) |
+| "More data = better model" | More *irrelevant* data often just gives the model more noise to memorize |
+| "Backtested Sharpe of 3+ from an ML model" | Extremely rare to survive live trading — check for look-ahead bias, survivorship bias, and unrealistic execution assumptions first |
+| "ML finds nonlinear relationships humans can't see" | True in principle, but the *feature engineering* (what you feed the model) still requires domain understanding — a model isn't a substitute for a mechanism |
+
+> 🧭 **Useful model, not gospel:** ML can be legitimately useful for well-defined sub-problems (e.g.,
+> execution-cost prediction, classifying regime, filtering false signals) — it's weakest when marketed
+> as an end-to-end "black box that predicts price."
+
+## 5. Why edges decay
+
+- **Crowding:** once a pattern is known and traded by enough capital, the very act of exploiting it
+  (buying the "cheap," selling the "expensive") pushes prices toward removing the mispricing.
+- **Regime change:** the market structure that created the edge (e.g., specific liquidity rules,
+  investor composition) changes — see [16 Advanced Topics → regime detection](/learn/advanced-topics/regimes-volatility-portfolio-optimization).
+- **Publication effect:** documented academic anomalies often show weaker returns *after* publication —
+  a well-studied empirical pattern in factor research.
+
+> 💡 **Key takeaway:** A quant "edge" is a temporarily-underexploited pattern with a plausible economic
+> reason. Expect decay. Continuous research, not "set and forget," is the job.
+
+### Related
+
+[14 Quantitative Trading — module overview](/learn/quantitative-trading) · [Factor Investing](/learn/quantitative-trading/factor-investing) · [Stop Losses & the R Multiple](/learn/risk-management/stops-and-r-multiple) · [Swaps, Regime Detection, Volatility Modeling & Portfolio Optimization](/learn/advanced-topics/regimes-volatility-portfolio-optimization)

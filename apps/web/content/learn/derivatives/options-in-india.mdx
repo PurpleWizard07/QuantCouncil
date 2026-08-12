@@ -1,0 +1,40 @@
+## 10. Indian-market specifics
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+🗓️ *Rates and rules below reflect current sources at the time of writing; verify before trading — they change with SEBI circulars and the Union Budget. Full detail in [Indian Markets](/learn/indian-markets).*
+
+- **Index vs stock options.** NIFTY, BANKNIFTY, FINNIFTY, etc. are **cash-settled** (no delivery of an index). Single-stock options are **physically settled** on expiry if held ITM — meaning you can end up obligated to give/take *delivery of shares*, which surprises many retail traders. Always square off single-stock options before expiry unless you intend delivery.
+- **Expiry rationalization.** SEBI limited weekly expiries to **one benchmark index per exchange** (NSE: NIFTY weekly; BSE: SENSEX weekly), effective from late 2024 — Bank Nifty and others moved to monthly-only weeklies. This reshaped the popular weekly-option-selling landscape.
+- **Contract size.** SEBI raised index derivative notional from ~₹5 lakh toward ₹15–20 lakh; NIFTY lot size moved to 75 and has since been revised (e.g. 65) based on index levels. Bigger lots = more capital and more risk per lot.
+- **Costs.** Options **STT is charged on the sell side on the premium** (raised to **0.15%** from 1 Apr 2026), plus **0.15% on intrinsic value if exercised** — so letting an ITM option get exercised can incur an ugly STT bill. Add brokerage (flat ₹20/order at discount brokers), exchange charges, SEBI fee, GST, and stamp duty. See [cost stack](/learn/indian-markets/cost-stack-and-stt#the-cost-stack).
+- **Upfront premium & margin.** Buyers must pay premium upfront; sellers post (and may have to top up) margin that grows near expiry.
+
+---
+
+## 11. Checklist & common mistakes
+
+### ✅ Before any options trade
+- [ ] I can draw the **full payoff** (both tails) of this position.
+- [ ] I know my **max loss in rupees** and it fits my [risk-per-trade](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing).
+- [ ] I've accounted for **theta** (am I paying or collecting rent?) and **vega** (is IV high/low, is an event coming?).
+- [ ] For single-stock options near expiry, I've planned to avoid **unwanted physical settlement**.
+- [ ] If selling, it is **defined-risk** (spread/condor), not naked, unless I truly understand and can fund the tail.
+- [ ] I've included **Indian costs** in my break-even.
+
+### ⚠️ Classic option mistakes
+| Mistake | Reality |
+|---|---|
+| "I was right on direction, why did I lose?" | Theta and/or a vega crush beat your small delta gain. |
+| Buying cheap deep-OTM options as "lottery tickets" | Usually a slow bleed; low probability, high decay. |
+| Selling naked options for "high win rate" | Win small, lose huge; negative gamma; ruin risk. |
+| Ignoring implied volatility before events | You overpaid for IV that then collapsed. |
+| Holding ITM single-stock options into expiry | Physical settlement / delivery obligation surprise. |
+| Confusing volume with open interest | They measure different things; OI = outstanding positions. |
+| Treating PCR/OI as buy/sell signals | Positioning ≠ strategy; predictive value is weak. |
+
+### Related
+
+[Risk Management → Position Sizing](/learn/risk-management/position-sizing) · [Indian Markets — module overview](/learn/indian-markets) · [Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money) · [Case Studies](/learn/case-studies/overfit-backtest-ltcm-retail-losses)

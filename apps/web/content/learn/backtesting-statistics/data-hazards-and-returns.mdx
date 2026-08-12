@@ -1,0 +1,27 @@
+> 💡 **Key takeaway:** A backtest is not evidence that a strategy works — it is evidence that a strategy *would have* worked *on that specific past data, as you measured it.* The gap between those two statements is where fortunes are lost. This section gives you the statistics to measure honestly and the checklist of ways backtests lie.
+
+## 1. Data: OHLCV and its hazards
+
+Market data usually arrives as **OHLCV** per period: **O**pen, **H**igh, **L**ow, **C**lose, **V**olume (see [charts](/learn/analysis/ta-honest-framing#2-price-representation-ohlc-candlesticks-timeframes-gaps)). Before any statistic, the data must be *clean and honest*:
+
+- **Adjusted vs unadjusted prices:** raw prices jump on splits/bonuses/dividends. For return studies you need **adjusted** series (corporate actions handled) — or your backtest will "see" a −50% crash that was really a 2:1 split. See [corporate actions](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+- **Survivorship:** a dataset of "currently listed" stocks silently **excludes the losers that got delisted/bankrupt** — inflating every historical result. See [pitfalls](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+- **Timestamps and alignment:** know exactly when each bar "closes" and when you could *actually* have acted; sloppy alignment causes [look-ahead bias](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+
+> 💡 **Key takeaway:** Garbage in, gospel out — the danger is that *clean-looking* but subtly-biased data produces *beautiful, believable, wrong* results. Data quality is not a preliminary; it is half the battle.
+
+## 2. Returns and log returns
+
+- **Simple (arithmetic) return:** $R_t = \frac{P_t - P_{t-1}}{P_{t-1}}$. Intuitive; what you actually earn in a period.
+- **Log return:** $r_t = \ln\!\left(\frac{P_t}{P_{t-1}}\right)$. Preferred for analysis because:
+  - **Additive over time:** log returns *sum* across periods (simple returns *compound*, i.e. multiply) — so a month's log return is just the sum of daily log returns. Much easier math.
+  - **Symmetric-ish** and better-behaved statistically.
+- **Relationship:** for small moves, $r_t \approx R_t$; they diverge for large moves.
+
+**Example:** ₹100 → ₹110. Simple = `10/100 = 10%`. Log = `ln(1.10) ≈ 9.53%`. Then ₹110 → ₹100: simple = `−9.09%`, log = `ln(100/110) ≈ −9.53%`. Note the log returns are equal-and-opposite (+9.53 / −9.53) and sum to 0 — matching the reality that you're back to ₹100. Simple returns (+10 / −9.09) don't sum to zero, which is exactly the [asymmetry](/learn/foundations/return-compounding-inflation#6-return) that trips people up.
+
+> ⚠️ **Common mistake:** Averaging *simple* returns and treating the mean as your growth rate. Use **log returns** for time-aggregation, or compute the **[CAGR/geometric mean](/learn/foundations/return-compounding-inflation#6-return)** — the arithmetic mean of simple returns *overstates* compounded growth.
+
+### Related
+
+[Backtesting & Statistics — module overview](/learn/backtesting-statistics) · [The Backtest Loop & the Pitfalls That Kill It](/learn/backtesting-statistics/backtest-loop-and-pitfalls) · [Foundations → Return, Compounding & Inflation](/learn/foundations/return-compounding-inflation#6-return) · [Glossary → Log Return](/learn/glossary#log-return)

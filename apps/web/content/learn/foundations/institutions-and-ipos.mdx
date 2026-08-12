@@ -1,0 +1,38 @@
+> 💡 **Key takeaway:** When you "buy a stock," you don't buy it *from the company* or *from the exchange* — you buy it from another trader, matched anonymously by a computer, with several institutions guaranteeing and recording the transfer behind the scenes. Understanding this plumbing demystifies slippage, settlement, margin, and why your order sometimes doesn't fill.
+
+## 1. The institutions and who does what
+
+A modern market is a **stack of specialized institutions**, each with one job. Using India as the concrete example:
+
+| Institution | Job | Indian example |
+|---|---|---|
+| **Regulator** | Sets rules, licenses participants, polices fraud | **SEBI** (Securities and Exchange Board of India) |
+| **Exchange** | Runs the venue and the **matching engine** that pairs buy/sell orders | **NSE**, **BSE** |
+| **Broker** | Your licensed gateway to the exchange; routes your orders, holds your account | Zerodha, Groww, Angel One, ICICI Direct, … |
+| **Clearing corporation** | Steps between buyer and seller as **central counterparty (CCP)**; nets obligations; guarantees the trade completes | **NSE Clearing (NCL)**, **Indian Clearing Corp (ICCL)** |
+| **Depository** | Holds your shares electronically (in *demat* form); records ownership | **NSDL**, **CDSL** |
+| **Depository Participant (DP)** | The depository's agent (usually your broker) that services your demat account | Your broker acting as DP |
+
+Why so many layers? **To manage risk and record ownership reliably.** The exchange matches trades fast; the clearing corp ensures that even if your counterparty defaults, *you still get your shares/cash* (it guarantees settlement); the depository makes ownership a secure ledger entry rather than a paper certificate that can be forged or lost. See the deep-dive in [Indian Markets](/learn/indian-markets/regulatory-stack-accounts-settlement).
+
+> 💡 **Key takeaway:** The **clearing corporation is the unsung hero** — by becoming the buyer to every seller and the seller to every buyer, it removes *counterparty risk*. You never worry that the anonymous person on the other side of your trade won't pay; the CCP stands in the middle.
+
+## 2. Primary vs secondary markets; IPOs
+
+- **Primary market:** where securities are *created and first sold*, and money actually reaches the **issuer** (the company or government). An **IPO** (Initial Public Offering) is the classic example: a company sells new shares to the public and receives the proceeds to fund its business.
+- **Secondary market:** where *already-issued* securities trade **between investors**. The company gets *nothing* from these trades — money flows from buyer to seller. This is where ~all your daily trading happens (NSE/BSE order books).
+
+| | Primary market | Secondary market |
+|---|---|---|
+| Who gets the money | The **issuer** (company/govt) | The **selling investor** |
+| Example | IPO, FPO, new bond issue | Buying INFY shares on NSE today |
+| Purpose | Raise capital | Liquidity & price discovery |
+| Common mistake | Thinking buying shares "funds the company" | It doesn't — in the secondary market, you pay another investor |
+
+> ⚠️ **Common mistake:** "I'm supporting company X by buying its stock." Unless it's a primary issue (IPO/FPO), your purchase money goes to *another shareholder*, not the company. (You do indirectly affect the company via its share price, cost of capital, and management incentives — but no cash changes hands with the firm.)
+
+An **IPO** in India: the company files a prospectus (DRHP) with SEBI, sets a price band, and takes bids during a window; funds are **blocked** in your bank via **ASBA/UPI** and only debited if shares are *allotted*; listing follows a few days later. More in [Indian Markets → IPOs](/learn/indian-markets/indices-etfs-ipos).
+
+### Related
+
+[Order book & order types](/learn/foundations/order-book-and-order-types) · [Indian Markets → regulatory stack, accounts & settlement](/learn/indian-markets/regulatory-stack-accounts-settlement) · [Indian Markets → indices, ETFs & IPOs](/learn/indian-markets/indices-etfs-ipos) · [Glossary](/learn/glossary)

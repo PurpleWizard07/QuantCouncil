@@ -1,0 +1,49 @@
+## 5. Volatility: implied vs historical, smile, skew
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+- **Historical (realized) volatility (HV):** how much the underlying *actually* moved, measured from past prices. Backward-looking, a fact.
+- **Implied volatility (IV):** the volatility the *option's price implies* via a pricing model (Black–Scholes and its descendants). Forward-looking, an *opinion* baked into the premium. India's **India VIX** is a widely watched index of NIFTY option IV — a "fear gauge."
+- **The relationship you trade:** if IV ≫ HV, options are "expensive" relative to how the asset has actually moved (favours sellers *if* the future resembles the past); if IV ≪ HV, "cheap" (favours buyers). But IV is high *for a reason* (an event, uncertainty) — it is not a free lunch.
+
+**Volatility smile / skew.** In theory, all strikes on one expiry would share one IV. In reality they don't:
+- **Skew:** in equity indices, downside puts usually carry *higher* IV than upside calls, because investors pay up for crash protection and markets fall faster than they rise. So a NIFTY 5%-OTM put is typically priced at a higher IV than a 5%-OTM call.
+- **Smile:** in some markets IV rises for *both* deep-OTM calls and puts, forming a smile.
+
+> ⚠️ **Common mistake:** Treating IV as a prediction of the actual future move. IV is the *price of insurance*, set by supply and demand for protection and leverage — often persistently **above** realized vol (the "variance risk premium"). That premium is *why* selling options can have an edge — and the fat left tail is why that edge is dangerous ([§9](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money)).
+
+---
+
+## 6. Reading an option chain (NIFTY example)
+
+An **option chain** lists, for one expiry, every strike with its calls (left) and puts (right). Illustrative snapshot with **NIFTY spot ≈ 24,150**:
+
+| CALL OI | CALL LTP | **Strike** | PUT LTP | PUT OI |
+|---:|---:|:---:|---:|---:|
+| 42,10,000 | 305 | 23,900 | 42 | 18,50,000 |
+| 55,30,000 | 210 | **24,000** | 55 | 60,20,000 |
+| 38,90,000 | 130 | 24,100 | 95 | 33,40,000 |
+| **71,60,000** | 78 | 24,200 | 150 | 21,10,000 |
+| 40,20,000 | 42 | 24,300 | 245 | 12,30,000 |
+
+How to read it:
+- The strike nearest spot (24,100–24,200) is **ATM**; premiums there are mostly time value.
+- Above spot, **calls are OTM / puts are ITM**; below spot it's reversed.
+- **OI** (open interest, [§7](#7-open-interest--the-put-call-ratio)) shows where positions are concentrated. Large call OI at 24,200 and large put OI at 24,000 are sometimes read as a *rough* expected range ("max pain" / support-resistance folklore) — treat this as ⚔️ **contested** market lore, not established fact.
+
+> 💡 **Key takeaway:** The chain is a *cross-section of prices and positioning*, not a forecast. Use it to see what a move is *priced at* (e.g., "a 24,200 call costs ₹78, so the market prices a meaningful chance NIFTY closes above 24,278"), not as a signal in itself.
+
+---
+
+## 7. Open interest & the put-call ratio
+
+- **Open interest (OI):** the number of option contracts currently *open* (not yet closed or expired). Unlike volume (which counts trades), OI counts *outstanding positions*. Rising OI + rising price is often read as fresh money entering; falling OI as positions unwinding — but every OI story has *two* sides (a buyer and a seller), so causal readings are 🚩 often overstated.
+- **Put-Call Ratio (PCR):** total put OI (or volume) ÷ total call OI. High PCR is conventionally called "bearish positioning" and sometimes read as a *contrarian bullish* signal (everyone's hedged/short, so who's left to sell?). This is ⚔️ **contested** — PCR's predictive value is weak and regime-dependent.
+
+> ⚠️ **Common mistake:** Treating OI/PCR levels as mechanical buy/sell triggers. They describe *positioning*, which is context, not a strategy. Any claim that "PCR > X ⇒ market rises" is a 🔬 **testable claim** that usually fails out-of-sample.
+
+### Related
+
+[Options: Building Blocks & the Greeks](/learn/derivatives/options-building-blocks-and-greeks) · [Options Strategies & Payoffs](/learn/derivatives/options-strategies-and-payoffs) · [Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money) · [Glossary](/learn/glossary)

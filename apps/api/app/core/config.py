@@ -92,11 +92,18 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         """CORS_ORIGINS parsed into a list, splitting on commas."""
-        return [
+        configured = [
             origin.strip()
             for origin in self.cors_origins_raw.split(",")
             if origin.strip()
         ]
+        if self.app_env.lower() in {"dev", "development", "local"}:
+            configured.extend(
+                f"http://{host}:{port}"
+                for host in ("localhost", "127.0.0.1")
+                for port in range(3000, 3011)
+            )
+        return list(dict.fromkeys(configured))
 
     @property
     def backtests_dir_path(self) -> Path:

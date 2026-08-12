@@ -1,0 +1,87 @@
+> 💡 **Key takeaway:** These require real data, real code, or both. Where there's no single numeric answer, the worked solution gives you the correct method and the pattern you should expect to see — check your own result against that pattern, not against a number.
+
+## 1. Cointegration test
+
+Pick two related Indian stocks (e.g., two large private banks). Using historical price data, test for cointegration (ADF on each series, then Engle-Granger on the regression residual). Report whether the pair is cointegrated and over what lookback window the relationship holds. See [Pairs trading](/learn/quantitative-trading/pairs-trading-and-cointegration#3-pairs-trading--cointegration).
+
+<CollapsibleSection title="Show worked solution">
+
+There's no single numeric answer — this depends on real market data you pull yourself. The **method**, and what a correct result looks like:
+
+1. **Test each price series individually with an Augmented Dickey-Fuller (ADF) test.** You should *fail to reject* the null of a unit root for both — i.e. both series are non-stationary (typical for price levels; a stock price wandering with no fixed mean is the norm, not the exception).
+2. **Regress one series on the other:** $\text{Stock}_A = \alpha + \beta \cdot \text{Stock}_B + \varepsilon$.
+3. **Run ADF on the residuals** $\varepsilon$. If the residual series *is* stationary (you now *reject* the unit-root null, typically at p < 0.05), the pair is cointegrated — a linear combination of two non-stationary series is itself stationary, which is the whole definition.
+4. **Report the lookback sensitivity honestly.** A pair can show cointegration over a 2-year window and not over a 5-year one, or vice versa — especially across a merger, a business-model shift, or a regulatory change to one of the two companies. The correct conclusion is never "these are permanently cointegrated" — it's "these were cointegrated over this specific window, re-test before trusting it live."
+
+</CollapsibleSection>
+
+## 2. Walk-forward validation
+
+Take any strategy you've backtested in-sample. Implement proper walk-forward validation (rolling train/test windows) and compare in-sample vs. out-of-sample Sharpe ratios. Quantify the degradation. See [Validation](/learn/backtesting-statistics/validation-walkforward-montecarlo#8-validation-traintest-walk-forward-out-of-sample).
+
+<CollapsibleSection title="Show worked solution">
+
+Again, no single number — but a very specific **pattern to check your own result against**:
+
+- Roll a training window forward (e.g. optimize on months 1–12, test on month 13; slide to months 2–13, test on month 14; and so on), stitching every out-of-sample test segment into one continuous curve.
+- **Expect the out-of-sample Sharpe to be meaningfully lower than the in-sample Sharpe** — this is true almost universally, even for "sensible" parameter choices, because *some* in-sample fitting is unavoidable any time you chose parameters by looking at historical performance at all.
+- **A 40–60% haircut** from in-sample to walk-forward out-of-sample Sharpe is common for a retail strategy with any amount of parameter tuning. If your out-of-sample Sharpe comes back near zero or negative while the in-sample curve looked beautiful, that is the textbook signature of overfitting — not bad luck, not a bad lookback window choice.
+- If your degradation is *small* (say, under 20%), that's a genuinely good sign — but check you didn't accidentally leak future information into the training window before believing it.
+
+</CollapsibleSection>
+
+## 3. Volatility clustering
+
+Fit a GARCH(1,1) model to NIFTY daily returns and compare its volatility forecasts to a simple rolling-standard-deviation approach, out-of-sample. Which produced better-calibrated forecasts (e.g., via a simple backtesting of realized-vs-predicted variance)? See [Volatility modeling](/learn/advanced-topics/regimes-volatility-portfolio-optimization#3-volatility-modeling-garch-and-friends).
+
+<CollapsibleSection title="Show worked solution">
+
+**Method:** fit a GARCH(1,1) model (e.g. via the `arch` Python package) to a training slice of NIFTY daily log returns, generate one-step-ahead conditional variance forecasts over a held-out period, and compare against a simple rolling N-day realized-variance benchmark using a loss function like MSE or QLIKE against subsequently realized variance.
+
+**Expected finding:** GARCH typically forecasts volatility somewhat better than a naive rolling window, *especially* around volatility regime shifts (a sudden vol spike, followed by decay) — because GARCH's mean-reverting structure captures the well-documented fact that volatility clusters and then reverts, while a rolling window is purely backward-looking and reacts slowly to a regime change. In calm, steady periods the improvement over a well-chosen rolling window is often modest; the real edge shows up specifically around the spikes.
+
+**The honest caveat:** this comparison depends heavily on which rolling window length you pick as the benchmark, and on the specific historical period tested. Treat "GARCH beat the rolling window" as a claim that needs the same [out-of-sample, cost-aware scrutiny](/learn/backtesting-statistics/backtest-loop-and-pitfalls) as any other backtested edge.
+
+</CollapsibleSection>
+
+## 4. Kelly under uncertainty
+
+For a strategy with an *estimated* (not certain) edge — win rate 55% ± 5%, payoff ratio 1.3 ± 0.2 — compute full Kelly and quarter-Kelly position sizes across the range of plausible parameters. How much does position size swing, and what does that imply about using fractional Kelly in practice? See [Kelly criterion](/learn/risk-management/kelly-criterion#9-the-kelly-criterion-and-why-to-use-a-fraction-of-it).
+
+<CollapsibleSection title="Show worked solution">
+
+Using $f^* = \frac{bp - q}{b}$ across the plausible range:
+
+| Scenario | Win rate $p$ | Payoff $b$ | Full Kelly $f^*$ | Quarter-Kelly |
+|---|---|---|---|---|
+| Low edge | 0.50 | 1.1 | $\frac{1.1(0.5) - 0.5}{1.1} = 4.5\%$ | 1.1% |
+| Central estimate | 0.55 | 1.3 | $\frac{1.3(0.55) - 0.45}{1.3} = 20.4\%$ | 5.1% |
+| High edge | 0.60 | 1.5 | $\frac{1.5(0.6) - 0.4}{1.5} = 33.3\%$ | 8.3% |
+
+**Full Kelly swings from 4.5% to 33.3%** across the plausible parameter range — roughly a 7× spread, and a **28.8 percentage-point** absolute swing. **Quarter-Kelly swings from 1.1% to 8.3%** — the same relative range, but only a **7.2 percentage-point** absolute swing.
+
+**The implication:** your true edge is never known exactly — $p$ and $b$ are estimated from a finite historical sample and drift. If you bet the *full*-Kelly size implied by your central estimate and the true edge turns out to be at the low end of the plausible range, you're dramatically over-betting — exactly the scenario that produces the deep, account-threatening drawdowns full Kelly is infamous for. Fractional Kelly doesn't just reduce the bet size; it compresses the *sensitivity* of that bet size to your own estimation error, which is the real reason it's the standard practical choice.
+
+</CollapsibleSection>
+
+## 5. Build and stress-test an execution pipeline
+
+Implement (paper-trading only) the full pipeline from [Algorithmic Trading](/learn/algorithmic-trading/automating-a-strategy#4-building-blocks-of-a-retail-algo-system) — data feed, strategy logic, risk checks, OMS, logging — then deliberately kill the data feed mid-session and confirm your risk-check/kill-switch layer behaves safely.
+
+<CollapsibleSection title="Show worked solution">
+
+This is a hands-on systems exercise — the "answer" is a checklist of correct behavior, not a number. When you kill the data feed mid-session, your system should:
+
+1. **Detect staleness** — no new tick/bar within an expected interval should be a flagged condition, not silence.
+2. **Refuse to generate new signals from stale data** — strategy logic should not keep computing "fresh" decisions off a frozen last-known price.
+3. **Trigger the kill-switch** — halt new order submission at minimum; flattening open positions is the more conservative and generally correct default for a retail system.
+4. **Log the failure clearly**, with a timestamp, distinguishable from normal operation in the log stream.
+5. **Surface the failure** rather than degrading silently — a system that "fails safe but silent" just delays the moment someone notices something is wrong.
+
+**The exercise fails if:** the system keeps sending orders based on stale prices after the feed dies, or if it crashes without logging anything. Either outcome is exactly the "accident waiting for a data glitch" the lesson warns about — a live algo with no kill switch and no logging isn't a trading system, it's a liability with better marketing.
+
+</CollapsibleSection>
+
+---
+
+**Related:** [Backtesting & Statistics](/learn/backtesting-statistics) · [Quantitative Trading](/learn/quantitative-trading) · [Risk Management](/learn/risk-management) · [Algorithmic Trading](/learn/algorithmic-trading)

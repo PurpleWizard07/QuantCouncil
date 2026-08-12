@@ -1,0 +1,47 @@
+## 3. Stop losses done properly
+
+A **stop loss** is a pre-committed exit that caps a trade's loss. It exists because humans are
+terrible at cutting losers in the moment (see [Psychology → disposition effect](/learn/psychology/bias-catalogue-and-discipline-systems)).
+
+### Placement: structure, not round numbers
+
+Place stops where your **thesis is proven wrong**, not at an arbitrary "I can only lose ₹X" level.
+If you're long on a breakout above resistance, the trade is wrong if price falls back *below* the
+breakout level — so the stop belongs just under it. Then use
+[risk per trade and position sizing](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing)
+to size *around* that stop, not the other way round.
+
+### Stops are promises the market can break
+
+| Order used as stop | What it guarantees | What it does **not** guarantee |
+|---|---|---|
+| **Stop-market** | You *will* exit (it becomes a market order when triggered) | The *price* — in a gap you can fill far worse |
+| **Stop-limit** | The *price* (won't fill worse than your limit) | The *fill* — in a fast move it may not execute at all, leaving you in the trade |
+
+> ⚠️ **Common mistake:** Assuming a ₹30 stop caps your loss at ₹30/share. On an overnight gap, an
+> earnings shock, or a lower-circuit move, you can lose far more. This is called **gap/slippage
+> risk** and is the main reason to keep per-trade risk small and to be cautious holding through
+> known events (results, budgets, RBI policy). See
+> [Technical Analysis → gaps](/learn/analysis/ta-honest-framing#2-price-representation-ohlc-candlesticks-timeframes-gaps).
+
+> 🤔 **Think about this:** If stops can slip, why use them at all? (Because a *distribution of losses
+> that is usually capped and occasionally larger* is vastly better than *no cap at all* — you survive
+> the ordinary and only rarely suffer the extreme.)
+
+## 4. Risk/reward and the R multiple
+
+Define **1R = the amount you risk on a trade** (from entry to stop). Then measure every outcome in R.
+
+- Risk ₹5,000, make ₹10,000 → **+2R**. Risk ₹5,000, lose ₹5,000 → **−1R**. Stopped at half → −0.5R.
+
+Thinking in **R** frees you from rupee amounts and lets you compare trades of different sizes on one
+scale. Your entire track record becomes a list like `+2R, −1R, −1R, +3R, −1R, +1R…`, which is
+exactly what [expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula) needs.
+
+> 💡 **Key takeaway:** The two levers of profitability are **how often you win (win rate)** and **how
+> big wins are versus losses (reward:risk)**. Neither alone tells you if a strategy makes money —
+> only their *combination* does.
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Position Sizing](/learn/risk-management/position-sizing) · [Expectancy — the Master Formula](/learn/risk-management/expectancy) · [Glossary → Stop Loss](/learn/glossary#stop-loss) · [Glossary → R Multiple](/learn/glossary#r-multiple)

@@ -9,11 +9,18 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.2",
+    "github-slugger": "^2.0.0",
+    "katex": "^0.18.4",
     "motion": "^12.42.2",
     "next": "15.1.6",
+    "next-mdx-remote": "^6.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "^3.9.2",
+    "rehype-katex": "^7.0.1",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "tailwindcss": "^4.3.2"
   },
   "devDependencies": {

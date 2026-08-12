@@ -1,0 +1,49 @@
+## 10. Portfolio-level risk: correlation, exposure, leverage
+
+Sizing each trade correctly is not enough — **your positions interact.**
+
+- **Correlation.** Five "different" long trades in banking (HDFCBANK, ICICIBANK, AXISBANK,
+  KOTAKBANK, SBIN) are essentially **one big bet on banks**. In a sector selloff they all hit stops
+  together, so your "1% per trade × 5 = 5% at risk" is really ~5% on a *single* correlated event.
+  See [Foundations → correlation](/learn/foundations/liquidity-volatility-correlation#correlation) and
+  [Foundations → diversification](/learn/foundations/liquidity-volatility-correlation#diversification).
+- **Total exposure & heat.** Track the sum of *open risk* ("portfolio heat"). A common cap: total
+  simultaneous risk ≤ **6%** of the account. When many correlated positions are open, treat their
+  combined risk as larger than the naive sum.
+- **Leverage & margin.** Leverage multiplies **both** returns and losses and introduces **margin
+  calls** — forced liquidation at the worst possible moment. In Indian F&O, leverage is inherent and
+  SEBI has *raised* the capital required per lot precisely because retail traders were over-levered
+  (see [Indian Markets → F&O framework](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-sebi-fo-overhaul-2024-2026)).
+  Leverage does not create edge; it only scales what you already have — including a *negative* edge.
+
+> 💡 **Key takeaway:** Diversification only helps when positions are genuinely **uncorrelated**. Ten
+> correlated bets are one bet with extra brokerage. Always ask: *if I'm wrong, how many of these lose
+> at once?*
+
+## 11. Checklist & common mistakes
+
+### ✅ Pre-trade risk checklist
+
+- [ ] I know my **stop level** (where the thesis is wrong) *before* entering.
+- [ ] I sized the position from [risk per trade and position sizing](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing), not gut feel.
+- [ ] Risk per trade ≤ my chosen cap (e.g. 1%).
+- [ ] My **net** expectancy (after Indian costs) is positive, or this is a tested edge.
+- [ ] Total **portfolio heat** (all open risk, correlations included) is within my cap.
+- [ ] I've considered **gap/event risk** (results, budget, RBI) for anything held overnight.
+- [ ] The position size is **fractional-Kelly** sane, not full-Kelly greedy.
+
+### ⚠️ The classic ways people blow up
+
+| Mistake | Why it kills you | Fix |
+|---|---|---|
+| No stop / "mental stop" ignored in the moment | One trade becomes 20 trades' worth of loss | Pre-committed hard stop, sized small |
+| Sizing by "shares I can afford" | Risk varies randomly with stock price | Size by risk/trade formula |
+| Averaging down a loser | Adds risk exactly when thesis is failing | Add only to *winners*, per plan |
+| Risking 5–10% per trade | Normal streaks → catastrophic drawdown | 0.5–2% per trade |
+| Ignoring correlation | "Diversified" book is one bet | Cap sector/factor exposure |
+| Betting full Kelly on overfit stats | Over-bets a mis-estimated edge | Half-Kelly or less |
+| Forgetting costs | Positive gross edge, negative net | Always compute net expectancy |
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Trading Psychology → Bias Catalogue & Discipline Systems](/learn/psychology/bias-catalogue-and-discipline-systems) · [Case Studies](/learn/case-studies/overfit-backtest-ltcm-retail-losses) · [Glossary → Correlation](/learn/glossary#correlation)

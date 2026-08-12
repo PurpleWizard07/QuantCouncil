@@ -1,0 +1,67 @@
+## 3. The order book, bid, ask, and spread
+
+Every liquid stock has an **order book** (a.k.a. limit order book) — a live, sorted list of all resting **buy** orders (bids) and **sell** orders (asks/offers) at each price.
+
+- **Bid** = the highest price a buyer is currently willing to **pay**.
+- **Ask (offer)** = the lowest price a seller is currently willing to **accept**.
+- **Spread** = Ask − Bid. The gap between what buyers offer and sellers demand.
+
+Illustrative order book for a stock (last trade ₹500.00):
+
+```text
+        BUYERS (bids)                 SELLERS (asks)
+   Qty     Price                 Price     Qty
+   1,200   499.80   <- best bid  500.20    900    <- best ask   (spread = 0.40)
+     800   499.75                500.25   1,500
+   2,000   499.70                500.30    600
+     500   499.60                500.40   3,000
+```
+
+- The **best bid** is ₹499.80; the **best ask** is ₹500.20; the **spread** is ₹0.40.
+- A **market buy** would hit the best ask (₹500.20). A **market sell** would hit the best bid (₹499.80). Notice you *buy at the ask and sell at the bid* — you immediately "pay the spread."
+
+> 💡 **Key takeaway:** The **spread is a real cost of trading** — a hidden fee you pay every round trip just by crossing it. Liquid stocks (RELIANCE) have spreads of a paisa or two; illiquid smallcaps can have spreads of 1–2%+, which quietly devours returns. See [microstructure](/learn/market-microstructure/order-flow-and-market-impact).
+
+## 4. Market depth and liquidity
+
+**Market depth** = how much quantity is available at each price level in the book. It tells you how big a trade the market can absorb *before the price moves*.
+
+- A **deep** book (big quantities at many nearby prices) absorbs large orders with little price impact — high [liquidity](/learn/foundations/liquidity-volatility-correlation#9-liquidity).
+- A **thin/shallow** book (small quantities, gaps between levels) means even a modest order "walks the book," filling at progressively worse prices — [slippage](#6-partial-fills-and-slippage).
+
+**Example (using the book above):** You want to buy **2,500** shares *at market*. The best ask has only 900 at ₹500.20, then 1,500 at ₹500.25, then 600 at ₹500.30. Your order fills: 900 @ 500.20 + 1,500 @ 500.25 + 100 @ 500.30. Average price ≈ **₹500.24**, *worse* than the ₹500.20 you saw — because you consumed multiple levels. That difference is slippage caused by insufficient depth.
+
+> ⚠️ **Common mistake:** Judging liquidity by the *last price* alone. The last trade might be ₹500, but if there's only 100 shares on offer there, your 5,000-share order will fill far higher. **Always check depth before trading size**, especially in smallcaps and far-OTM options.
+
+## 5. Order types
+
+Orders are the vocabulary you use to talk to the matching engine. The four core types:
+
+| Order type | What it does | Guarantees | Does NOT guarantee | Use when |
+|---|---|---|---|---|
+| **Market** | Buy/sell immediately at best available price(s) | **Execution** (you'll get filled) | **Price** (can slip) | You need *in/out now* and it's liquid |
+| **Limit** | Buy/sell only at your price *or better* | **Price** (won't fill worse) | **Execution** (may never fill) | You care about price, can wait |
+| **Stop (stop-market)** | Becomes a *market* order when a trigger price is hit | Execution once triggered | Price (slips on gaps) | Exiting a loser / triggering entries |
+| **Stop-limit** | Becomes a *limit* order when triggered | Price | Execution (may not fill in a fast move) | You want a stop *and* price control |
+
+**Confusable pair — the classic table:**
+
+| Concept | Meaning | Example | Common mistake |
+|---|---|---|---|
+| **Market order** | Fill now at whatever price is available | "Buy 100 at market" → fills at best ask(s) | Using it in illiquid names → nasty slippage |
+| **Limit order** | Fill only at a set price or better | "Buy 100 @ ₹499" → waits until someone sells at ₹499 | Setting it too far → it never fills, you miss the move |
+
+> 💡 **Key takeaway:** **Market = certainty of fill, uncertainty of price. Limit = certainty of price, uncertainty of fill.** Choosing between them is choosing which risk you'd rather bear. Stops inherit this same trade-off (see [Risk Management → stops](/learn/risk-management/stops-and-r-multiple#3-stop-losses-done-properly)).
+
+## 6. Partial fills and slippage
+
+- **Partial fill:** your order executes for *part* of its quantity because not enough was available at your terms. A limit order for 1,000 shares might fill 300 now and leave 700 resting until more counterparty interest appears (or it expires).
+- **Slippage:** the difference between the price you *expected* and the price you *got*. Caused by (a) thin depth (walking the book), (b) fast-moving prices between click and execution, and (c) gaps (price jumps with no trading in between — e.g. overnight news). Slippage is usually *against* you.
+
+**Slippage is a core, unavoidable cost** — especially for larger size, illiquid instruments, fast markets, and market orders. Serious [backtests](/learn/backtesting-statistics/backtest-loop-and-pitfalls) *must* model it, or they overstate returns badly.
+
+> ⚠️ **Common mistake:** Backtesting a strategy as if every fill happened exactly at the printed price with unlimited size. Real fills slip, real books are finite, and a strategy that trades often can have its entire "edge" eaten by slippage + costs. See [Backtesting pitfalls](/learn/backtesting-statistics/backtest-loop-and-pitfalls#backtesting-pitfalls).
+
+### Related
+
+[Liquidity, volatility & correlation](/learn/foundations/liquidity-volatility-correlation) · [Risk Management → Stops & R-multiple](/learn/risk-management/stops-and-r-multiple) · [Market Microstructure](/learn/market-microstructure/order-flow-and-market-impact) · [Glossary](/learn/glossary)

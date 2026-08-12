@@ -1,0 +1,93 @@
+## The building blocks
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+> 💡 **Key takeaway:** A futures contract is a **binding agreement to buy/sell an asset at a set price on a future date**, standardized and traded on an exchange with **daily settlement**. Its defining features — **leverage** and **mark-to-market** — make it powerful for hedging and dangerous for the careless. Unlike [options](/learn/derivatives/options-building-blocks-and-greeks), a future has *linear*, *symmetric* payoff and *obligation on both sides*.
+
+**Learning objectives:** explain contract mechanics, margin, mark-to-market, basis, and contango/backwardation; distinguish hedging from speculation; understand rollovers — with Indian examples.
+
+---
+
+| Term | Meaning |
+|---|---|
+| **Contract** | A standardized agreement (fixed lot size, expiry, tick) to buy/sell an underlying |
+| **Underlying** | What it's on — an index (NIFTY), stock, commodity, or currency |
+| **Expiry** | The date the contract settles (Indian index/stock futures: monthly, last Thursday) |
+| **Lot size** | Units per contract ([SEBI raised these](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-sebi-fo-overhaul-20242026)) 🗓️ |
+| **Futures price** | The agreed price for future delivery (differs from spot by the [basis](#basis-contango-backwardation)) |
+| **Long / Short** | Obligation to *buy* (long) or *sell* (short) at expiry — both sides are obligated |
+
+**Spot vs futures.** *Spot* is the price for immediate delivery; *futures* is for future delivery. They differ by the **cost of carry** (financing, storage, minus any income like dividends).
+
+---
+
+## Basis, contango, backwardation
+
+- **Basis** = Futures − Spot. It reflects cost of carry and expectations, and **converges to zero at expiry** (an arbitrage force — see [Price behavior → arbitrage](/learn/foundations/price-drivers-and-market-efficiency#5-price-discovery-arbitrage-and-market-makers)).
+- **Contango:** futures **> spot** (the normal state when carry costs dominate). **Backwardation:** futures **< spot** (often when there's demand for the asset *now*, or expected decline).
+- **Example:** NIFTY spot 24,000, near-month future 24,080 → basis +80 (mild contango). By expiry the future must equal spot, so that 80-point premium erodes over the month.
+
+> 💡 **Key takeaway:** For a **rolling** futures position, contango/backwardation create a *roll cost/yield* over time — persistent contango bleeds long holders as they "roll" to a pricier next contract (crucial for commodity ETFs and long-horizon futures strategies).
+
+---
+
+## Margin and leverage — the double-edged sword
+
+You don't pay the full notional; you post **margin** (a fraction) as collateral, giving **leverage**.
+
+- **Example (illustrative):** A NIFTY future has a large notional (lot size × index). If margin is, say, ~15–20% of notional, you control the full contract with a fraction of the cash — so a small % move in the index is a *large* % move on your margin. [SEBI raised contract sizes and near-expiry margins](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-sebi-fo-overhaul-20242026), so capital-per-lot is higher than pre-2024. 🗓️
+- **Leverage cuts both ways** and — via [mark-to-market](#mark-to-market-mtm) — can trigger **margin calls** and forced liquidation (see [How Markets Work → margin](/learn/foundations/short-selling-margin-leverage#9-short-selling-borrowing-and-margin)).
+
+## Mark-to-market (MTM)
+
+Futures are **settled daily**: each day, gains/losses are credited/debited to your account based on the settlement price. You don't wait until expiry to realize P&L — it flows *every day*.
+
+- **Worked example (one NIFTY future, lot 75, illustrative):**
+  - Buy at **24,000**. Day 1 settles **24,100** → +100 pts × 75 = **+₹7,500** credited.
+  - Day 2 settles **23,950** → −150 pts × 75 = **−₹11,250** debited (and if your margin dips below maintenance, a **margin call**).
+- This daily cash flow is why futures losses are *felt immediately* and why undercapitalized leverage is so dangerous.
+
+> ⚠️ **Common mistake:** Treating a future like a stock you can "hold and forget." MTM debits hit daily; a leveraged adverse move can force you out at the worst time before your thesis plays out. Size for the *daily swing*, per [risk management](/learn/risk-management/kelly-criterion#8-volatility-adjusted-sizing).
+
+---
+
+## Hedging vs speculation
+
+The *same* contract serves opposite purposes — this is the whole point of futures markets ([Foundations → why markets exist](/learn/foundations/money-assets-markets#3-what-is-a-financial-market-and-why-do-they-exist)):
+
+- **Hedging (risk transfer):** an investor holding a stock portfolio **shorts NIFTY futures** to neutralize market risk before an uncertain event; a producer locks in a selling price. The hedger *gives up* upside to *remove* downside — trading risk for certainty.
+- **Speculation (risk bearing):** a trader takes a directional futures position to profit from a move, providing the liquidity the hedger needs.
+
+> 💡 **Key takeaway:** Futures **transfer risk** from those who want to shed it to those willing to bear it. Leverage is what makes them efficient for hedging *and* what makes reckless speculation lethal.
+
+---
+
+## Rollovers
+
+Futures expire, but exposure needn't. **Rolling** = closing the expiring contract and opening the next month before expiry. Watch the **[basis](#basis-contango-backwardation)** when rolling — you may pay a premium (contango) or receive one (backwardation), which is a real, recurring cost/benefit of maintaining the position.
+
+- Indian index/stock futures expire **monthly (last Thursday)**; rollover activity clusters in the final days ("rollover week"), watched as a sentiment/positioning gauge (with the usual [caveats about reading positioning](/learn/derivatives/volatility-chain-open-interest#7-open-interest--the-put-call-ratio)).
+
+---
+
+## Futures vs options (quick contrast)
+
+| | **Futures** | **Options** |
+|---|---|---|
+| Obligation | Both sides obligated | Buyer has a *right*, seller an obligation |
+| Payoff | Linear, symmetric | Non-linear, asymmetric |
+| Cost to enter | Margin (no premium) | Buyer pays premium |
+| Max loss (long) | Large (down to zero on the notional) | Limited to premium |
+| Time decay | None | Yes ([theta](/learn/derivatives/options-building-blocks-and-greeks#4-the-greeks)) |
+
+**✅ Ready to move on when you can:** explain leverage, margin, and mark-to-market with an INR example; define basis and contango/backwardation; and say when you'd *hedge* with futures vs *speculate*.
+
+---
+
+*Outline — ask to expand into full worked hedging examples (beta-hedging a portfolio with NIFTY futures, a commodity roll-cost case, and a currency-futures example).*
+
+### Related
+
+[Options: Building Blocks & the Greeks](/learn/derivatives/options-building-blocks-and-greeks) · [Risk Management — module overview](/learn/risk-management) · [Indian Markets → SEBI F&O overhaul](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-sebi-fo-overhaul-20242026) · [Advanced Topics](/learn/advanced-topics/regimes-volatility-portfolio-optimization) · [Glossary](/learn/glossary)

@@ -1,0 +1,40 @@
+## 8. Strategies and their payoffs
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+Strategies combine options (and sometimes the underlying) to **shape a payoff** — capping risk, lowering cost, or expressing a view on direction *and* volatility. Grouped by intent:
+
+### Income / covered (you own or will own the underlying)
+| Strategy | Construction | View | Max loss | Max gain |
+|---|---|---|---|---|
+| **Covered call** | Long stock + short OTM call | Mildly bullish / neutral | Stock falls (minus premium) | Capped at strike + premium |
+| **Cash-secured put** | Short put + cash to buy | Willing to buy lower | Strike − premium (stock → 0) | Premium |
+| **Protective put** | Long stock + long put | Bullish but want insurance | Premium + gap to strike | Unlimited (minus premium) |
+
+### Vertical spreads (defined risk **and** defined reward — the workhorses)
+| Strategy | Construction | View | Character |
+|---|---|---|---|
+| **Bull call spread** | Buy lower-strike call, sell higher-strike call | Moderately bullish | Debit; cheaper than a naked call, capped upside |
+| **Bear put spread** | Buy higher-strike put, sell lower-strike put | Moderately bearish | Debit; capped |
+| **Bull put spread** | Sell higher-strike put, buy lower-strike put | Neutral-to-bullish | **Credit**; defined risk (a *safer* way to be a seller) |
+| **Bear call spread** | Sell lower-strike call, buy higher-strike call | Neutral-to-bearish | Credit; defined risk |
+
+**Worked example — Bull call spread on NIFTY (spot 24,150):** Buy 24,200 CE @ ₹78, sell 24,400 CE @ ₹30. Net debit = ₹48/unit. Max loss = ₹48 (if NIFTY ≤ 24,200 at expiry). Max gain = `(24,400 − 24,200) − 48 = 152`/unit (if NIFTY ≥ 24,400). Break-even = `24,200 + 48 = 24,248`. Per lot (75): risk ₹3,600 to make up to ₹11,400. You gave up the tail upside above 24,400 in exchange for paying much less than the ₹78 naked call.
+
+### Volatility structures (bet on *how much* it moves, not which way)
+| Strategy | Construction | You profit if… | You lose if… |
+|---|---|---|---|
+| **Long straddle** | Buy ATM call + ATM put | Big move *either* way (or IV rises) | It sits still / IV falls (theta bleeds you) |
+| **Long strangle** | Buy OTM call + OTM put | Very big move; cheaper than straddle | Small move; both expire worthless |
+| **Short straddle** | Sell ATM call + ATM put | It barely moves (collect both premiums) | 🚩 **Big move either way — large/unbounded loss** |
+| **Iron condor** | Sell OTM put spread + sell OTM call spread | Stays in a range | Breaks out (but loss is **capped** — the defined-risk condor) |
+| **Butterfly** | Buy 1 low + sell 2 mid + buy 1 high (calls or puts) | Pins near the middle strike | Moves away; cheap, low-probability payoff |
+| **Calendar spread** | Sell near-dated, buy longer-dated (same strike) | Time decay + IV behave as expected | Complex — a bet on term structure of vol |
+
+> 💡 **Key takeaway:** **Spreads and condors are "defined-risk" — you always know your worst case before you enter.** Naked short options (short straddle/strangle, naked calls/puts) are "undefined-risk" — one bad gap can exceed months of gains. For most traders, most of the time, defined-risk is the adult choice. This ties directly to [Risk Management → portfolio heat](/learn/risk-management/portfolio-risk-correlation-leverage#10-portfolio-level-risk-correlation-exposure-leverage).
+
+### Related
+
+[Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money) · [Options: Building Blocks & the Greeks](/learn/derivatives/options-building-blocks-and-greeks) · [Risk Management → Portfolio Risk, Correlation & Leverage](/learn/risk-management/portfolio-risk-correlation-leverage) · [Options in India](/learn/derivatives/options-in-india)

@@ -1,0 +1,62 @@
+> 🗓️ **This section contains date-sensitive facts (fees, taxes, settlement, F&O rules).** They were
+> checked against current official and reputable sources at the time of writing, but **they change
+> with every Union Budget and SEBI circular.** Treat every number here as a *snapshot to verify*, not
+> a timeless truth. Where something is especially prone to change, it is flagged 🗓️. **Always confirm
+> against your broker's contract note, exchange circulars, and SEBI/CBDT before it affects money.**
+
+## 1. The regulatory and institutional stack
+
+(See [How Markets Work → institutions](/learn/foundations/institutions-and-ipos#1-the-institutions-and-who-does-what) for the general roles.)
+
+| Body | Role in India |
+|---|---|
+| **SEBI** | The market regulator. Licenses intermediaries, writes the rulebook, protects investors, polices fraud/manipulation. |
+| **NSE** (National Stock Exchange) | India's largest exchange by volume; home of NIFTY and most F&O activity. |
+| **BSE** (Bombay Stock Exchange) | Asia's oldest exchange; home of SENSEX. |
+| **NSE Clearing (NCL)** & **ICCL** (BSE) | Clearing corporations / central counterparties that guarantee and net settlement. |
+| **NSDL** & **CDSL** | The two depositories that hold your shares in *dematerialized* (electronic) form. |
+| **RBI** | The central bank; sets monetary policy and oversees the banking rails your money moves on. |
+| **AMFI** | Industry body for mutual funds (standards, investor education). |
+
+> 💡 **Key takeaway:** SEBI writes the rules; NSE/BSE run the venues; NCL/ICCL guarantee trades;
+> NSDL/CDSL hold your shares. Your **broker** is your licensed gateway to all of it and usually also
+> acts as your **Depository Participant (DP)**.
+
+## 2. Accounts: demat, trading, bank
+
+To trade Indian equities you typically link **three** accounts:
+
+| Account | Holds / does | Provided by |
+|---|---|---|
+| **Bank account** | Your money | Your bank |
+| **Trading account** | Places orders on the exchange | Your broker |
+| **Demat account** | Holds your shares electronically | Depository (NSDL/CDSL) via your broker as DP |
+
+Opening requires **KYC** (PAN, Aadhaar, bank proof, in-person/e-verification). The flow of a delivery
+buy: money moves **bank → (via broker) → exchange settlement**, and shares land in your **demat**;
+selling reverses it, with shares debited from demat (which triggers **DP charges**, see [§8](/learn/indian-markets/cost-stack-and-stt#the-cost-stack)).
+
+> 💡 **Key takeaway:** "Trading account" ≠ "demat account." One *transacts*; the other *stores*. Many
+> beginners are confused why they need both — the trading account is the remote control, the demat is
+> the shelf where the shares actually sit.
+
+## Settlement
+
+🗓️ *India is actively shortening settlement — verify current status with NSE/BSE/SEBI.*
+
+- **T+1 is the default cycle** for all equities, ETFs, REITs, and InvITs — a trade settles **one
+  business day** later. India completed the move from T+2 to T+1 in **early 2023** (fully rolled out by
+  end-January 2023), making it one of the fastest major markets in the world.
+- **T+0 (same-day) settlement** launched as an **optional beta on 28 March 2024** and has been
+  expanded in phases to the **top 500 stocks by market capitalization**; it runs *in addition to* T+1.
+  SEBI has also been piloting an even faster **instant settlement** mechanism (near-real-time,
+  UPI-funded).
+- **Practical implications:** funds and shares free up faster (good for capital efficiency), but you
+  must fund your account **sooner**; a failed pay-in (insufficient funds at settlement) triggers
+  penalties and short-delivery auction handling.
+
+See the mechanics in [How Markets Work → settlement](/learn/foundations/order-lifecycle-and-settlement#8-settlement-t1--t0).
+
+### Related
+
+[Who Runs a Market: Institutions & IPOs](/learn/foundations/institutions-and-ipos) · [What Happens After You Press Buy](/learn/foundations/order-lifecycle-and-settlement) · [The Cost Stack & STT](/learn/indian-markets/cost-stack-and-stt) · [Glossary → Demat account](/learn/glossary#demat-account)

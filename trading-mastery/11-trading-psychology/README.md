@@ -1,0 +1,90 @@
+# 11 — Trading Psychology
+
+> ⬅ Back to [README](../README.md) · Prev: [10 Options](../10-options/README.md) · Next: [12 Backtesting & Statistics](../12-backtesting-and-statistics/README.md)
+
+> 💡 **Key takeaway:** Understanding probability does **not** make you act rationally under money
+> stress. Your brain evolved for survival, not for holding losers, cutting winners, or sitting still
+> through drawdowns. Most trading failure is not an *analysis* problem — it's a *behavior* problem. The
+> defense is **rules that remove in-the-moment discretion** ([strategy](../08-strategy-development/README.md) +
+> [risk limits](../07-risk-management/README.md)).
+
+**Learning objectives:** recognize the major biases *in yourself*; understand *why* they fire even when
+you "know better"; build guardrails against them.
+
+---
+
+## Why smart, probability-literate people still behave irrationally
+
+Two reasons the biases below persist even after you learn them:
+
+1. **They're fast and emotional, not slow and logical.** Under real money and time pressure, the
+   emotional system overrides the analytical one (Kahneman's two systems). Knowing a bias exists
+   doesn't switch it off in the heat of a losing trade.
+2. **Losses hurt ~twice as much as equivalent gains feel good** (loss aversion). This asymmetry warps
+   every decision toward avoiding the *feeling* of a loss — which is exactly the wrong incentive.
+
+> 💡 The point of this section is not to "try harder to be disciplined." It's to **design your process
+> so discipline isn't required in the moment** — pre-committed stops, pre-set sizes, checklists.
+
+---
+
+## The bias catalogue
+
+| Bias | What it is | How it hurts trading | Guardrail |
+|---|---|---|---|
+| **FOMO** (fear of missing out) | Chasing a move you missed | Buying tops, ignoring your rules/plan | Only take *planned* setups; a missed trade costs nothing |
+| **Revenge trading** | Trying to "win it back" after a loss | Oversized, unplanned trades → bigger losses | Daily loss limit; step away after a stop-out |
+| **Overtrading** | Trading too much/too often | [Costs](../17-indian-markets/README.md#the-cost-stack) pile up; forces low-quality trades | Trade quota; require setups to *qualify* |
+| **Loss aversion** | Losses hurt ~2× gains | Holding losers, cutting winners early | Mechanical stops/targets; think in [R](../07-risk-management/README.md#4-riskreward-and-the-r-multiple) |
+| **Disposition effect** | Selling winners, holding losers | The *exact opposite* of "cut losses, let winners run" | Rules-based exits; trail winners |
+| **Confirmation bias** | Seeking info that agrees with you | Ignoring the thesis-is-wrong signal | Pre-define what would *disprove* the trade |
+| **Recency bias** | Overweighting the latest results | Abandoning a good system after a normal losing streak | Judge over large samples ([stats](../12-backtesting-and-statistics/README.md#10-statistical-significance-and-overfitting)) |
+| **Gambler's fallacy** | "It's due to bounce/reverse" | Averaging down; fighting trends | Independent trades; no "it must" logic |
+| **Sunk-cost fallacy** | Throwing good money after bad | Adding to losers to justify past decisions | Decisions are forward-looking only |
+| **Anchoring** | Fixating on a reference price | "I'll sell when it gets back to my buy price" | Value/plan-based exits, not entry price |
+| **Overconfidence** | Overestimating your edge/skill | Oversizing; skipping validation; full-[Kelly](../07-risk-management/README.md#9-the-kelly-criterion-and-why-to-use-a-fraction-of-it) | Position limits; out-of-sample proof; humility |
+| **Fear** | Panic in drawdowns | Cutting good trades; freezing; abandoning plan | Pre-sized small; pre-committed stops |
+| **Greed** | Overstaying/oversizing for "more" | Giving back gains; blowing risk limits | Targets/trailing rules; fixed sizing |
+
+> ⚠️ **Common mistake:** Believing you're "too rational" for these. **Everyone** exhibits them — the
+> question is only whether your *process* contains them. The disposition effect and loss aversion in
+> particular are documented in real retail trading data (and are part of *why* the
+> [retail base rate is poor](../17-indian-markets/README.md#the-retail-fo-reality)).
+
+---
+
+## Discipline is a system, not a personality trait
+
+You cannot out-willpower your own neurochemistry mid-trade. So **externalize** discipline:
+
+- **Pre-commit** entries, stops, targets, and size *before* the trade (bracket orders help).
+- **Set hard limits:** risk-per-trade, portfolio heat, **daily loss limit**, max trades/day.
+- **Use checklists** ([strategy plan](../08-strategy-development/README.md#trading-plan--journal-templates))
+  so decisions are made when calm, not when triggered.
+- **Journal the *decision*, not just the result** — grade "followed plan? (Y/N)"
+  ([why this matters](../08-strategy-development/README.md#trading-plan--journal-templates)).
+- **Step away** after a loss streak or a stop-out; the urge to immediately re-engage is the bias
+  talking.
+- **Size small enough that no single trade is emotionally overwhelming** — the cheapest psychological
+  fix there is ([risk management](../07-risk-management/README.md#2-risk-per-trade--position-sizing)).
+
+> 💡 **Key takeaway:** The best traders aren't unusually disciplined humans — they've built **systems
+> that make discipline the default** and make impulsive damage hard. Design your environment so the
+> lazy/scared/greedy path *is* the correct path.
+
+🤔 **Think about this:** Why do so many traders do fine on [paper](../18-practical-trading/README.md)
+and fall apart with real money — with the *same* strategy? (No money → no loss aversion, no fear, no
+greed. Real money activates the emotional system the paper account never touched. That gap *is*
+psychology.)
+
+**✅ Ready to move on when you can:** name your two worst biases honestly and point to the *specific
+rule* in your process that contains each.
+
+---
+*Outline — ask to expand with pre-trade/post-loss routines, a tilt-detection checklist, and a
+psychology-focused journal template.*
+
+### Related
+[07 Risk Management](../07-risk-management/README.md) · [08 Strategy Development](../08-strategy-development/README.md) · [18 Practical Trading](../18-practical-trading/README.md) · [Resources → Kahneman/Taleb](../resources/README.md) · [Glossary](../glossary/README.md)
+
+> Next: [12 — Backtesting & Statistics](../12-backtesting-and-statistics/README.md) →

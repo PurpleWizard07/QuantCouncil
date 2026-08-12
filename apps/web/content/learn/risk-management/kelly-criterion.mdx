@@ -1,0 +1,61 @@
+## 8. Volatility-adjusted sizing
+
+A fixed ₹ stop makes no sense across instruments with wildly different volatility: ₹30 is a tight
+stop on RELIANCE but an absurdly loose one on a ₹40 penny stock. **Volatility-adjusted sizing** sets
+your stop distance from the instrument's own movement, usually via **ATR** (Average True Range — see
+[Technical Analysis → ATR](/learn/analysis/ta-indicator-reference#atr-average-true-range)).
+
+### ATR-based sizing
+
+1. Choose risk per trade (e.g. ₹5,000).
+2. Choose stop distance as a multiple of ATR (e.g. 2 × ATR). If daily ATR = ₹25, stop distance = ₹50.
+3. Quantity = ₹5,000 ÷ ₹50 = **100 shares.**
+
+Now a calm stock (small ATR) gets a *bigger* position and a wild stock gets a *smaller* one, so each
+trade risks the same rupees **and** roughly the same "amount of normal wiggle." This is how you make
+positions comparable across a portfolio.
+
+> 💡 **Key takeaway:** Normalize by volatility so that "1 unit of risk" means the same thing whether
+> you're trading a sleepy PSU or a volatile smallcap. Fixed share counts are how portfolios end up
+> accidentally dominated by their most volatile name.
+
+## 9. The Kelly criterion (and why to use a fraction of it)
+
+The **Kelly criterion** answers: "Given my edge, what bet fraction maximizes long-run *growth rate*
+of capital?" Bet more and you grow faster — until volatility drag and ruin risk overwhelm you; bet
+less and you leave growth on the table. Kelly is the theoretical sweet spot for growth.
+
+### For a simple win/lose bet
+
+$$f^* = \frac{bp - q}{b}$$
+
+- **What it calculates:** the fraction of capital to risk to maximize long-term geometric growth.
+- **Variables:** `p` = win prob, `q = 1 − p`, `b` = reward-to-risk (win size ÷ loss size).
+- **Example:** `p = 0.55`, `q = 0.45`, `b = 1` (win = risk). `f* = (1×0.55 − 0.45)/1 =` **0.10 → risk
+  10% per trade** for maximum growth.
+- **Crucial property:** if edge is zero or negative (`bp ≤ q`), Kelly returns `f* ≤ 0` → **bet
+  nothing.** Kelly literally forbids betting a negative-edge game. 🚩
+
+### Why almost nobody bets full Kelly
+
+- Full Kelly is a **wild ride**: it routinely produces 50%+ drawdowns even when "correct."
+- Your inputs (`p`, `b`) are **estimates**; overestimating edge makes full Kelly *over*bet, which is
+  far more dangerous than underbetting. Growth is roughly flat near the Kelly peak but risk rises
+  steeply past it — so erring high is punished asymmetrically.
+- **Standard practice: fractional Kelly** — bet ¼ to ½ of `f*`. Half-Kelly captures ~75% of the
+  growth with far less than half the drawdown. This is why the sane retail numbers in
+  [risk per trade and position sizing](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing)
+  (0.5%–2%) exist: they are *fractional-Kelly-sized* for realistic, uncertain edges.
+
+> ⚠️ **Common mistake:** Plugging optimistic, overfit backtest numbers into Kelly and betting the
+> result. Since your edge estimate is almost always too high, this over-bets — the very thing Kelly's
+> own math punishes hardest.
+
+> 🤔 **Think about this:** Two traders have the same true edge. One bets full Kelly, one bets
+> half-Kelly. Over 20 years, why might the half-Kelly trader end up *wealthier and definitely
+> saner*? (Lower drawdowns mean less chance of a forced stop, less emotional error, and less volatility
+> drag on compounding.)
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Position Sizing](/learn/risk-management/position-sizing) · [Drawdown & Risk of Ruin](/learn/risk-management/drawdown-and-risk-of-ruin) · [Technical Analysis → Indicator Reference](/learn/analysis/ta-indicator-reference) · [Glossary → Kelly Criterion](/learn/glossary#kelly-criterion)

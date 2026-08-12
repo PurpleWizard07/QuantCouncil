@@ -1,0 +1,50 @@
+## 6. Return
+
+A **return** is the gain or loss on an investment as a fraction of what you put in.
+
+$$R = \frac{P_{end} - P_{start} + \text{Income}}{P_{start}}$$
+
+- **What it calculates:** total percentage gain, including price change *and* income (dividends/coupons).
+- **Why it matters:** it lets you compare investments of different sizes on one scale.
+- **Variables:** `P_start`/`P_end` = start/end price; Income = dividends or coupons received.
+- **Example (Indian):** Buy 100 shares of a stock at ₹200 (₹20,000). A year later price is ₹230 and it paid ₹4/share dividend. Return = `(23,000 − 20,000 + 400) / 20,000 = 3,400/20,000 =` **17%.**
+- **Limitations:** a single-period return ignores *when* cash flowed and *how much risk* you took. A 17% return with wild swings is not the same as a steady 17% (see [risk-adjusted returns](/learn/foundations/liquidity-volatility-correlation#13-risk-adjusted-returns)).
+
+**Arithmetic vs geometric (CAGR).** Averaging returns naively overstates growth. If you make +50% then −50%, the *arithmetic* average is 0%, but you actually have `1.5 × 0.5 = 0.75` → you **lost 25%.** The **CAGR** (compound annual growth rate) captures what you actually earned:
+
+$$\text{CAGR} = \left(\frac{P_{end}}{P_{start}}\right)^{1/n} - 1$$
+
+where `n` = number of years. This asymmetry (gains and losses don't cancel) is the same math as [drawdown recovery](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin).
+
+## 7. Compounding
+
+**Compounding** = earning returns on your past returns. It is the most important — and most *underestimated* — force in finance because it grows **exponentially**, and human intuition is linear.
+
+$$FV = PV \times (1 + r)^n$$
+
+- **What it calculates:** future value of an amount growing at rate `r` for `n` periods.
+- **Variables:** `PV` = present value, `r` = periodic return, `n` = number of periods.
+- **Example:** ₹1,00,000 at **12%/year** for **30 years** = `1,00,000 × 1.12^30 ≈` **₹29,96,000** — nearly **30×**, from a rate that sounds modest. At 15% it's ~₹66 lakh; at 8% it's ~₹10 lakh. Small differences in rate → huge differences over decades.
+- **The Rule of 72 (handy heuristic):** years to double ≈ `72 ÷ (rate %)`. At 12%, money doubles in ~6 years; at 8%, ~9 years. 🧭 A useful *approximation*, not exact.
+- **Limitations:** compounding cuts *both ways* — costs, taxes, and losses compound against you too. A 1.5% annual fee over 30 years can quietly eat a *third or more* of your final wealth. And a big drawdown resets the compounding base, which is why avoiding ruin matters so much.
+
+> 💡 **Key takeaway:** Time in the market and *avoiding large losses* usually beat clever timing, because compounding rewards uninterrupted growth. A trader's real enemy is not "missing gains" — it is the deep drawdown that breaks the compounding chain.
+
+> 🤔 **Think about this:** Would you rather have ₹10 lakh today, or ₹1 that doubles every day for 30 days? (₹1 doubling for 30 days ≈ ₹53 crore. Exponential growth crushes linear intuition — this is why people mis-judge both compounding *and* how fast a leveraged loss can spiral.)
+
+## 8. Inflation; nominal vs real returns
+
+**Inflation** is the general rise in prices over time — equivalently, the fall in money's purchasing power. If inflation is 6%, something that costs ₹100 today costs ₹106 next year; your ₹100 note buys *less*.
+
+- **Nominal return** = the raw percentage your money grew (the number on your statement).
+- **Real return** = nominal return *adjusted for inflation* — what your wealth grew in terms of actual purchasing power.
+
+$$\text{Real} \approx \text{Nominal} - \text{Inflation}$$ (a good approximation; exact form is `(1+nom)/(1+inf) − 1`).
+
+- **Example:** A fixed deposit pays **7%** while inflation runs **6%**. Nominal return = 7%, **real return ≈ 1%.** You feel richer (more rupees) but are barely gaining purchasing power. If inflation were 8%, your "safe" 7% FD is a **−1% real** loss — you're getting poorer safely.
+
+> ⚠️ **Common mistake:** Judging investments by nominal returns and calling cash/FDs "risk-free." They carry **inflation risk** — a near-guaranteed slow erosion of purchasing power. "Safe" and "no loss" are not the same thing. This is *why* people take on market risk at all: to try to beat inflation over the long run.
+
+### Related
+
+[Money, assets & markets](/learn/foundations/money-assets-markets) · [Liquidity, volatility & correlation → Risk-adjusted returns](/learn/foundations/liquidity-volatility-correlation#13-risk-adjusted-returns) · [Drawdown & risk of ruin](/learn/risk-management/drawdown-and-risk-of-ruin) · [Glossary](/learn/glossary)

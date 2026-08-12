@@ -1,0 +1,31 @@
+## Why selling options is NOT free money
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+This deserves its own section because it is the most seductive and most account-destroying idea in retail derivatives.
+
+**The pitch:** "Most options expire worthless, so *sell* them, collect premium, and win ~80–90% of the time. Time decay is on your side. Free money."
+
+**Why the pitch is misleading:**
+
+1. **The payoff shape is 'win small, lose huge.'** A short option collects a small premium most of the time and pays out a large loss rarely. This is exactly the [70%-win-rate-that-loses payoff](/learn/risk-management/expectancy#6-why-a-40-win-rate-can-win-and-a-70-win-rate-can-lose): high win *rate*, negative *expectancy* if the tail losses are big enough. Win rate ≠ profitability.
+
+2. **"Most options expire worthless" is survivorship-flavoured spin.** Many that expire worthless were *bought as hedges* (the buyer was happy to "lose" the premium, like an insurance customer glad they didn't crash). And the ones that *don't* expire worthless are precisely the big-mover cases that hand the seller the large loss. The statistic says nothing about *expectancy*.
+
+3. **Negative gamma means losses accelerate.** As the market moves against a short option, its delta swings against you and losses grow *faster and faster* — the opposite of a comfortable, linear position. A single gap (results, an RBI surprise, a global shock) can inflict a loss larger than many months of collected premium. Indian traders have repeatedly been wiped out by overnight gaps and gap-through-stop moves on short straddles around events and expiries.
+
+4. **You are selling insurance.** There *is* a real edge here — the **variance risk premium**: IV tends to sit above realized vol, so sellers are, on average, paid for bearing tail risk (like an insurer). But an insurer who sells hurricane policies without reinsurance and without capital goes bankrupt in the first big storm. **The edge is real *and* the ruin risk is real** — and the ruin arrives all at once. Retail sellers who ignore the tail are un-capitalized insurers.
+
+5. **Leverage and margin turn a bad day into a forced exit.** Short options tie up margin that *expands* as the market moves against you, triggering margin calls and forced liquidation at the worst price. SEBI's 2024–2026 rules (larger lots, higher near-expiry margins, upfront premium) exist *specifically because* retail option-selling losses were systemic — see [Indian Markets → F&O overhaul](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-sebi-fo-overhaul-20242026).
+
+> ⚠️ **Common mistake:** "80% win rate, what could go wrong?" The 20% is where the money is. A naked short-straddle seller can win 15 weeks straight and give it all back (plus more) in week 16. **The question is never the win rate — it is: how big is the loss when I'm wrong, and can I survive it?**
+
+**The responsible version.** Selling options is a legitimate strategy — but only with **defined risk** (spreads, iron condors), **small size**, **respect for events/gaps**, and full awareness that you are being paid to take tail risk. That is a world apart from "free money."
+
+> 🤔 **Think about this:** If selling options were free money, why do sophisticated, well-capitalized institutions *buy* tail protection from these sellers — happily paying that premium year after year? (Because they know the tail is real, and they'd rather pay the premium than own the disaster.)
+
+### Related
+
+[Risk Management → Expectancy](/learn/risk-management/expectancy) · [Options Strategies & Payoffs](/learn/derivatives/options-strategies-and-payoffs) · [Options in India](/learn/derivatives/options-in-india) · [Case Studies](/learn/case-studies/overfit-backtest-ltcm-retail-losses)

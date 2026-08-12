@@ -1,0 +1,127 @@
+A curated, quality-first list. The ordering principle throughout this course: **official exchange/regulator docs → academic papers → reputable institutions → established textbooks → high-quality educational sources.** Reddit, YouTube, Twitter/X threads, and "trading gurus" are **not** authoritative and are deliberately excluded. For anything about Indian fees, taxes, settlement, or regulation, **verify against the official sources below** — they supersede any summary (including this course). 🗓️
+
+## 1. Official Indian sources (verify current facts here first)
+
+| Source | What it's authoritative for | Where |
+|---|---|---|
+| **SEBI** | Regulations, circulars, F&O framework, investor education, the studies on retail F&O losses | sebi.gov.in |
+| **NSE** | Contract specs, settlement cycles, transaction charges, lot sizes, indices, holidays | nseindia.com |
+| **BSE** | Contract specs, charges, SENSEX methodology | bseindia.com |
+| **NSE Clearing (NCL) / ICCL** | Clearing & settlement rules, margins | via NSE/BSE sites |
+| **NSDL / CDSL** | Depository/demat rules and investor info | nsdl.com / cdslindia.com |
+| **RBI** | Monetary policy, interest rates, G-Secs, FX rules | rbi.org.in |
+| **Income Tax Department / CBDT** | Capital gains rules, ITR forms, current tax rates | incometax.gov.in |
+| **AMFI** | Mutual fund data and standards | amfiindia.com |
+| **India VIX (NSE)** | The volatility index methodology and values | nseindia.com |
+
+<Callout type="info">
+The **SEBI investor-education** material and the periodic **SEBI studies on individual F&O traders** are especially worth reading — they are the empirical backbone of [the retail F&O reality](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality#the-retail-fo-reality).
+</Callout>
+
+## 2. Books (established, by topic)
+
+> Read *skeptically* — even good books contain opinions and dated claims. Prefer editions that discuss evidence.
+
+**Foundations & investing**
+- *A Random Walk Down Wall Street* — Burton Malkiel (markets efficiency, humility about beating them).
+- *The Intelligent Investor* — Benjamin Graham (value investing; the "Mr. Market" and margin-of-safety ideas). Dated specifics, timeless temperament.
+- *Common Stocks and Uncommon Profits* — Philip Fisher (qualitative business analysis).
+
+**Fundamental analysis & valuation**
+- *Financial Statement Analysis* — Martin Fridson & Fernando Alvarez.
+- *Investment Valuation* / *Damodaran on Valuation* — Aswath Damodaran (DCF, multiples; Damodaran's free online materials and datasets are outstanding).
+- *The Little Book of Valuation* — Aswath Damodaran (accessible entry point).
+
+**Risk, probability & trading psychology**
+- *Fortune's Formula* — William Poundstone (the Kelly criterion, told as history).
+- *Thinking, Fast and Slow* — Daniel Kahneman (the cognitive biases behind [trading psychology](/learn/psychology/bias-catalogue-and-discipline-systems)).
+- *Fooled by Randomness* & *The Black Swan* — Nassim Taleb (luck, fat tails, and the danger of underestimating rare events — directly relevant to [why selling options can ruin you](/learn/derivatives/why-selling-options-is-not-free-money)).
+- *Trading in the Zone* — Mark Douglas (trading discipline; treat as psychology, not strategy).
+
+**Derivatives**
+- *Options, Futures, and Other Derivatives* — John C. Hull (the standard graduate text; rigorous).
+- *Option Volatility and Pricing* — Sheldon Natenberg (practitioner-focused; volatility and the Greeks).
+
+**Quant, statistics & systematic trading**
+- *Quantitative Trading* & *Algorithmic Trading* — Ernest Chan (accessible intro to systematic methods and their pitfalls).
+- *Advances in Financial Machine Learning* — Marcos López de Prado (advanced; strong on the *dangers* of naïve ML and backtest overfitting — highly relevant to [backtesting pitfalls](/learn/backtesting-statistics/backtest-loop-and-pitfalls) and [quantitative trading](/learn/quantitative-trading/pairs-trading-and-cointegration)).
+- *Trading Systems and Methods* — Perry Kaufman (encyclopedic reference on systematic methods).
+- *Evidence-Based Technical Analysis* — David Aronson (applies statistical rigor and data-snooping correction to TA — the skeptical companion to [Technical Analysis](/learn/analysis/ta-honest-framing)).
+
+**Market microstructure**
+- *Trading and Exchanges* — Larry Harris (the definitive text on how markets/order books actually work; underpins [Market Microstructure](/learn/market-microstructure/order-flow-and-market-impact)).
+- *Empirical Market Microstructure* — Joel Hasbrouck (advanced/academic).
+
+**Market history & humility**
+- *When Genius Failed* — Roger Lowenstein (LTCM; a masterclass in leverage and tail risk — see [Case Studies](/learn/case-studies/overfit-backtest-ltcm-retail-losses)).
+- *Reminiscences of a Stock Operator* — Edwin Lefèvre (classic trading memoir; entertaining, not a method).
+
+## 3. Academic papers & foundational research
+
+> Search on Google Scholar / SSRN / NBER. These shape the *evidence* behind factors and efficiency.
+
+- Fama (1970), *Efficient Capital Markets* — the EMH statement.
+- Fama & French (1992/1993) — the value and size factors; later the 5-factor model.
+- Jegadeesh & Titman (1993) — **momentum** (returns continuation).
+- Carhart (1997) — momentum as a 4th factor.
+- Sharpe (1964) & the **CAPM**; Sharpe (1966/1994) — the Sharpe ratio.
+- Black & Scholes (1973) and Merton (1973) — **option pricing**.
+- Engle (1982) / Bollerslev (1986) — **ARCH/GARCH** volatility models (volatility clustering).
+- Bailey & López de Prado — work on **backtest overfitting** and the "deflated Sharpe ratio" (why beautiful backtests mislead).
+- Barber, Odean, and co-authors — retail traders **underperform** and trade too much (behavioral evidence echoed by **SEBI's Indian F&O studies**).
+
+## 4. Data sources
+
+| Type | Options (India-relevant) |
+|---|---|
+| **Official prices/indices** | NSE / BSE websites; NSE historical data; India VIX |
+| **Broker APIs (India)** | Zerodha **Kite Connect**, Upstox API, Angel One **SmartAPI**, and others (for live/historical data and, under [SEBI's algo framework](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality), automated trading) |
+| **Fundamentals** | Company filings/annual reports; **Screener.in** and **Tijori** for Indian financials; **Damodaran's** public datasets |
+| **Macro** | RBI database; MOSPI; World Bank/IMF for cross-country |
+| **Programmatic** | `yfinance` (global, convenient but caveat data quality); vendor feeds for serious work |
+
+<Callout type="warning">
+**Free data is fine for learning, risky for money.** Watch for adjustment errors, survivorship, and gaps ([data hazards](/learn/backtesting-statistics/data-hazards-and-returns)). Validate before trusting.
+</Callout>
+
+## 5. Python libraries
+
+**Data & analysis**
+- `pandas`, `numpy` — the workhorses for time series and math.
+- `scipy`, `statsmodels` — statistics, regression, time-series tests (e.g. cointegration for [pairs trading](/learn/quantitative-trading/pairs-trading-and-cointegration)).
+- `matplotlib`, `plotly` — charting equity curves and distributions.
+
+**Backtesting & trading**
+- `vectorbt`, `backtrader`, `zipline-reloaded`, `bt` — backtesting frameworks (each with trade-offs; learn one well and *always model costs/slippage*).
+- `TA-Lib` / `pandas-ta` — technical indicators (remember [the skeptical framing](/learn/analysis/ta-honest-framing)).
+- Broker SDKs — **Kite Connect** (`kiteconnect`), Upstox, Angel One SmartAPI — for live data/execution.
+
+**Quant/ML (use with heavy skepticism)**
+- `scikit-learn` — regression, trees, cross-validation (respect [overfitting](/learn/backtesting-statistics/backtest-loop-and-pitfalls)).
+- `PyPortfolioOpt` — portfolio optimization/risk parity for [Advanced Topics](/learn/advanced-topics/regimes-volatility-portfolio-optimization).
+
+<Callout type="info">
+A library that makes it *easy* to backtest also makes it easy to **overfit**. Tools don't create edges; disciplined, out-of-sample, cost-aware process does.
+</Callout>
+
+## 6. Platforms & tools
+
+- **Brokers/terminals (India):** compare on cost, reliability, and API quality — not on marketing. Use each broker's official charge sheet and brokerage calculator (see [the cost stack](/learn/indian-markets/cost-stack-and-stt)).
+- **Paper-trading / simulators:** most brokers and platforms offer them — essential for [moving from paper → tiny capital → larger capital](/learn/practical-trading/capital-progression-broker-journaling). QuantCouncil's own paper-trading lab is built for exactly this stage.
+- **Charting:** exchange-provided tools, TradingView (charts; ignore the "idea" social feed as authority), or your own Python.
+- **Journaling:** any spreadsheet works; the template in [Practical Trading](/learn/practical-trading/capital-progression-broker-journaling) is enough to start — or use QuantCouncil's own Journal.
+
+## 7. How to evaluate *any* trading source (a meta-skill)
+
+Before trusting a book, video, course, or "guru," ask:
+
+- Do they distinguish **established facts from opinion**, and cite evidence?
+- Do they emphasize **risk, costs, and drawdowns** — or only wins and lifestyle?
+- Are results **out-of-sample and cost-adjusted**, or in-sample screenshots?
+- Do they acknowledge that **most active traders lose** (the documented base rate)?
+- Do they sell **certainty/urgency/guaranteed profits**? (🚩 the biggest red flag of all.)
+- Would a **university textbook or a regulator** agree with the claim?
+
+<Callout type="warning" title="Rule of thumb">
+The louder the promise of easy, guaranteed, fast money, the more confidently you can ignore it. Real edges are modest, hard-won, risk-managed, and quietly discussed — never shouted with rocket emojis. This is the spirit of this entire course.
+</Callout>

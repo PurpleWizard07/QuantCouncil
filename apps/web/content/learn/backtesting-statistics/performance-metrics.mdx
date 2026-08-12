@@ -1,0 +1,42 @@
+## The Sharpe ratio
+*(and Sortino, drawdown, Calmar — the performance metrics)*
+
+Raw return is meaningless without risk ([Foundations → risk-adjusted](/learn/foundations/liquidity-volatility-correlation#13-risk-adjusted-returns)). The standard metrics:
+
+### Sharpe ratio — return per unit of volatility
+$$\text{Sharpe} = \frac{R_p - R_f}{\sigma_p}$$
+- **Calculates:** excess return (over risk-free `R_f`, e.g. an Indian T-bill/G-Sec yield) per unit of total volatility `σ_p`, usually annualized.
+- **Example:** 18% return, 12% vol, 6% risk-free → `(18−6)/12 = 1.0`. Rough rule of thumb: < 1 modest, 1–2 good, > 2 excellent, > 3 be suspicious (often overfit or hidden tail risk).
+- **Limitations:** penalizes upside and downside volatility *equally*; assumes returns are well-behaved (they [aren't](/learn/backtesting-statistics/core-statistics-and-fat-tails#4-distributions-and-fat-tails)); easy to **game** by strategies that look smooth but hide rare catastrophic losses (naked option selling can post a lovely Sharpe — until it doesn't).
+
+### Sortino ratio — return per unit of *downside* volatility
+$$\text{Sortino} = \frac{R_p - R_f}{\sigma_{downside}}$$
+Same idea, but only counts **downside** deviation — because you don't mind upside volatility. Better than Sharpe for asymmetric strategies, but still tail-blind.
+
+### Maximum drawdown (MDD)
+The largest **peak-to-trough** equity decline over the period — the most *visceral* risk measure ("how bad did it get / how close to quitting or ruin"). Recall the brutal [recovery math](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin): −50% needs +100% to recover.
+
+### Calmar ratio — return per unit of drawdown
+$$\text{Calmar} = \frac{\text{Annualized return}}{|\text{Max drawdown}|}$$
+Rewards strategies that earn without deep drawdowns. A strategy returning 20%/yr with a −40% MDD (Calmar 0.5) is arguably *worse* than one returning 12% with a −10% MDD (Calmar 1.2).
+
+```python
+def max_drawdown(equity):
+    peak = np.maximum.accumulate(equity)
+    dd = (equity - peak) / peak
+    return dd.min()          # most negative value
+
+def sharpe(returns, rf_daily=0.0, periods=252):
+    excess = returns - rf_daily
+    return np.sqrt(periods) * excess.mean() / returns.std(ddof=1)
+```
+
+> 💡 **Key takeaway:** Never quote a return without a **risk-adjusted** companion (Sharpe/Sortino) *and* a **drawdown**. A high return with a huge drawdown and fat tails is a landmine, not an achievement.
+
+<Callout type="info" title="Try this in QuantCouncil">
+Every run in [`/backtests`](/backtests) reports these exact numbers — Sharpe, Sortino, max drawdown, and Calmar — computed the same way shown above, alongside the equity curve and trade list. Read them together, never the headline return alone, before trusting a result.
+</Callout>
+
+### Related
+
+[Foundations → Risk-Adjusted Returns](/learn/foundations/liquidity-volatility-correlation#13-risk-adjusted-returns) · [Risk Management → Drawdown & Risk of Ruin](/learn/risk-management/drawdown-and-risk-of-ruin#7-drawdown-losing-streaks-and-risk-of-ruin) · [The Backtest Loop & the Pitfalls That Kill It](/learn/backtesting-statistics/backtest-loop-and-pitfalls) · [Glossary → Sharpe Ratio](/learn/glossary#sharpe-ratio)

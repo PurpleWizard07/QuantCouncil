@@ -1,0 +1,66 @@
+## 7. Drawdown, losing streaks, and risk of ruin
+
+### Losing streaks are normal — and longer than your intuition
+
+Even a good 50%-win strategy will, over a few hundred trades, hand you streaks of 6–8 losses in a
+row *by pure chance*. The probability of a streak of length `k` shows up surprisingly often over
+many trades.
+
+- Probability of `k` losses in a row (independent trades) = `L^k`.
+- With `L = 0.5`: seven losses in a row = `0.5^7 ≈ 0.8%` on any given start — but across **hundreds**
+  of trades, encountering *some* such streak becomes almost certain.
+
+If you risk **2%** per trade and hit an 8-loss streak, you're down ~15% and rattled. If you risk
+**10%** per trade, the same ordinary streak leaves you down ~57% — and needing a **+133%** gain just
+to recover. This asymmetry is the killer:
+
+### The recovery math (why drawdowns are asymmetric)
+
+$$\text{Gain needed to recover} = \frac{1}{1 - d} - 1$$
+
+- **What it calculates:** the return required to climb back from a drawdown of fraction `d`.
+- **Why it matters:** losses and gains are *not* symmetric — a −50% needs +100%, not +50%.
+- **Example table:**
+
+| Drawdown `d` | Gain to recover |
+|---|---|
+| −10% | +11.1% |
+| −20% | +25% |
+| −33% | +50% |
+| −50% | **+100%** |
+| −75% | **+300%** |
+| −90% | **+900%** |
+
+> ⚠️ **Common mistake:** "I'm down 50%, I just need 50% to get back." No — you need **100%**. Deep
+> drawdowns are mathematically brutal, which is *why* small per-trade risk is non-negotiable.
+
+### Maximum drawdown, defined
+
+**Maximum drawdown (MDD)** = the largest peak-to-trough fall in your equity curve over a period. It
+is the single most honest measure of "how bad did it feel / how close to quitting or ruin did I get."
+Two strategies with identical returns but different MDD are *not* equally good — the lower-MDD one is
+superior on a risk-adjusted basis (see [Sharpe/Calmar](/learn/backtesting-statistics/performance-metrics)).
+
+### Risk of ruin (intuition + a usable bound)
+
+**Risk of ruin (RoR)** = the probability that a losing streak takes your account below a threshold
+you can't come back from (either literal zero, or the point where you stop trading). Three levers
+control it:
+
+1. **Edge** (expectancy) — more edge → lower RoR.
+2. **Risk per trade** — smaller size → dramatically lower RoR.
+3. **Bankroll relative to bet size** — more "bullets" → lower RoR.
+
+A simplified model (equal-sized bets, win prob `p`, lose prob `q = 1−p`, risking a fixed fraction):
+for a **negative-edge** game, ruin is essentially certain given enough trades — *time is the
+gambler's enemy.* For a **positive-edge** game, RoR falls roughly geometrically as you cut bet size.
+The practical lesson doesn't need the full formula:
+
+> 💡 **Key takeaway:** With a real edge, **halving your risk per trade cuts your risk of ruin far
+> more than proportionally.** With no edge, no bet size saves you — only *not playing* does. This is
+> why the [Kelly criterion](/learn/risk-management/kelly-criterion#9-the-kelly-criterion-and-why-to-use-a-fraction-of-it)
+> never tells a negative-edge bettor to bet anything.
+
+### Related
+
+[07 Risk Management — module overview](/learn/risk-management) · [Kelly Criterion](/learn/risk-management/kelly-criterion) · [Performance Metrics: Sharpe, Sortino, Drawdown, Calmar](/learn/backtesting-statistics/performance-metrics) · [Glossary → Risk of Ruin](/learn/glossary#risk-of-ruin)

@@ -1,0 +1,104 @@
+> 💡 **Key takeaway:** "This setup looks good" is not a strategy. A **strategy** is a set of rules so
+> precise that a stranger — or a computer — would take the *same* trades you would. Vagueness is where
+> hindsight, bias, and inconsistency creep in. This section turns intuition into a system.
+
+**Learning objectives:** specify a complete strategy (the 10 components); distinguish rules-based vs
+discretionary; document a trading plan and keep a useful journal.
+
+---
+
+## The 10 components of a complete strategy
+
+A strategy is under-specified until *all ten* are unambiguous:
+
+| # | Component | The question it answers | Example (a swing momentum idea) |
+|---|---|---|---|
+| 1 | **Hypothesis** | *Why* should this make money? What edge/mechanism? | "Stocks breaking to 52-wk highs on volume tend to continue for weeks (momentum)." |
+| 2 | **Universe & regime filter** | *What* do you trade and *when* is it valid? | Liquid NSE stocks; only when NIFTY is above its 200-DMA ([regime](/learn/analysis/ta-indicator-reference#adx)) |
+| 3 | **Entry** | *Exact* trigger to get in | Close > 52-wk high AND volume > 1.5× 20-day avg |
+| 4 | **Stop** | Where the thesis is *wrong* | Below the breakout level / 2×[ATR](/learn/analysis/ta-indicator-reference#atr-average-true-range) |
+| 5 | **Exit (target/trail)** | How you *take profit* | Trail a 3×ATR stop; or exit on close < 20-DMA |
+| 6 | **Position sizing** | *How much* | [Risk-per-trade](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing) = 1%, sized off the stop |
+| 7 | **Time horizon** | Expected holding period | Days–weeks |
+| 8 | **Filters** | What to *avoid* | Skip earnings within N days ([event/gap risk](/learn/foundations/price-drivers-and-market-efficiency#7-forced-flows-and-positioning)) |
+| 9 | **Execution** | Order types, timing, slippage plan | Limit orders near close; avoid illiquid opens |
+| 10 | **Risk limits** | Portfolio-level guardrails | Max heat 6%; max 3 correlated names ([correlation](/learn/risk-management/portfolio-risk-correlation-leverage#10-portfolio-level-risk-correlation-exposure-leverage)) |
+
+> ⚠️ **Common mistake:** Specifying only entries and leaving exits/sizing "to feel." Since
+> [exits and sizing dominate results](/learn/risk-management/position-sizing#1-why-risk-management-comes-first),
+> a great entry with fuzzy exits is not a strategy — it's a hope.
+
+---
+
+## Rules-based vs discretionary
+
+| | **Rules-based (systematic)** | **Discretionary** |
+|---|---|---|
+| Decisions | Mechanical, from fixed rules | Judgment within a framework |
+| Backtestable | Yes, cleanly | Hard (hindsight contaminates) |
+| Failure mode | Rules stop fitting the market | Emotion/bias creep; inconsistency |
+| Strength | Consistent, testable, scalable | Adapts to context a rulebook misses |
+
+Most durable retail approaches are **rules-based or heavily rule-guided**, because rules are
+[testable](/learn/backtesting-statistics) and immune to in-the-moment
+[psychology](/learn/psychology/bias-catalogue-and-discipline-systems). Discretionary trading can work but demands elite
+self-honesty and is very hard to validate.
+
+---
+
+## From idea → validated system (the workflow)
+
+1. **Write the hypothesis and mechanism** (component 1). If you can't articulate *why* an edge exists,
+   be suspicious.
+2. **Define all 10 components mechanically.**
+3. **[Backtest](/learn/backtesting-statistics) with realistic Indian costs/slippage**;
+   judge on [expectancy, Sharpe, drawdown](/learn/backtesting-statistics/performance-metrics#the-sharpe-ratio),
+   not win rate.
+4. **Validate [out-of-sample / walk-forward](/learn/backtesting-statistics/validation-walkforward-montecarlo#8-validation-traintest-walk-forward-out-of-sample)**;
+   run [Monte Carlo](/learn/backtesting-statistics/validation-walkforward-montecarlo#9-monte-carlo-and-the-bootstrap) to see
+   possible drawdowns.
+5. **[Paper trade](/learn/practical-trading/capital-progression-broker-journaling)** to catch execution gaps the backtest missed.
+6. **Go live tiny**, scale only with evidence.
+
+---
+
+## Trading plan & journal (templates)
+
+### One-page trading plan
+```text
+STRATEGY NAME:
+Hypothesis (why edge exists):
+Universe & regime filter:
+Entry rules:
+Stop rules:
+Exit/target/trail rules:
+Position sizing (risk % / method):
+Filters (avoid):
+Execution (order types/timing):
+Risk limits (max heat, correlation caps, daily loss limit):
+Review cadence:
+```
+
+### Trade journal (per trade)
+```text
+Date | Instrument | Setup/why | Entry | Stop | Size | Risk (₹/R) |
+Exit | Result (R) | Costs | Followed plan? (Y/N) | Mistake? | Screenshot | Notes
+```
+
+> 💡 **Key takeaway:** The journal's most valuable column is **"Followed plan? (Y/N)"** — separating
+> *process* from *outcome*. A losing trade that followed the plan is a *good* trade; a winning trade
+> that broke the plan is a *dangerous* one. Grade yourself on **process**, and the outcomes follow.
+
+**✅ Ready to move on when:** a stranger could execute your written strategy and get materially the same
+trades — and your journal lets you review *decisions*, not just P&L.
+
+---
+
+*Outline — ask to expand into 2–3 fully-worked example strategies (trend, mean-reversion, event) with complete rules and a filled-in journal.*
+
+<Callout type="info" title="Try this in QuantCouncil">
+The [Strategies](/strategies) page is where a specification like this stops being a mental note and becomes a saved record. Every strategy persisted there follows the same shape this lesson walks through — entry, stop, position sizing, and filters — so building one in the app forces the same precision as the one-page trading plan above.
+</Callout>
+
+### Related
+[07 Risk Management — module overview](/learn/risk-management) · [12 Backtesting — module overview](/learn/backtesting-statistics) · [13 Algorithmic Trading](/learn/algorithmic-trading/automating-a-strategy) · [18 Practical Trading](/learn/practical-trading/capital-progression-broker-journaling) · [Glossary](/learn/glossary)

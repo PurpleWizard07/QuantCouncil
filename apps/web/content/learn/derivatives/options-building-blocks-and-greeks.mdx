@@ -1,0 +1,131 @@
+## 1. The building blocks
+
+<Callout type="danger" title="Educational only">
+QuantCouncil's paper-trading engine (v1) is long-only cash equities. Nothing in this lesson is simulated in the product yet — this is knowledge, not a feature.
+</Callout>
+
+> 💡 **Key takeaway:** An option is a *conditional* contract whose value depends on price, **time**, and **volatility** simultaneously. That third dimension — volatility — is what makes options powerful and what makes most beginners lose: they get the *direction* right and still lose money because time decay and a volatility crush worked against them.
+
+An **option** gives its **buyer the right, but not the obligation**, to buy or sell an underlying asset at a fixed price, on or before a fixed date. The **seller (writer)** takes the *obligation* to honour that right if the buyer exercises, in exchange for a payment (**premium**) received up front.
+
+| Term | Meaning | Indian example |
+|---|---|---|
+| **Call** | Right to **buy** the underlying at the strike | NIFTY 24000 CE |
+| **Put** | Right to **sell** the underlying at the strike | NIFTY 24000 PE |
+| **Strike** | The fixed price at which the right can be exercised | 24000 |
+| **Premium** | Price paid by buyer / received by seller, *per unit* | ₹120 |
+| **Expiry** | Last date the right is valid | Last Thursday of the month (index monthly) |
+| **Lot size** | Units per contract (options trade in lots) | NIFTY lot = 75 (revised to 65) 🗓️ |
+| **Underlying** | The asset the option is on | NIFTY 50 index |
+
+**Buyer vs seller — the fundamental asymmetry:**
+
+| | Option **buyer** | Option **seller (writer)** |
+|---|---|---|
+| Pays/receives premium | Pays it (cash out) | Receives it (cash in) |
+| Maximum loss | Limited to premium paid | **Large / "unlimited"** (for naked calls) |
+| Maximum gain | Large (calls) / large (puts) | Limited to premium received |
+| Wants | A **big** move (and/or rising volatility) | A **small/no** move (and/or falling volatility) |
+| Time works | **Against** them (decay) | **For** them (decay) |
+| Probability of profit | Often **low** per trade | Often **high** per trade |
+
+> ⚠️ **Common mistake:** Reading the table above and concluding "selling is obviously better — high probability, collect premium." That intuition is exactly the trap dismantled in [§9](/learn/derivatives/why-selling-options-is-not-free-money#why-selling-options-is-not-free-money). High probability of a *small* gain is paired with low probability of a *large* loss. Remember the payoff shape from [Risk Management → 70% win rate that loses](/learn/risk-management/expectancy#6-why-a-40-win-rate-can-win-and-a-70-win-rate-can-lose).
+
+---
+
+## 2. Intrinsic vs time value; moneyness
+
+Premium = **intrinsic value** + **time (extrinsic) value**.
+
+- **Intrinsic value** = the profit if exercised *right now* (never negative).
+  - Call intrinsic = `max(Spot − Strike, 0)`. Put intrinsic = `max(Strike − Spot, 0)`.
+- **Time value** = everything else in the premium — the market's price for the *possibility* of favourable moves before expiry. It decays to zero at expiry.
+
+**Example (NIFTY spot = 24,150):**
+
+| Option | Strike | Premium | Intrinsic | Time value |
+|---|---|---|---|---|
+| 24000 CE | 24,000 | ₹210 | `24,150 − 24,000 = 150` | `210 − 150 = 60` |
+| 24200 CE | 24,200 | ₹95 | 0 (spot below strike) | 95 |
+| 24000 PE | 24,000 | ₹55 | 0 | 55 |
+
+**Moneyness:**
+
+| Term | Call | Put | Meaning |
+|---|---|---|---|
+| **ITM** (in the money) | Spot > Strike | Spot < Strike | Has intrinsic value |
+| **ATM** (at the money) | Spot ≈ Strike | Spot ≈ Strike | Mostly time value; highest gamma/theta |
+| **OTM** (out of the money) | Spot < Strike | Spot > Strike | Pure time value; cheap, low probability |
+
+> 💡 **Key takeaway:** When you buy an OTM option you are buying **pure time value** — a wasting asset. If the underlying just sits still, you lose *every day* as time value bleeds out, even though you were "not wrong" about direction.
+
+> 🤔 **Think about this:** You buy an OTM call, the stock rises modestly, and you *still lose money*. How? (The rise wasn't enough to offset the time decay and/or a drop in implied volatility. Being directionally right is necessary, not sufficient.)
+
+---
+
+## 3. Payoff diagrams — the four basic positions
+
+Payoff at **expiry** (ignoring premium timing), where `K` = strike, `S` = spot at expiry.
+
+### Long Call — pay premium, profit if S rises well above K
+
+<PayoffDiagram type="long-call" />
+
+- Max loss = premium. Break-even = `K + premium`. Upside large.
+
+### Long Put — pay premium, profit if S falls well below K
+
+<PayoffDiagram type="long-put" />
+
+- Max loss = premium (`p`). Break-even = `K − premium`.
+
+### Short Call (naked) — receive premium, lose badly if S rises
+
+<PayoffDiagram type="short-call" />
+
+- 🚩 Max gain = premium; max loss = **unbounded**. This is the most dangerous single option position.
+
+### Short Put — receive premium, lose if S falls
+
+<PayoffDiagram type="short-put" />
+
+- Max gain = premium; max loss = `Strike − premium` (large; = you effectively agreed to *buy* the stock at the strike no matter how far it falls).
+
+> ⚠️ **Common mistake:** Drawing only the pretty capped side of a short-option payoff and forgetting the long, ugly tail. The tail is where the account dies. Every serious options trader learns to *always* draw the full picture and to prefer **defined-risk** structures ([§8](/learn/derivatives/options-strategies-and-payoffs#8-strategies-and-their-payoffs)).
+
+---
+
+## 4. The Greeks
+
+The Greeks measure how an option's price responds to changes in the variables that drive it. They are **sensitivities** (partial derivatives). You don't need calculus to *use* them, but the intuition matters.
+
+| Greek | Measures sensitivity to… | Sign for long call | Sign for long put | Plain-English |
+|---|---|---|---|---|
+| **Delta (Δ)** | Underlying price | + (0 → 1) | − (0 → −1) | "How many rupees the option moves per ₹1 in the underlying." |
+| **Gamma (Γ)** | *Change in delta* | + | + | "How fast delta itself changes." Highest ATM near expiry. |
+| **Theta (Θ)** | Passage of time | − | − | "Rupees lost per day to time decay." Sellers *earn* it. |
+| **Vega (ν)** | Implied volatility | + | + | "Rupees gained per 1-point rise in IV." Buyers *want* IV up. |
+| **Rho (ρ)** | Interest rates | + | − | Usually minor for short-dated options. |
+
+### Delta — directional exposure (and a rough probability gauge)
+- A call with Δ = 0.40 gains ≈ ₹0.40 for each ₹1 the underlying rises. ATM ≈ 0.5, deep ITM → 1, deep OTM → 0. Delta also *approximates* the risk-neutral probability of finishing ITM (a **rough** heuristic, not a promise).
+- **Example:** You're long 2 lots of a 0.30-delta NIFTY call (lot 75). If NIFTY rises 50 points, the option gains ≈ `0.30 × 50 = ₹15` per unit → `15 × 75 × 2 = ₹2,250` (before other Greeks move).
+
+### Gamma — why "small move" positions blow up on big moves
+- Gamma is the *acceleration*. When you are **short** options (negative gamma), a fast move makes your delta swing violently *against* you — losses accelerate. This is precisely why option-selling strategies that look calm for weeks can lose catastrophically in a single gap. Long options have **positive gamma** (moves accelerate in your favour), which is what you pay theta for.
+
+### Theta — the price of time
+- Theta is the daily rent the buyer pays and the seller collects. It **accelerates as expiry nears** for ATM options. A NIFTY ATM weekly with 2 days left can lose a large fraction of its value to theta over a weekend even if NIFTY is flat.
+- **The core tension:** buyers have positive gamma / negative theta (pay rent, hope for a big move); sellers have negative gamma / positive theta (collect rent, hope for calm). *You are always trading one against the other.*
+
+### Vega — the volatility bet you didn't know you made
+- Every option position is *also* a volatility position. Buy options → long vega → you profit if IV rises and lose if IV falls (a "vol crush"), **independent of direction.**
+- **Example — the earnings/event trap:** Before a big event, IV is high (options expensive). You buy a call expecting a jump. The event happens, the stock moves *your way a bit* — but IV collapses post-event, vega losses swamp your small delta gain, and you lose. This is the classic "I was right and still lost" experience, now explained.
+
+> 💡 **Key takeaway:** Price, time, and volatility move an option *simultaneously.* A profitable options trade requires the **net** of delta + theta + vega to be in your favour — not just direction. Beginners model only delta and are blindsided by the other two.
+
+> 🔬 **Testable claim:** "Buying options before earnings is a good strategy." Test it: measure the average post-event IV crush against the average post-event move for a basket of Indian stocks over many events; a strategy is only viable if the delta gains reliably exceed the vega losses net of costs. (Historically, this is a hard bet — the crush is real.)
+
+### Related
+
+[Futures: Mechanics, Basis, Mark-to-Market, Hedging](/learn/derivatives/futures-mechanics) · [Volatility, the Option Chain & Open Interest](/learn/derivatives/volatility-chain-open-interest) · [Why Selling Options Is Not Free Money](/learn/derivatives/why-selling-options-is-not-free-money) · [Glossary](/learn/glossary)

@@ -1,0 +1,25 @@
+## 9. Short selling, borrowing, and margin
+
+### Short selling — profiting from a *fall*
+
+Normally you buy low then sell high. **Short selling reverses the order:** you *sell first* (shares you don't own, borrowed) and *buy back later*, hoping to buy back cheaper and pocket the difference.
+
+- Mechanically, you **borrow** the shares (via a stock-lending mechanism — in India, **SLBM**, Securities Lending and Borrowing) to deliver to the buyer, then buy them back later to return them.
+- **The risk is asymmetric and dangerous:** a stock you *buy* can only fall to zero (−100% max), but a stock you *short* can rise without limit — your **potential loss is theoretically unbounded**, and a "short squeeze" (forced buying by shorts) can spike prices violently.
+
+> 🚩 **Myth:** "Shorting is just buying in reverse, same risk." False — the loss profiles are opposite. A short's downside is unbounded and can be forcibly closed against you at the worst time. Treat shorting with far more caution than buying.
+
+**Indian nuance:** retail short-selling of *cash equities* is generally restricted to **intraday** (you must square off by day-end); true multi-day shorting is done via **futures and options** ([Futures](/learn/derivatives/futures-mechanics)/[Options](/learn/derivatives/options-building-blocks-and-greeks)) or SLBM. See [Indian Markets](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality).
+
+### Margin and leverage
+
+**Margin** is collateral you post to take a position larger than your cash — i.e., to use **leverage**.
+
+- **Example:** With 20% margin, ₹1,00,000 controls a ₹5,00,000 position (5× leverage). A 10% move makes/loses ₹50,000 — **50%** of your capital. Leverage multiplies *both* gains and losses.
+- **Margin call:** if the position moves against you and your collateral falls below the required level, the broker demands more funds — or **force-liquidates** your position, often at the worst possible price. This is how leveraged traders get wiped out in a single bad session.
+
+> 💡 **Key takeaway:** Leverage does not create edge; it *scales* whatever you already have — including a losing strategy and your emotions. The margin call is the mechanism that turns a temporary adverse move into a *permanent* loss. Handle with the respect described in [Risk Management → leverage](/learn/risk-management/portfolio-risk-correlation-leverage#10-portfolio-level-risk-correlation-exposure-leverage).
+
+### Related
+
+[Derivatives → Futures mechanics](/learn/derivatives/futures-mechanics) · [Derivatives → Options building blocks & Greeks](/learn/derivatives/options-building-blocks-and-greeks) · [Risk Management → Portfolio risk, correlation & leverage](/learn/risk-management/portfolio-risk-correlation-leverage) · [Indian Markets → SEBI F&O overhaul & retail reality](/learn/indian-markets/sebi-fo-overhaul-and-retail-reality) · [Glossary](/learn/glossary)

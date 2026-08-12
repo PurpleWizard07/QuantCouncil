@@ -83,7 +83,9 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3" aria-label="Primary">
       {NAV_ITEMS.map((item) => {
         const active =
-          item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          item.href === "/"
+            ? pathname === "/" || pathname === "/dashboard"
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}

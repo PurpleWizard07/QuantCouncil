@@ -1,0 +1,100 @@
+> 💡 **Key takeaway:** Reading about compounding, expectancy, and cointegration is not the same as being able to compute them under pressure with real numbers. These exercises are deliberately calculation- and judgment-heavy, not multiple-choice.
+
+Each question has a full worked solution — try it yourself first, then check your working against the reveal.
+
+## 1. Compounding
+
+You invest ₹1,00,000 at a 12% annual CAGR. Using the [Rule of 72](/learn/foundations/return-compounding-inflation#7-compounding) and then the exact compound-interest formula, estimate and then calculate how long it takes to double. How much do the two answers differ, and why?
+
+<CollapsibleSection title="Show worked solution">
+
+**Rule of 72 estimate:** years to double ≈ 72 ÷ 12 = **6 years.**
+
+**Exact calculation:** solve $1.12^n = 2$ for $n$:
+
+$$n = \frac{\ln 2}{\ln 1.12} = \frac{0.6931}{0.1133} \approx 6.12 \text{ years}$$
+
+**Difference:** about 0.12 years (~1.4 months). The Rule of 72 is a linearized approximation that's most accurate around 8% annual growth; at 12% it slightly *underestimates* the true doubling time. The gap grows as the rate moves further from that ~8% sweet spot — useful for a quick mental estimate, not for anything that actually needs precision (loan terms, retirement planning).
+
+</CollapsibleSection>
+
+## 2. Real vs. nominal return
+
+Your portfolio returned 9% nominal this year; inflation was 5.5%. Compute your approximate real return. If you need real returns of 5%+ to meet a goal, what nominal return do you need at 5.5% inflation?
+
+<CollapsibleSection title="Show worked solution">
+
+**Approximate real return:** Nominal − Inflation = 9% − 5.5% = **3.5%.**
+
+**Exact real return:** $\frac{1.09}{1.055} - 1 \approx 3.32\%$ — close to the approximation but not identical; the gap widens as either rate grows.
+
+**Nominal return needed for a 5% real return at 5.5% inflation:**
+- Approximate: Real + Inflation = 5% + 5.5% = **~10.5%.**
+- Exact: $(1.05)(1.055) - 1 = 10.78\%$.
+
+So you'd need roughly **10.5–10.8% nominal** just to clear a 5% real hurdle — a useful reminder that "beating inflation by 5%" requires a meaningfully higher headline return than 5%.
+
+</CollapsibleSection>
+
+## 3. Order book reading
+
+Given a hypothetical 5-level market depth snapshot for a NIFTY stock (you construct or are given bid/ask sizes and prices), determine: the current spread, and how many shares a ₹2,00,000 market buy order would consume before it started moving to worse price levels. See [market depth](/learn/foundations/order-book-and-order-types#4-market-depth-and-liquidity).
+
+<CollapsibleSection title="Show worked solution">
+
+There's no single numeric answer here — the point is the *method*. Worked with an illustrative book:
+
+```text
+        BUYERS (bids)                 SELLERS (asks)
+   Qty     Price                 Price     Qty
+   1,200   499.90   <- best bid  500.10    400    <- best ask
+     900   499.80                500.50    700
+   1,500   499.60                501.00    2,000
+```
+
+**Spread** = best ask − best bid = 500.10 − 499.90 = **₹0.20.**
+
+**Walking the book for a ₹2,00,000 market buy:** the first 400 shares are available at ₹500.10, costing 400 × 500.10 = ₹2,00,040 — already just over ₹2,00,000. So a ₹2,00,000 order (by value) would buy roughly **399–400 shares, filling entirely at the best ask of ₹500.10** without touching the second price level. If the order had instead been ₹5,00,000, it would consume all 400 @ 500.10, then all 700 @ 500.50, then the remainder at ₹501.00 — the average fill price would be *worse* than the quoted ₹500.10, which is exactly what slippage means in practice.
+
+**The general method:** walk down the ask ladder, accumulating quantity × price until you reach the target notional; whatever level you land on is your worst fill price, and the size-weighted average across all consumed levels is your true execution price.
+
+</CollapsibleSection>
+
+## 4. Order lifecycle
+
+Write out, in your own words and without looking at the lesson, every step between clicking "Buy" and shares appearing in your demat account. Then check your answer against the chapter and note what you missed. See [the full lifecycle](/learn/foundations/order-lifecycle-and-settlement).
+
+<CollapsibleSection title="Show worked solution">
+
+The reference sequence:
+
+1. You tap **Buy** — the order leaves your app for your broker's servers.
+2. **Broker risk/margin checks** — funds and limits verified in milliseconds; can be rejected here (insufficient funds, price out of range).
+3. **Routed to the exchange** (NSE/BSE) over the broker's dedicated connection.
+4. **Matching engine** pairs your order with resting sell orders by price-time priority.
+5. **Trade executed** — confirmation races back: exchange → broker → your app, typically in well under a second.
+6. **Clearing (end of trade day)** — the clearing corporation (NCL/ICCL) becomes the counterparty to both sides and nets every participant's obligations.
+7. **Settlement (T+1)** — pay-in/pay-out: cash and shares actually move via the depositories.
+8. **Shares land in your demat** (NSDL/CDSL) — only now is the transfer final and irreversible.
+
+Most people's first draft skips step 6 (clearing/netting) entirely and conflates "trade executed" with "I own the shares" — they're actually three distinct events (matching, clearing, settlement), which is the whole point of the lesson.
+
+</CollapsibleSection>
+
+## 5. Position sizing
+
+Account size ₹5,00,000. You risk 1% per trade. Entry ₹250, stop ₹242. Calculate the correct position size in shares. See [risk per trade](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing).
+
+<CollapsibleSection title="Show worked solution">
+
+- Risk per trade = 1% × ₹5,00,000 = **₹5,000.**
+- Risk per share = Entry − Stop = ₹250 − ₹242 = **₹8.**
+- Quantity = ₹5,000 ÷ ₹8 = **625 shares.**
+
+Position value = 625 × ₹250 = ₹1,56,250 (about 31% of the account) — but the actual *risk* if the stop is hit is exactly ₹5,000 (1%), which is the entire point of sizing from the stop distance rather than from "how many shares I can afford."
+
+</CollapsibleSection>
+
+---
+
+**Related:** [Risk Management](/learn/risk-management) · [Foundations](/learn/foundations) · [Glossary](/learn/glossary)

@@ -203,4 +203,78 @@ samp,
   .text-glow-accent {
     text-shadow: 0 0 16px rgba(34, 211, 238, 0.5);
   }
+
+  /* ==========================================================================
+     Learn prose -- long-form lesson typography. No @tailwindcss/typography
+     plugin is installed; this is a small hand-rolled stylesheet themed to
+     the existing dark-glass palette rather than a generic prose reset.
+     ========================================================================== */
+  .prose-learn {
+    color: var(--color-text-muted);
+    font-size: 15.5px;
+    line-height: 1.75;
+    max-width: 72ch;
+  }
+  .prose-learn > :first-child {
+    margin-top: 0;
+  }
+  .prose-learn h1 {
+    color: var(--color-text);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.9rem;
+  }
+  .prose-learn h2 {
+    color: var(--color-text);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 2.2rem 0 0.9rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--color-border-soft);
+  }
+  .prose-learn h2:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+  .prose-learn h3 {
+    color: var(--color-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.6rem 0 0.6rem;
+  }
+  .prose-learn p {
+    margin: 0 0 1rem;
+  }
+  .prose-learn strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .prose-learn ul,
+  .prose-learn ol {
+    margin: 0 0 1rem;
+    padding-left: 1.4em;
+  }
+  .prose-learn li {
+    margin-bottom: 0.4rem;
+  }
+  .prose-learn li::marker {
+    color: var(--color-text-faint);
+  }
+  .prose-learn li > input[type="checkbox"] {
+    margin-right: 0.5em;
+    accent-color: var(--color-accent);
+  }
+
+  /* KaTeX math -- inherit the surrounding text color instead of KaTeX's
+     default black, and let block equations scroll on narrow screens. */
+  .prose-learn .katex {
+    color: var(--color-text);
+    font-size: 1.05em;
+  }
+  .prose-learn .katex-display {
+    overflow-x: auto;
+    padding: 0.25rem 0;
+  }
 }

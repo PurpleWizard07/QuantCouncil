@@ -35,7 +35,7 @@ import type {
 
 // NEXT_PUBLIC_ variables are inlined at build time by Next.js. Keep this
 // exact name -- it is the project-wide convention, documented in .env.example.
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 /** Normalized API error. FastAPI error bodies carry `{"detail": ...}`. */
 export class ApiError extends Error {

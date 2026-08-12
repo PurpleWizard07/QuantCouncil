@@ -1,0 +1,62 @@
+## 6. Backtesting: the basic loop
+
+A **backtest** simulates a strategy on historical data to estimate how it *would have* performed. The skeleton:
+
+1. **Data** → clean, adjusted OHLCV.
+2. **Signal** → rules that decide long/short/flat each bar (from [TA](/learn/analysis/ta-honest-framing), [fundamentals](/learn/analysis/fundamental-analysis), or a [quant factor](/learn/quantitative-trading/factor-investing)).
+3. **Position sizing** → convert signals to quantities ([risk-based sizing](/learn/risk-management/position-sizing#2-risk-per-trade--position-sizing)).
+4. **Execution model** → *when* and at *what price* you'd fill (with costs & slippage!).
+5. **Accounting** → track P&L, equity curve, trades.
+6. **Metrics** → returns, Sharpe, drawdown, [expectancy](/learn/risk-management/expectancy#5-expectancy--the-master-formula).
+
+```python
+# Toy backtest: 20/50 SMA crossover on a daily close series (illustrative, NOT trade-ready)
+import pandas as pd
+
+df = pd.DataFrame({"close": prices})               # use a real, adjusted series in practice
+df["fast"] = df["close"].rolling(20).mean()
+df["slow"] = df["close"].rolling(50).mean()
+
+# signal decided on bar t, ACTED ON bar t+1's open -> shift(1) prevents look-ahead
+df["signal"] = (df["fast"] > df["slow"]).astype(int)
+df["position"] = df["signal"].shift(1).fillna(0)
+
+df["mkt_ret"] = df["close"].pct_change()
+COST = 0.0005                                       # per-trade cost estimate (tune to Indian reality)
+df["trade"] = df["position"].diff().abs().fillna(0)
+df["strat_ret"] = df["position"] * df["mkt_ret"] - df["trade"] * COST
+
+equity = (1 + df["strat_ret"].fillna(0)).cumprod()
+```
+
+> ⚠️ Note the **`.shift(1)`** — it forces the strategy to *decide* on bar `t` but *act* on `t+1`, because in reality you cannot trade on a close you haven't seen yet. Omitting this is the single most common backtesting bug ([look-ahead](#backtesting-pitfalls)).
+
+## Backtesting pitfalls
+*(This is the most important section — read it twice.)*
+
+Almost every impressive backtest that fails live was killed by one of these:
+
+| Pitfall | What it is | Why it inflates results | Guard |
+|---|---|---|---|
+| **Look-ahead bias** | Using data you couldn't have had at decision time | You "trade" on tomorrow's close today | `shift()`; strict as-of timestamps |
+| **Survivorship bias** | Testing only stocks that *survived* | Excludes the bankruptcies/delistings | Point-in-time universe incl. dead names |
+| **Data snooping / p-hacking** | Trying thousands of variants and keeping the best | Best-of-N *will* look great by luck | Out-of-sample; limit trials; adjust for multiplicity |
+| **Overfitting** | Model fits noise, not signal | Too many parameters memorize the past | Fewer params; walk-forward; simplicity |
+| **Ignoring costs/slippage** | Frictionless fills at printed prices | Frequent strategies feed on nonexistent edge | Model [Indian cost stack](/learn/indian-markets/cost-stack-and-stt#the-cost-stack) + slippage |
+| **Ignoring liquidity/impact** | Assuming unlimited size at last price | Your size would've moved the market | Cap size vs volume; model impact |
+| **Corporate-action errors** | Unadjusted splits/dividends | Phantom crashes/spikes | Use adjusted data |
+| **Regime dependence** | Works only in the tested regime | One bull market ≠ an edge | Test across bull/bear/range, multiple periods |
+| **Selection of period** | Cherry-picking start/end dates | Flatters the curve | Report full history; multiple windows |
+
+### The two you must burn into memory
+
+- **Overfitting** is fitting your model to the *noise* in past data. With enough parameters you can fit *anything* historically and predict *nothing* forward. The more knobs you turn and variants you try, the more you're just memorizing history. **Simplicity and out-of-sample testing are the antidotes.**
+- **Data snooping** is the meta-version: if you (or the internet) test 1,000 strategies, ~50 will look "significant" at p < 0.05 *by pure chance*. The winner of a big search is probably a lucky fluke, not an edge. This is why "I found a pattern that backtests great" is weak evidence.
+
+> ⚠️ **Common mistake:** Iterating: tweak rule → backtest → tweak → backtest, on the *same* data, until the curve is gorgeous. You have now **fit the noise** and learned nothing about the future. The beautiful curve is a *portrait of the past's randomness.*
+
+> 🤔 **Think about this:** You test 500 indicator combos and the best has a Sharpe of 2.5 in-sample. Before getting excited, what's the *expected* best-of-500 result even if **none** has real edge? (High, purely by luck. That's why the *out-of-sample* result — on data you never touched while searching — is the only one that counts.)
+
+### Related
+
+[Validation: Walk-Forward, Monte Carlo & Significance](/learn/backtesting-statistics/validation-walkforward-montecarlo) · [Case Studies → An Overfit Backtest, LTCM & Retail F&O Losses](/learn/case-studies/overfit-backtest-ltcm-retail-losses) · [Indian Markets → Cost Stack & STT](/learn/indian-markets/cost-stack-and-stt#the-cost-stack) · [Glossary → Overfitting](/learn/glossary#overfitting)

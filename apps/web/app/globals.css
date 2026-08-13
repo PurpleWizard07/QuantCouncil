@@ -1,7 +1,8 @@
 /* ============================================================================
-   QuantCouncil design system — dark-only "AI quant command center".
-   Tailwind v4 CSS-first theme: tokens below become Tailwind utilities
-   automatically (e.g. --color-accent -> bg-accent / text-accent / border-accent).
+   QuantCouncil design system -- "The Chamber": anodized graphite under one
+   fixed light source. Tailwind v4 CSS-first theme: tokens below become
+   Tailwind utilities automatically (e.g. --color-accent -> bg-accent /
+   text-accent / border-accent).
    Light mode is NOT implemented by design: one deliberate dark theme reads
    calmer and more "terminal" than a toggle nobody asked for.
    ============================================================================ */
@@ -9,40 +10,53 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- surfaces ------------------------------------------------------- */
-  --color-bg: #070b14; /* near-black, blue-tinted app background */
-  --color-bg-raised: #0b1120; /* sidebar / command bar */
-  --color-panel: #0e1526; /* solid fallback panel (behind glass) */
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-soft: rgba(255, 255, 255, 0.06);
+  /* --- surfaces: machined graphite plates, one step lighter per layer --- */
+  --color-bg: #09090b; /* near-black, neutral graphite app background */
+  --color-bg-raised: #101114; /* sidebar / command bar plate */
+  --color-panel: #15161a; /* the .surface fill -- default card material */
+  --color-panel-raised: #1b1c21; /* stacked/hover/active state, one step up */
+  --color-border: rgba(255, 255, 255, 0.09);
+  --color-border-soft: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.18); /* metal-edge accents, used sparingly */
 
-  /* --- accent (electric cyan/teal) ------------------------------------- */
-  --color-accent: #22d3ee;
-  --color-accent-2: #2dd4bf;
-  --color-accent-soft: rgba(34, 211, 238, 0.12);
+  /* --- cool channel: the machine (charts, data, deterministic math) ----- */
+  --color-accent: #4cc3d9;
+  --color-accent-2: #3fa6a0;
+  --color-accent-soft: rgba(76, 195, 217, 0.12);
 
-  /* --- semantic status colors ------------------------------------------ */
-  --color-positive: #34d399; /* approved / bullish / filled / open / gains */
-  --color-positive-soft: rgba(52, 211, 153, 0.14);
-  --color-negative: #fb7185; /* rejected / bearish / cancelled / losses */
-  --color-negative-soft: rgba(251, 113, 133, 0.14);
-  --color-warning: #fbbf24; /* needs-review / pending / mixed / risk-off */
-  --color-warning-soft: rgba(251, 191, 36, 0.14);
-  --color-watchlist: #38bdf8; /* watchlist / neutral-informative */
-  --color-watchlist-soft: rgba(56, 189, 248, 0.14);
+  /* --- warm channel: authority and consequence (verdicts, CIO, veto, ₹) - */
+  --color-warm: #c6a15b;
+  --color-warm-soft: rgba(198, 161, 91, 0.14);
 
-  /* --- neutral text scale ------------------------------------------------ */
-  --color-text: #e6edf5;
-  --color-text-muted: #94a3b8;
-  --color-text-faint: #5b6b81;
+  /* --- semantic status colors -------------------------------------------- */
+  --color-positive: #34b27a; /* approved / bullish / filled / open / gains */
+  --color-positive-soft: rgba(52, 178, 122, 0.14);
+  --color-negative: #e15c6e; /* rejected / bearish / cancelled / losses */
+  --color-negative-soft: rgba(225, 92, 110, 0.14);
+  --color-warning: #e0a83e; /* needs-review / pending / mixed / risk-off */
+  --color-warning-soft: rgba(224, 168, 62, 0.14);
+  --color-watchlist: #5698c7; /* watchlist / neutral-informative */
+  --color-watchlist-soft: rgba(86, 152, 199, 0.14);
 
-  /* --- typography -------------------------------------------------------- */
+  /* --- neutral text scale: neutral graphite, not blue-tinted ------------- */
+  --color-text: #edeff2;
+  --color-text-muted: #9aa1ac;
+  --color-text-faint: #7c8798; /* ~5.5:1 on --color-bg -- passes AA at small sizes */
+
+  /* --- typography: three voices ------------------------------------------
+     sans  = UI voice (labels, body, nav, tables)
+     mono  = numeric voice (tickers, ids, money, tabular figures)
+     serif = verdict voice -- risk/CIO decisions and hero numerals ONLY,
+             never body copy or UI chrome. */
   --font-sans:
-    Inter, "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
   --font-mono:
-    ui-monospace, "JetBrains Mono", "Cascadia Code", "SF Mono", Consolas,
+    var(--font-geist-mono), ui-monospace, "Cascadia Code", "SF Mono", Consolas,
     Menlo, monospace;
+  --font-serif:
+    var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", Georgia,
+    "Times New Roman", serif;
 
   /* --- layout ------------------------------------------------------------ */
   --sidebar-width: 264px;
@@ -90,13 +104,13 @@ body {
   background: var(--color-bg);
   background-image:
     radial-gradient(
-      ellipse 900px 500px at 15% -10%,
-      rgba(34, 211, 238, 0.08),
+      ellipse 1000px 600px at 12% -8%,
+      rgba(255, 255, 255, 0.035),
       transparent 60%
     ),
     radial-gradient(
-      ellipse 700px 500px at 100% 0%,
-      rgba(45, 212, 191, 0.05),
+      ellipse 800px 500px at 100% 0%,
+      rgba(198, 161, 91, 0.03),
       transparent 55%
     );
   background-attachment: fixed;
@@ -113,6 +127,14 @@ kbd,
 samp,
 .font-mono-ui {
   font-family: var(--font-mono);
+}
+
+/* Tabular figures + slashed zero everywhere numerals render as data rather
+   than prose -- money, ids, tickers, table cells. Prevents column reflow on
+   count-up animations and makes 0/O unambiguous. */
+.font-mono-ui,
+.tabular-nums {
+  font-variant-numeric: tabular-nums slashed-zero;
 }
 
 * {
@@ -139,16 +161,67 @@ samp,
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* Respect the OS-level motion preference for everything Motion doesn't
+   already cover via MotionConfig (plain CSS transitions/keyframes below). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ============================================================================
    Component-layer utilities
    ============================================================================
-   The "glass" recipe used by GlassCard and friends: translucent surface,
-   backdrop blur, a 1px hairline border, and a faint inner top highlight to
-   sell the glass edge. Kept as real CSS (not just Tailwind utility strings)
-   so every consumer gets exactly the same recipe.
+   Material system: one fixed light source, top-left. Every panel is a solid
+   machined graphite plate (.surface) with a specular highlight along its top
+   edge and a shadow cast down-right -- the same physical model everywhere,
+   instead of thirty independently blurred rectangles.
+
+   .glass keeps real translucency + blur, but is now reserved for things that
+   genuinely float above other content: the mobile nav drawer's backdrop,
+   the command palette, tooltips, modals. Structural chrome (sidebar, command
+   bar, cards) uses .surface.
    ============================================================================ */
 
 @layer components {
+  .surface {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.07),
+      0 1px 2px 0 rgba(0, 0, 0, 0.45),
+      6px 18px 32px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  .surface-raised {
+    background: var(--color-panel-raised);
+    border: 1px solid var(--color-border);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+      0 1px 2px 0 rgba(0, 0, 0, 0.45),
+      6px 20px 36px -14px rgba(0, 0, 0, 0.6);
+  }
+
+  .surface-hover {
+    transition:
+      background-color 0.24s ease,
+      border-color 0.24s ease,
+      box-shadow 0.24s ease,
+      transform 0.24s ease;
+  }
+
+  .surface-hover:hover {
+    background: var(--color-panel-raised);
+    border-color: var(--color-border-strong);
+  }
+
+  /* Reserved for genuinely floating layers: drawer backdrop, command
+     palette, tooltips, modals. Not for structural chrome or cards. */
   .glass {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(16px);
@@ -172,42 +245,62 @@ samp,
     border-color: rgba(255, 255, 255, 0.16);
   }
 
+  /* A single brushed hairline for the one authoritative element per screen
+     -- the risk verdict, the CIO decision, NAV. Not a general-purpose border. */
+  .metal-edge {
+    border-top: 1px solid var(--color-border-strong);
+    background-image: linear-gradient(
+      90deg,
+      rgba(198, 161, 91, 0.35),
+      rgba(198, 161, 91, 0.05) 40%,
+      transparent 70%
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: top left;
+  }
+
   /* Soft glow ring utilities keyed to the semantic accent colors: a low-alpha
      box-shadow "bloom" rather than a hard border -- readable, not neon. */
   .glow-accent {
     box-shadow:
-      0 0 0 1px rgba(34, 211, 238, 0.35),
-      0 0 24px -4px rgba(34, 211, 238, 0.45);
+      0 0 0 1px rgba(76, 195, 217, 0.35),
+      0 0 24px -4px rgba(76, 195, 217, 0.45);
   }
   .glow-positive {
     box-shadow:
-      0 0 0 1px rgba(52, 211, 153, 0.35),
-      0 0 24px -4px rgba(52, 211, 153, 0.45);
+      0 0 0 1px rgba(52, 178, 122, 0.35),
+      0 0 24px -4px rgba(52, 178, 122, 0.45);
   }
   .glow-negative {
     box-shadow:
-      0 0 0 1px rgba(251, 113, 133, 0.35),
-      0 0 24px -4px rgba(251, 113, 133, 0.45);
+      0 0 0 1px rgba(225, 92, 110, 0.35),
+      0 0 24px -4px rgba(225, 92, 110, 0.45);
   }
   .glow-warning {
     box-shadow:
-      0 0 0 1px rgba(251, 191, 36, 0.35),
-      0 0 24px -4px rgba(251, 191, 36, 0.45);
+      0 0 0 1px rgba(224, 168, 62, 0.35),
+      0 0 24px -4px rgba(224, 168, 62, 0.45);
   }
   .glow-watchlist {
     box-shadow:
-      0 0 0 1px rgba(56, 189, 248, 0.35),
-      0 0 24px -4px rgba(56, 189, 248, 0.45);
+      0 0 0 1px rgba(86, 152, 199, 0.35),
+      0 0 24px -4px rgba(86, 152, 199, 0.45);
+  }
+  .glow-warm {
+    box-shadow:
+      0 0 0 1px rgba(198, 161, 91, 0.4),
+      0 0 28px -4px rgba(198, 161, 91, 0.5);
   }
 
   .text-glow-accent {
-    text-shadow: 0 0 16px rgba(34, 211, 238, 0.5);
+    text-shadow: 0 0 16px rgba(76, 195, 217, 0.5);
   }
 
   /* ==========================================================================
      Learn prose -- long-form lesson typography. No @tailwindcss/typography
      plugin is installed; this is a small hand-rolled stylesheet themed to
-     the existing dark-glass palette rather than a generic prose reset.
+     the app's material system rather than a generic prose reset.
      ========================================================================== */
   .prose-learn {
     color: var(--color-text-muted);

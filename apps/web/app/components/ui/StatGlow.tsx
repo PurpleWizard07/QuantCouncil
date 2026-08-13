@@ -12,11 +12,11 @@ export interface StatGlowProps {
 }
 
 const GLOW_SHADOW: Record<StatusVariant, string> = {
-  positive: "shadow-[0_0_40px_-8px_rgba(52,211,153,0.55)]",
-  negative: "shadow-[0_0_40px_-8px_rgba(251,113,133,0.55)]",
-  warning: "shadow-[0_0_40px_-8px_rgba(251,191,36,0.55)]",
-  watchlist: "shadow-[0_0_40px_-8px_rgba(56,189,248,0.55)]",
-  accent: "shadow-[0_0_40px_-8px_rgba(34,211,238,0.55)]",
+  positive: "shadow-[0_0_40px_-8px_rgba(52,178,122,0.55)]",
+  negative: "shadow-[0_0_40px_-8px_rgba(225,92,110,0.55)]",
+  warning: "shadow-[0_0_40px_-8px_rgba(224,168,62,0.55)]",
+  watchlist: "shadow-[0_0_40px_-8px_rgba(86,152,199,0.55)]",
+  accent: "shadow-[0_0_40px_-8px_rgba(76,195,217,0.55)]",
   neutral: "",
 };
 

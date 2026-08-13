@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 
 import { DataTable, type DataTableColumn } from "@/app/components/ui/DataTable";
 import { EmptyState } from "@/app/components/ui/EmptyState";
@@ -30,18 +31,19 @@ function ResearchCta({ children }: { children: ReactNode }) {
   return (
     <Link
       href="/research"
-      className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-bg shadow-[0_0_20px_-6px_rgba(34,211,238,0.6)] transition-colors hover:bg-accent/90"
+      className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-bg shadow-[0_0_20px_-6px_rgba(76,195,217,0.6)] transition-colors hover:bg-accent/90"
     >
       {children}
     </Link>
   );
 }
 
-export default function BacktestsPage() {
+function BacktestsPageInner() {
+  const searchParams = useSearchParams();
   const [runs, setRuns] = useState<BacktestListItem[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("backtest_id"));
 
   const load = () => {
     setLoading(true);
@@ -164,5 +166,13 @@ export default function BacktestsPage() {
         </div>
       </Section>
     </MotionPage>
+  );
+}
+
+export default function BacktestsPage() {
+  return (
+    <Suspense fallback={null}>
+      <BacktestsPageInner />
+    </Suspense>
   );
 }

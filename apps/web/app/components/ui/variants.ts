@@ -22,7 +22,7 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-positive/40",
     glow: "glow-positive",
     dot: "bg-positive",
-    hex: "#34d399",
+    hex: "#34b27a",
   },
   negative: {
     text: "text-negative",
@@ -30,7 +30,7 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-negative/40",
     glow: "glow-negative",
     dot: "bg-negative",
-    hex: "#fb7185",
+    hex: "#e15c6e",
   },
   warning: {
     text: "text-warning",
@@ -38,7 +38,7 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-warning/40",
     glow: "glow-warning",
     dot: "bg-warning",
-    hex: "#fbbf24",
+    hex: "#e0a83e",
   },
   watchlist: {
     text: "text-watchlist",
@@ -46,7 +46,7 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-watchlist/40",
     glow: "glow-watchlist",
     dot: "bg-watchlist",
-    hex: "#38bdf8",
+    hex: "#5698c7",
   },
   accent: {
     text: "text-accent",
@@ -54,7 +54,7 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-accent/40",
     glow: "glow-accent",
     dot: "bg-accent",
-    hex: "#22d3ee",
+    hex: "#4cc3d9",
   },
   neutral: {
     text: "text-text-muted",
@@ -62,6 +62,6 @@ export const VARIANT_STYLES: Record<StatusVariant, VariantStyle> = {
     border: "border-white/10",
     glow: "",
     dot: "bg-text-faint",
-    hex: "#5b6b81",
+    hex: "#7c8798",
   },
 };

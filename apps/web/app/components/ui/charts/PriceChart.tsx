@@ -23,7 +23,7 @@ export function PriceChart({ data, height = 240, variant = "area", className = "
       data={data}
       xKey="date"
       yKey="close"
-      color="#2dd4bf"
+      color="#3fa6a0"
       variant={variant}
       height={height}
       className={className}

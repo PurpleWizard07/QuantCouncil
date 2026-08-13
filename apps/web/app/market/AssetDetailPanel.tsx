@@ -113,14 +113,14 @@ export function AssetDetailPanel({ symbol, onClose }: AssetDetailPanelProps) {
     >
       <div className="space-y-4">
         {barsLoading ? (
-          <div className="glass rounded-2xl p-5">
+          <div className="surface rounded-2xl p-5">
             <Skeleton className="h-[260px] w-full" />
           </div>
         ) : barsError ? (
           <ErrorState message={barsError} onRetry={loadBars} />
         ) : (
           <>
-            <div className="glass rounded-2xl p-5">
+            <div className="surface rounded-2xl p-5">
               <PriceChart data={chartData} height={260} />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -181,7 +181,7 @@ function IndicatorStat({
   formatter: (value: number | null) => string;
 }) {
   return (
-    <div className="glass rounded-xl p-3">
+    <div className="surface rounded-xl p-3">
       <div className="text-[11px] font-medium uppercase tracking-wide text-text-muted">{label}</div>
       <div className="mt-1 font-mono-ui text-sm font-semibold tabular-nums text-text">
         {formatter(value)}

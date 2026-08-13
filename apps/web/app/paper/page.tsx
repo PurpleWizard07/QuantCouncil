@@ -556,7 +556,7 @@ export default function PaperPage() {
                   xKey="date"
                   yKey="nav"
                   height={240}
-                  color="#22d3ee"
+                  color="#4cc3d9"
                   variant="area"
                   valueFormatter={(v) => fmtInr(v)}
                 />

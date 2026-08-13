@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/app/components/ui/Button";
 import { DataTable, type DataTableColumn } from "@/app/components/ui/DataTable";
@@ -26,8 +27,10 @@ function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : "Unexpected error.";
 }
 
-/** Section 1: recent risk evaluations table + click-to-inspect detail panel. */
-function RecentEvaluations() {
+/** Section 1: recent risk evaluations table + click-to-inspect detail panel.
+ * `initialId` deep-links a risk_evaluation_id (e.g. from the ⌘K palette)
+ * straight into the detail panel without waiting on the list to load it. */
+function RecentEvaluations({ initialId }: { initialId: string | null }) {
   const [items, setItems] = useState<RiskEvaluationListItem[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +68,11 @@ function RecentEvaluations() {
       .then((res) => setDetail(res))
       .catch((e) => setDetailError(errMsg(e)))
       .finally(() => setDetailLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (initialId) selectRow({ risk_evaluation_id: initialId } as RiskEvaluationListItem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const columns: DataTableColumn<RiskEvaluationListItem>[] = [
@@ -188,7 +196,9 @@ function EvaluateForm() {
   );
 }
 
-export default function RiskPage() {
+function RiskPageInner() {
+  const searchParams = useSearchParams();
+
   return (
     <MotionPage>
       <PageHeader
@@ -216,8 +226,16 @@ export default function RiskPage() {
       </Section>
 
       <Section title="Recent evaluations" description="Latest 20 risk evaluations, newest first.">
-        <RecentEvaluations />
+        <RecentEvaluations initialId={searchParams.get("risk_evaluation_id")} />
       </Section>
     </MotionPage>
+  );
+}
+
+export default function RiskPage() {
+  return (
+    <Suspense fallback={null}>
+      <RiskPageInner />
+    </Suspense>
   );
 }

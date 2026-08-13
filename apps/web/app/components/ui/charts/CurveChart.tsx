@@ -37,7 +37,7 @@ export function CurveChart<T extends object>({
   xKey,
   yKey,
   height = 240,
-  color = "#22d3ee",
+  color = "#4cc3d9",
   variant = "area",
   valueFormatter,
   className = "",
@@ -58,13 +58,13 @@ export function CurveChart<T extends object>({
           <XAxis
             dataKey={xKey}
             tickFormatter={(value: string) => fmtDate(value)}
-            tick={{ fill: "#5b6b81", fontSize: 11 }}
+            tick={{ fill: "#7c8798", fontSize: 11 }}
             axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
             tickLine={false}
             minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#5b6b81", fontSize: 11 }}
+            tick={{ fill: "#7c8798", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={52}

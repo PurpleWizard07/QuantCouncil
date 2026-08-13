@@ -10,9 +10,9 @@ export interface RiskScoreGaugeProps {
 }
 
 function bandColor(score: number): string {
-  if (score >= 70) return "#34d399"; // emerald: low risk
-  if (score >= 40) return "#fbbf24"; // amber: moderate risk
-  return "#fb7185"; // rose: high risk
+  if (score >= 70) return "#34b27a"; // positive: low risk
+  if (score >= 40) return "#e0a83e"; // warning: moderate risk
+  return "#e15c6e"; // negative: high risk
 }
 
 function bandLabel(score: number): string {
@@ -48,7 +48,7 @@ export function RiskScoreGauge({ score, label = "Risk score", size = "md", class
       <div className={`relative w-full overflow-hidden rounded-full bg-white/[0.06] ${HEIGHT_CLASS[size]}`}>
         <motion.div
           className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg, #fb7185, #fbbf24, #34d399)" }}
+          style={{ background: "linear-gradient(90deg, #e15c6e, #e0a83e, #34b27a)" }}
           initial={{ width: 0 }}
           animate={{ width: `${clamped}%` }}
           transition={{ duration: 0.6, ease: "easeOut" }}

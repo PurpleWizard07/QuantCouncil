@@ -152,7 +152,7 @@ function BacktestDetailContent({ detail }: { detail: BacktestDetailResponse }) {
 
   return (
     <div className="space-y-4">
-      <div className="glass rounded-2xl p-5">
+      <div className="surface rounded-2xl p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="font-mono-ui text-base font-semibold text-text">
@@ -208,7 +208,7 @@ function BacktestDetailContent({ detail }: { detail: BacktestDetailResponse }) {
         </div>
       )}
 
-      <div className="glass rounded-2xl p-5">
+      <div className="surface rounded-2xl p-5">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-text-muted">
           Equity curve
         </h3>

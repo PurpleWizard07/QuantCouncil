@@ -18,7 +18,7 @@ export function EquityCurveChart({ data, height = 240, className = "" }: EquityC
       data={data}
       xKey="date"
       yKey="equity"
-      color="#22d3ee"
+      color="#4cc3d9"
       variant="area"
       height={height}
       className={className}

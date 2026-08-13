@@ -14,10 +14,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-bg hover:bg-accent/90 shadow-[0_0_20px_-6px_rgba(34,211,238,0.6)]",
+    "bg-accent text-bg hover:bg-accent/90 shadow-[0_0_20px_-6px_rgba(76,195,217,0.6)]",
   secondary: "bg-white/[0.06] text-text border border-white/10 hover:bg-white/[0.1]",
   ghost: "bg-transparent text-text-muted hover:text-text hover:bg-white/[0.05]",
-  danger: "bg-negative/90 text-bg hover:bg-negative shadow-[0_0_20px_-6px_rgba(251,113,133,0.6)]",
+  danger: "bg-negative/90 text-bg hover:bg-negative shadow-[0_0_20px_-6px_rgba(225,92,110,0.6)]",
 };
 
 /** Standard button: primary/secondary/ghost/danger, with a built-in loading state. */

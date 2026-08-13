@@ -91,7 +91,7 @@ export default async function LessonPage({ params }: { params: Promise<Params> }
           {prev && prevInfo ? (
             <Link
               href={`/learn/${prev.moduleSlug}/${prev.lessonSlug}`}
-              className="glass rounded-xl p-4 hover:border-white/20"
+              className="surface rounded-xl p-4 hover:border-white/20"
             >
               <div className="text-[11px] uppercase tracking-wide text-text-faint">← Previous</div>
               <div className="mt-1 text-sm text-text">{prevInfo.title}</div>
@@ -102,7 +102,7 @@ export default async function LessonPage({ params }: { params: Promise<Params> }
           {next && nextInfo && (
             <Link
               href={`/learn/${next.moduleSlug}/${next.lessonSlug}`}
-              className="glass rounded-xl p-4 text-right hover:border-white/20"
+              className="surface rounded-xl p-4 text-right hover:border-white/20"
             >
               <div className="text-[11px] uppercase tracking-wide text-text-faint">Next →</div>
               <div className="mt-1 text-sm text-text">{nextInfo.title}</div>

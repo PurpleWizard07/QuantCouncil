@@ -231,7 +231,7 @@ export function OverrideBanner({
 }) {
   if (!overrideWarning) return null;
   return (
-    <div className="glass flex flex-col gap-2 rounded-2xl border border-negative/40 bg-negative-soft p-4">
+    <div className="surface flex flex-col gap-2 rounded-2xl border border-negative/40 bg-negative-soft p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold text-negative">Committee override enforced</span>
         <span className="rounded-full border border-negative/40 bg-negative-soft px-2 py-0.5 font-mono-ui text-[10px] uppercase text-negative">

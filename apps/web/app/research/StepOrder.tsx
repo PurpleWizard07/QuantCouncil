@@ -154,7 +154,7 @@ export function StepOrder({
 
   if (!riskApproved) {
     return (
-      <div className="glass flex flex-col gap-2 rounded-2xl border border-negative/40 bg-negative-soft p-6">
+      <div className="surface flex flex-col gap-2 rounded-2xl border border-negative/40 bg-negative-soft p-6">
         <div className="text-sm font-semibold text-negative">Paper order creation blocked</div>
         <p className="text-xs leading-relaxed text-negative/90">
           The risk evaluation decision is <span className="font-mono-ui">{riskDecision}</span>. Paper trading is
@@ -206,7 +206,7 @@ export function StepOrder({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="glass rounded-xl border border-warning/30 bg-warning-soft p-3 text-xs text-warning">
+      <div className="surface rounded-xl border border-warning/30 bg-warning-soft p-3 text-xs text-warning">
         This is a human action. QuantCouncil never places a paper order automatically — you are confirming it.
       </div>
 
@@ -217,7 +217,7 @@ export function StepOrder({
       )}
       {!portfoliosLoading && portfoliosError && <ErrorState message={portfoliosError} onRetry={loadPortfolios} />}
       {!portfoliosLoading && !portfoliosError && portfolios && portfolios.length === 0 && (
-        <div className="glass flex flex-col items-center gap-3 rounded-xl p-6 text-center">
+        <div className="surface flex flex-col items-center gap-3 rounded-xl p-6 text-center">
           <p className="text-sm text-text-muted">No paper portfolios yet.</p>
           <Button variant="secondary" loading={creatingPortfolio} onClick={makeDefaultPortfolio}>
             Create default portfolio
@@ -287,7 +287,7 @@ export function StepOrder({
             <ErrorState message={submitError.message} onRetry={() => setSubmitError(null)} />
           )}
           {submitError?.status === 400 && (
-            <div className="glass rounded-xl border border-warning/40 bg-warning-soft p-4 text-center">
+            <div className="surface rounded-xl border border-warning/40 bg-warning-soft p-4 text-center">
               <div className="text-sm font-medium text-warning">Order rejected by portfolio limits</div>
               <p className="mt-2 text-xs text-text-muted">{submitError.message}</p>
             </div>

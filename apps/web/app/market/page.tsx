@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/app/components/ui/Button";
 import { DataTable, type DataTableColumn } from "@/app/components/ui/DataTable";
@@ -43,13 +44,14 @@ function SectorChip({
   );
 }
 
-export default function MarketPage() {
+function MarketPageInner() {
+  const searchParams = useSearchParams();
   const [assets, setAssets] = useState<AssetRecord[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState<string | null>(null);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(searchParams.get("symbol"));
 
   const load = () => {
     setLoading(true);
@@ -182,5 +184,13 @@ export default function MarketPage() {
         <AssetDetailPanel symbol={selectedSymbol} onClose={() => setSelectedSymbol(null)} />
       )}
     </MotionPage>
+  );
+}
+
+export default function MarketPage() {
+  return (
+    <Suspense fallback={null}>
+      <MarketPageInner />
+    </Suspense>
   );
 }

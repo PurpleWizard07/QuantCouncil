@@ -22,9 +22,11 @@ const PADDING: Record<NonNullable<GlassCardProps["padding"]>, string> = {
 };
 
 /**
- * The base glass panel every card-shaped surface in the app is built from.
- * `variant="highlighted"` adds an accent glow ring; a StatusVariant tints
- * the border/glow to that semantic color (e.g. a REJECTED backtest card).
+ * The base machined-graphite panel every card-shaped surface in the app is
+ * built from. Solid `.surface` material (one fixed light source, no blur --
+ * see globals.css) rather than glass; `variant="highlighted"` adds an accent
+ * glow ring, and a StatusVariant tints the border/glow to that semantic
+ * color (e.g. a REJECTED backtest card).
  */
 export function GlassCard({
   children,
@@ -38,11 +40,11 @@ export function GlassCard({
 
   const borderClass = variant === "highlighted" ? "border-accent/40" : (statusStyle?.border ?? "");
   const glowClass = variant === "highlighted" ? "glow-accent" : (statusStyle?.glow ?? "");
-  const hoverClass = hover ? "glass-hover" : "";
+  const hoverClass = hover ? "surface-hover" : "";
 
   return (
     <div
-      className={`glass rounded-2xl ${PADDING[padding]} ${borderClass} ${glowClass} ${hoverClass} ${className}`}
+      className={`surface rounded-2xl ${PADDING[padding]} ${borderClass} ${glowClass} ${hoverClass} ${className}`}
     >
       {children}
     </div>

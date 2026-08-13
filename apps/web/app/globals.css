@@ -378,4 +378,41 @@ samp,
     overflow-x: auto;
     padding: 0.25rem 0;
   }
+
+  /* The lede: a lesson's opening paragraph reads as an entrance, not just
+     the next line of body text -- a book's opening, not a terminal log. */
+  .prose-learn > p:first-of-type {
+    font-size: 1.15em;
+    color: var(--color-text);
+  }
+  .prose-learn > p:first-of-type::first-letter {
+    font-family: var(--font-serif);
+    font-size: 3.4em;
+    line-height: 0.82;
+    font-weight: 500;
+    float: left;
+    padding-right: 0.09em;
+    padding-top: 0.02em;
+    color: var(--color-warm);
+  }
+}
+
+/* ============================================================================
+   Learn: the reading room. Same building, different light -- warmer paper
+   tones and lower chroma replace graphite for the scope of /learn/** only.
+   Structural classes (.surface, .metal-edge, GlassCard, etc.) are untouched;
+   only the underlying color tokens shift, so every existing component
+   retints automatically without its own code changing.
+   ============================================================================ */
+.learn-room {
+  --color-bg: #14100c;
+  --color-bg-raised: #1c160f;
+  --color-panel: #211a12;
+  --color-panel-raised: #291f15;
+  --color-border: rgba(255, 245, 230, 0.08);
+  --color-border-soft: rgba(255, 245, 230, 0.045);
+  --color-border-strong: rgba(255, 245, 230, 0.16);
+  --color-text: #f0e6d8;
+  --color-text-muted: #b8a890;
+  --color-text-faint: #8f7e65; /* ~4.8:1 on the reading room's bg -- passes AA */
 }

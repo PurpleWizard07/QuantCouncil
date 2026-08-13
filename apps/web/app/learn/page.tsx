@@ -22,9 +22,12 @@ export default function LearnLandingPage() {
         subtitle="Trading Mastery — a first-principles path from market literacy to quantitative research, with concrete Indian-market examples throughout. Educational content, not investment advice."
       />
 
-      <Section title="Curriculum" description="14 modules, roughly in the order the source material recommends.">
+      <Section
+        title="Curriculum"
+        description={`${CURRICULUM.length} modules, roughly in the order the source material recommends.`}
+      >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {CURRICULUM.map((module) => {
+          {CURRICULUM.map((module, index) => {
             const lessonIds = module.lessons.map((l) => progressId(module.slug, l.slug));
             const outlineCount = module.lessons.filter((l) => l.status === "outline").length;
             return (
@@ -34,13 +37,18 @@ export default function LearnLandingPage() {
                   hover
                   className="flex h-full flex-col gap-3"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-text">{module.title}</h3>
-                    {module.critical && (
-                      <span className="shrink-0 rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
-                        Must read
-                      </span>
-                    )}
+                  <div className="flex items-start gap-3">
+                    <span className="font-serif text-2xl leading-none text-warm/70">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex flex-1 items-start justify-between gap-2">
+                      <h3 className="text-sm font-semibold text-text">{module.title}</h3>
+                      {module.critical && (
+                        <span className="shrink-0 rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
+                          Must read
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {module.levelLabel && (
                     <span className="text-[11px] font-medium uppercase tracking-wide text-text-faint">

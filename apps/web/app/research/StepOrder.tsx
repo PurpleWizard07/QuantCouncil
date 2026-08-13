@@ -11,6 +11,7 @@ import { Label } from "@/app/components/ui/Label";
 import { Select } from "@/app/components/ui/Select";
 import { Textarea } from "@/app/components/ui/Textarea";
 import { useToast } from "@/app/components/ui/Toast";
+import { VetoSeal } from "@/app/components/ui/VetoSeal";
 import { ApiError, createPaperOrder, createPortfolio, getPortfolios } from "@/app/lib/api";
 import { fmtInr, fmtInt, truncateId } from "@/app/lib/format";
 import type { AssetRecord, CreateOrderResponse, PaperPortfolio } from "@/app/lib/types";
@@ -25,6 +26,9 @@ export interface StepOrderProps {
   riskEvaluationId: string;
   riskApproved: boolean;
   riskDecision: string;
+  riskFailedRules: unknown[];
+  riskWarnings: unknown[];
+  riskReasons: unknown[];
   result: CreateOrderResponse | null;
   onSuccess: (result: CreateOrderResponse) => void;
 }
@@ -36,6 +40,9 @@ export function StepOrder({
   riskEvaluationId,
   riskApproved,
   riskDecision,
+  riskFailedRules,
+  riskWarnings,
+  riskReasons,
   result,
   onSuccess,
 }: StepOrderProps) {
@@ -154,12 +161,18 @@ export function StepOrder({
 
   if (!riskApproved) {
     return (
-      <div className="surface flex flex-col gap-2 rounded-2xl border border-negative/40 bg-negative-soft p-6">
-        <div className="text-sm font-semibold text-negative">Paper order creation blocked</div>
-        <p className="text-xs leading-relaxed text-negative/90">
-          The risk evaluation decision is <span className="font-mono-ui">{riskDecision}</span>. Paper trading is
-          blocked for this backtest until a fresh, approved risk evaluation exists — no LLM agent and no button in
-          this UI can override the veto.
+      <div className="flex flex-col gap-3">
+        <VetoSeal
+          key={riskEvaluationId || riskDecision}
+          decision={riskDecision === "REJECTED" ? "REJECTED" : "NEEDS_REVIEW"}
+          failedRules={riskFailedRules}
+          warnings={riskWarnings}
+          reasons={riskReasons}
+          variant="inline"
+        />
+        <p className="text-xs leading-relaxed text-text-faint">
+          Paper trading is blocked for this backtest until a fresh, approved risk evaluation exists — no LLM agent
+          and no button in this UI can override the veto.
         </p>
       </div>
     );

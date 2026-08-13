@@ -245,6 +245,14 @@ samp,
     border-color: rgba(255, 255, 255, 0.16);
   }
 
+  /* The measurement drains of color the instant a proposal is vetoed --
+     scope this to the specific data/metric block being overridden, not the
+     whole page (other independent proposals elsewhere shouldn't grey out). */
+  .veto-scope {
+    filter: saturate(0.35) contrast(0.96);
+    transition: filter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   /* A single brushed hairline for the one authoritative element per screen
      -- the risk verdict, the CIO decision, NAV. Not a general-purpose border. */
   .metal-edge {

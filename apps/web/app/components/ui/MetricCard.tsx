@@ -38,7 +38,7 @@ export function MetricCard({
     <GlassCard className={className} padding="md">
       <div className="text-xs font-medium uppercase tracking-wide text-text-muted">{label}</div>
       <div
-        className={`mt-2 text-2xl font-semibold tabular-nums ${accentStyle ? accentStyle.text : "text-text"}`}
+        className={`mt-2 font-mono-ui text-2xl font-semibold tabular-nums ${accentStyle ? accentStyle.text : "text-text"}`}
       >
         {value}
       </div>

@@ -14,18 +14,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 import { Button } from "@/app/components/ui/Button";
 import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ErrorState } from "@/app/components/ui/ErrorState";
+import { LedgerRow } from "@/app/components/ui/LedgerRow";
 import { MotionPage } from "@/app/components/ui/MotionPage";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Section } from "@/app/components/ui/Section";
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { Skeleton } from "@/app/components/ui/Skeleton";
 import { useToast } from "@/app/components/ui/Toast";
+import { NavBackdropChart } from "@/app/components/ui/charts/NavBackdropChart";
 import { RiskScoreGauge } from "@/app/components/ui/charts/RiskScoreGauge";
 import {
   ApiError,
@@ -46,7 +47,6 @@ import type {
   AgentDecisionRecord,
   BacktestListItem,
   JournalEntry,
-  NavSnapshot,
   PaperPortfolio,
   RiskEvaluationDetailResponse,
 } from "@/app/lib/types";
@@ -99,53 +99,6 @@ function useLoad<T>(fetcher: () => Promise<T>, enabled = true): Load<T> {
 }
 
 // --- hero standing sheet: NAV + backdrop curve + ledger rail -------------------
-
-/** Decorative only: no axes, grid, or tooltip -- it sits behind the NAV
- * numeral, not beside it, so it stays out of the way of the figure itself. */
-function NavBackdropChart({ snapshots }: { snapshots: NavSnapshot[] }) {
-  if (snapshots.length < 2) return null;
-  return (
-    <div className="absolute inset-0 opacity-[0.35]" aria-hidden="true">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={snapshots} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-          <defs>
-            <linearGradient id="nav-hero-gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4cc3d9" stopOpacity={0.55} />
-              <stop offset="100%" stopColor="#4cc3d9" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="nav"
-            stroke="#4cc3d9"
-            strokeWidth={2}
-            fill="url(#nav-hero-gradient)"
-            isAnimationActive={false}
-            dot={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function LedgerRow({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: ReactNode;
-  tone?: "positive" | "negative";
-}) {
-  const toneClass = tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : "text-text";
-  return (
-    <div className="flex items-baseline justify-between gap-3 py-2.5">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-text-faint">{label}</span>
-      <span className={`font-mono-ui text-sm font-semibold tabular-nums ${toneClass}`}>{value}</span>
-    </div>
-  );
-}
 
 function NavHeroBand() {
   const { showToast } = useToast();

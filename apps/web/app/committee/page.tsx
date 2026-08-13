@@ -20,50 +20,11 @@ import { evaluateCommittee, getCommitteeForBacktest } from "@/app/lib/api";
 import { fmtDateTime, truncateId } from "@/app/lib/format";
 import type { AgentDecisionRecord, CommitteeEvaluateResponse } from "@/app/lib/types";
 
-import {
-  BearCaseCard,
-  BullCaseCard,
-  CioCard,
-  OverrideBanner,
-  ProviderChips,
-  ProviderSelect,
-  QuantResearcherCard,
-  RiskNarratorCard,
-  TechnicalAnalystCard,
-} from "./components";
+import { ProviderChips, ProviderSelect } from "./components";
+import { ChamberLayout } from "./ChamberLayout";
 
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : "Unexpected error.";
-}
-
-function DebateLayout({ result }: { result: CommitteeEvaluateResponse }) {
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ProviderChips requested={result.requested_provider} selected={result.selected_provider} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TechnicalAnalystCard data={result.technical_analyst} />
-        <QuantResearcherCard data={result.quant_researcher} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <BullCaseCard data={result.bull_case} />
-        <BearCaseCard data={result.bear_case} />
-      </div>
-
-      <RiskNarratorCard data={result.risk_narrator} />
-
-      <OverrideBanner overrideWarning={result.override_warning} cioRaw={result.cio_raw} />
-
-      <CioCard
-        cio={result.cio}
-        requestedProvider={result.requested_provider}
-        selectedProvider={result.selected_provider}
-      />
-    </div>
-  );
 }
 
 function RunCommittee() {
@@ -136,7 +97,16 @@ function RunCommittee() {
       </GlassCard>
 
       {error && <ErrorState message={error} onRetry={run} />}
-      {result && <DebateLayout result={result} />}
+      {(loading || result) && (
+        <>
+          {result && (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <ProviderChips requested={result.requested_provider} selected={result.selected_provider} />
+            </div>
+          )}
+          <ChamberLayout result={result} loading={loading} />
+        </>
+      )}
     </div>
   );
 }

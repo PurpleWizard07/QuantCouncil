@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 import { Button } from "@/app/components/ui/Button";
 import { CurveChart } from "@/app/components/ui/charts/CurveChart";
+import { NavBackdropChart } from "@/app/components/ui/charts/NavBackdropChart";
 import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ErrorState } from "@/app/components/ui/ErrorState";
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { Input } from "@/app/components/ui/Input";
 import { Label } from "@/app/components/ui/Label";
-import { MetricCard } from "@/app/components/ui/MetricCard";
+import { LedgerRow } from "@/app/components/ui/LedgerRow";
 import { MotionPage } from "@/app/components/ui/MotionPage";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Section } from "@/app/components/ui/Section";
@@ -330,6 +331,9 @@ export default function PaperPage() {
       : null;
   const riskOff = portfolio?.risk_mode === "RISK_OFF";
   const positionsPending = positionsLoading && positions === null;
+  const navDelta = portfolio ? portfolio.current_nav - portfolio.starting_capital : null;
+  const navDeltaPct =
+    portfolio && portfolio.starting_capital && navDelta != null ? navDelta / portfolio.starting_capital : 0;
 
   // --- render ------------------------------------------------------------------
   const headerActions = portfolio ? (
@@ -492,40 +496,52 @@ export default function PaperPage() {
             </GlassCard>
           )}
 
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="NAV"
-              value={fmtInr(portfolio.current_nav)}
-              accent="accent"
-              subtext={`Peak ${fmtInr(portfolio.peak_nav)} · drawdown ${fmtPct(drawdown)}`}
-            />
-            <MetricCard
-              label="Cash"
-              value={fmtInr(portfolio.current_cash)}
-              subtext={`Started with ${fmtInr(portfolio.starting_capital)}`}
-            />
-            <MetricCard
-              label="Unrealized P&L"
-              value={pnlNode(unrealizedPnl)}
-              loading={positionsPending}
-              subtext="Open positions, last mark"
-            />
-            <MetricCard
-              label="Realized P&L"
-              value={pnlNode(realizedPnl)}
-              loading={positionsPending}
-              subtext="All positions, net of costs"
-            />
-            <MetricCard
-              label="Open positions"
-              value={openPositions ? fmtInt(openPositions.length) : PLACEHOLDER}
-              loading={positionsPending}
-            />
-            <MetricCard
-              label="Risk mode"
-              value={<DecisionBadge status={portfolio.risk_mode} pulse={riskOff} />}
-              subtext={riskOff ? "New BUYs are vetoed" : "Entries allowed"}
-            />
+          <div className="surface mb-8 overflow-hidden rounded-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px]">
+              <div className="relative overflow-hidden p-6 sm:p-8">
+                {navHistory && <NavBackdropChart snapshots={navHistory} />}
+                <div className="relative z-10">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-warm">
+                    {portfolio.name}
+                  </div>
+                  <div className="mt-2 font-serif text-5xl font-medium tabular-nums text-text sm:text-6xl lg:text-7xl">
+                    {fmtInr(portfolio.current_nav, { decimals: 0 })}
+                  </div>
+                  <div className="metal-edge mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 pt-3">
+                    <span
+                      className={`text-sm font-semibold tabular-nums ${
+                        (navDelta ?? 0) >= 0 ? "text-positive" : "text-negative"
+                      }`}
+                    >
+                      {(navDelta ?? 0) >= 0 ? "+" : ""}
+                      {fmtInr(navDelta, { decimals: 0 })} ({fmtPct(navDeltaPct, { showSign: true })})
+                    </span>
+                    <span className="text-xs text-text-faint">
+                      since {fmtInr(portfolio.starting_capital, { decimals: 0 })} starting · peak{" "}
+                      {fmtInr(portfolio.peak_nav, { decimals: 0 })} · drawdown {fmtPct(drawdown)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/[0.06] px-6 py-5 lg:border-l lg:border-t-0 lg:px-7">
+                <div className="flex flex-col divide-y divide-white/[0.05]">
+                  <LedgerRow label="Cash" value={fmtInr(portfolio.current_cash, { decimals: 0 })} />
+                  <LedgerRow label="Unrealized P&L" value={positionsPending ? "…" : pnlNode(unrealizedPnl)} />
+                  <LedgerRow label="Realized P&L" value={positionsPending ? "…" : pnlNode(realizedPnl)} />
+                  <LedgerRow
+                    label="Open positions"
+                    value={positionsPending ? "…" : openPositions ? fmtInt(openPositions.length) : PLACEHOLDER}
+                  />
+                  <div className="flex items-center justify-between py-2.5">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-text-faint">
+                      Risk mode
+                    </span>
+                    <DecisionBadge status={portfolio.risk_mode} size="sm" pulse={riskOff} />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <Section

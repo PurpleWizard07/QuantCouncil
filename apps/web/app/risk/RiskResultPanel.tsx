@@ -4,6 +4,7 @@ import { CollapsibleSection } from "@/app/components/ui/CollapsibleSection";
 import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { JsonViewer } from "@/app/components/ui/JsonViewer";
 import { StatGlow } from "@/app/components/ui/StatGlow";
+import { VetoSeal } from "@/app/components/ui/VetoSeal";
 import { RiskScoreGauge } from "@/app/components/ui/charts/RiskScoreGauge";
 import type { StatusVariant } from "@/app/components/ui/variants";
 import { truncateId } from "@/app/lib/format";
@@ -52,15 +53,14 @@ export function RiskResultPanel({
   return (
     <div className={`flex flex-col gap-5 ${className}`}>
       {vetoed && (
-        <div
-          className={`glass rounded-2xl border p-4 text-sm font-medium ${
-            result.decision === "REJECTED"
-              ? "border-negative/40 bg-negative-soft text-negative"
-              : "border-warning/40 bg-warning-soft text-warning"
-          }`}
-        >
-          Risk veto active — paper trading blocked for this backtest.
-        </div>
+        <VetoSeal
+          key={riskEvaluationId ?? result.decision}
+          decision={result.decision as "REJECTED" | "NEEDS_REVIEW"}
+          failedRules={result.failed_rules}
+          warnings={result.warnings}
+          reasons={result.reasons}
+          variant="panel"
+        />
       )}
 
       <div className="flex flex-wrap items-center gap-4">
@@ -87,7 +87,9 @@ export function RiskResultPanel({
         {createdAt && <span className="text-xs text-text-faint">{createdAt}</span>}
       </div>
 
-      <RiskScoreGauge score={result.risk_score} />
+      <div className={vetoed ? "veto-scope" : ""}>
+        <RiskScoreGauge score={result.risk_score} />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>

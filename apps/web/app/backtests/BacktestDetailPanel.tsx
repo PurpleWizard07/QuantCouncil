@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { DataTable, type DataTableColumn } from "@/app/components/ui/DataTable";
 import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ErrorState } from "@/app/components/ui/ErrorState";
 import { InlineSpinner } from "@/app/components/ui/InlineSpinner";
-import { MetricCard } from "@/app/components/ui/MetricCard";
 import { Section } from "@/app/components/ui/Section";
 import { SkeletonCard } from "@/app/components/ui/Skeleton";
 import { EquityCurveChart } from "@/app/components/ui/charts/EquityCurveChart";
-import type { StatusVariant } from "@/app/components/ui/variants";
+import { VARIANT_STYLES, type StatusVariant } from "@/app/components/ui/variants";
 import { ApiError, getBacktest, getLatestRiskForBacktest } from "@/app/lib/api";
 import { fmtDate, fmtInr, fmtInt, fmtNum, fmtPct, truncateId } from "@/app/lib/format";
 import type {
@@ -50,6 +49,20 @@ function profitFactorAccent(value: number | null | undefined): StatusVariant | u
 function drawdownLabel(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `-${fmtPct(value)}`;
+}
+
+function Stat({ label, value, accent }: { label: string; value: ReactNode; accent?: StatusVariant }) {
+  const style = accent ? VARIANT_STYLES[accent] : null;
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wide text-text-faint">{label}</div>
+      <div
+        className={`mt-0.5 font-mono-ui text-sm font-semibold tabular-nums ${style ? style.text : "text-text"}`}
+      >
+        {value}
+      </div>
+    </div>
+  );
 }
 
 function ConfigChip({ label, value }: { label: string; value: string }) {
@@ -180,31 +193,29 @@ function BacktestDetailContent({ detail }: { detail: BacktestDetailResponse }) {
       {!metrics ? (
         <p className="text-sm text-text-muted">No metrics available for this run yet.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total return"
-            value={fmtPct(metrics.total_return, { showSign: true })}
-            accent={signAccent(metrics.total_return)}
-          />
-          <MetricCard
-            label="CAGR"
-            value={fmtPct(metrics.cagr, { showSign: true })}
-            accent={signAccent(metrics.cagr)}
-          />
-          <MetricCard
-            label="Max drawdown"
-            value={drawdownLabel(metrics.max_drawdown)}
-            accent={metrics.max_drawdown ? "negative" : undefined}
-          />
-          <MetricCard label="Win rate" value={fmtPct(metrics.win_rate)} />
-          <MetricCard
-            label="Profit factor"
-            value={fmtNum(metrics.profit_factor)}
-            accent={profitFactorAccent(metrics.profit_factor)}
-          />
-          <MetricCard label="Sharpe" value={fmtNum(metrics.sharpe)} accent={signAccent(metrics.sharpe)} />
-          <MetricCard label="Num trades" value={fmtInt(metrics.num_trades)} />
-          <MetricCard label="Final equity" value={fmtInr(metrics.final_equity)} />
+        <div className="surface rounded-2xl p-5">
+          <div className="flex flex-wrap gap-x-8 gap-y-4">
+            <Stat
+              label="Total return"
+              value={fmtPct(metrics.total_return, { showSign: true })}
+              accent={signAccent(metrics.total_return)}
+            />
+            <Stat label="CAGR" value={fmtPct(metrics.cagr, { showSign: true })} accent={signAccent(metrics.cagr)} />
+            <Stat
+              label="Max drawdown"
+              value={drawdownLabel(metrics.max_drawdown)}
+              accent={metrics.max_drawdown ? "negative" : undefined}
+            />
+            <Stat label="Win rate" value={fmtPct(metrics.win_rate)} />
+            <Stat
+              label="Profit factor"
+              value={fmtNum(metrics.profit_factor)}
+              accent={profitFactorAccent(metrics.profit_factor)}
+            />
+            <Stat label="Sharpe" value={fmtNum(metrics.sharpe)} accent={signAccent(metrics.sharpe)} />
+            <Stat label="Num trades" value={fmtInt(metrics.num_trades)} />
+            <Stat label="Final equity" value={fmtInr(metrics.final_equity)} />
+          </div>
         </div>
       )}
 
@@ -266,11 +277,7 @@ export function BacktestDetailPanel({ backtestId }: { backtestId: string }) {
       {loading ? (
         <div className="space-y-4">
           <SkeletonCard />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
+          <SkeletonCard />
         </div>
       ) : error ? (
         <ErrorState message={error} onRetry={load} />

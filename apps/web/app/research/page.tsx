@@ -2,11 +2,12 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { DecisionBadge } from "@/app/components/ui/DecisionBadge";
 import { Button } from "@/app/components/ui/Button";
 import { MotionPage } from "@/app/components/ui/MotionPage";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StepIndicator, type Step } from "@/app/components/ui/StepIndicator";
-import { fmtInr, fmtPct, truncateId } from "@/app/lib/format";
+import { fmtInr, fmtInt, fmtNum, fmtPct, truncateId } from "@/app/lib/format";
 import type {
   AssetRecord,
   BacktestRunResponse,
@@ -23,7 +24,6 @@ import { StepRisk } from "./StepRisk";
 import { StepShell, type StepPhase } from "./StepShell";
 import { StepStrategy } from "./StepStrategy";
 import { StepSymbol } from "./StepSymbol";
-import { SummaryChips } from "./SummaryChips";
 
 interface PipelineState {
   symbol: AssetRecord | null;
@@ -142,26 +142,24 @@ export default function ResearchPage() {
         }
       />
 
-      <SummaryChips
-        symbol={state.symbol}
-        strategy={state.strategy}
-        backtestId={state.backtest?.backtest_id ?? null}
-        riskDecision={state.risk?.decision ?? null}
-        cioDecision={state.committee?.cio.decision ?? null}
-      />
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_1fr]">
         <div className="lg:sticky lg:top-24 lg:self-start">
           <StepIndicator steps={stepIndicatorSteps} orientation="vertical" />
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="relative flex flex-col gap-4">
+          {/* The spine: continuous behind the gaps between cards, hidden
+              wherever an opaque .surface card sits on top of it -- so it
+              reads as connecting the nodes without needing pixel-perfect
+              alignment with each card's own (padding-dependent) circle. */}
+          <div className="pointer-events-none absolute bottom-0 left-[34px] top-0 z-0 w-px bg-border" aria-hidden="true" />
+
           <StepShell
             index={1}
             title="Select symbol"
             phase={phaseOf(1)}
             onExpand={() => setExpandedStep(1)}
-            summary={
+            strata={
               state.symbol && (
                 <div className="text-xs text-text-muted">
                   <span className="font-semibold text-text">{state.symbol.symbol}</span> — {state.symbol.name}
@@ -179,7 +177,7 @@ export default function ResearchPage() {
             phase={phaseOf(2)}
             lockedHint="Select a symbol first."
             onExpand={() => setExpandedStep(2)}
-            summary={
+            strata={
               state.strategy && (
                 <div className="text-xs text-text-muted">
                   <span className="font-semibold text-text">{state.strategy.name}</span>
@@ -197,16 +195,41 @@ export default function ResearchPage() {
             phase={phaseOf(3)}
             lockedHint="Select a symbol and strategy first."
             onExpand={() => setExpandedStep(3)}
-            summary={
+            strata={
               state.backtest && (
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
-                  <span>
-                    Total return{" "}
-                    <span className="font-semibold text-text">{fmtPct(state.backtest.metrics.total_return)}</span>
-                  </span>
-                  <span>{state.backtest.trades.length} trades</span>
+                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-faint">Total return</div>
+                    <div
+                      className={`font-mono-ui text-sm font-semibold tabular-nums ${
+                        (state.backtest.metrics.total_return ?? 0) >= 0 ? "text-positive" : "text-negative"
+                      }`}
+                    >
+                      {fmtPct(state.backtest.metrics.total_return, { showSign: true })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-faint">Sharpe</div>
+                    <div className="font-mono-ui text-sm font-semibold tabular-nums text-text">
+                      {fmtNum(state.backtest.metrics.sharpe)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-faint">Max drawdown</div>
+                    <div className="font-mono-ui text-sm font-semibold tabular-nums text-text">
+                      {fmtPct(state.backtest.metrics.max_drawdown)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-faint">Trades</div>
+                    <div className="font-mono-ui text-sm font-semibold tabular-nums text-text">
+                      {fmtInt(state.backtest.metrics.num_trades)}
+                    </div>
+                  </div>
                   {state.backtest.backtest_id && (
-                    <span className="font-mono-ui">{truncateId(state.backtest.backtest_id)}</span>
+                    <div className="self-center font-mono-ui text-xs text-text-faint">
+                      {truncateId(state.backtest.backtest_id)}
+                    </div>
                   )}
                 </div>
               )
@@ -229,11 +252,29 @@ export default function ResearchPage() {
             phase={phaseOf(4)}
             lockedHint="Run a backtest first."
             onExpand={() => setExpandedStep(4)}
-            summary={
+            carryForward={
+              state.backtest && (
+                <p className="text-xs text-text-muted">
+                  Building on backtest{" "}
+                  <span className="font-mono-ui text-text">{truncateId(state.backtest.backtest_id)}</span>: total
+                  return{" "}
+                  <span className="font-semibold text-text">{fmtPct(state.backtest.metrics.total_return)}</span>,
+                  Sharpe <span className="font-semibold text-text">{fmtNum(state.backtest.metrics.sharpe)}</span>.
+                </p>
+              )
+            }
+            strata={
               state.risk && (
-                <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                  <span className="font-semibold text-text">{state.risk.decision}</span>
-                  <span>score {state.risk.risk_score}/100</span>
+                <div className="flex flex-wrap items-center gap-4">
+                  <DecisionBadge status={state.risk.decision} size="sm" />
+                  <span className="font-serif text-2xl font-medium tabular-nums text-text">
+                    {state.risk.risk_score}
+                    <span className="text-sm text-text-faint">/100</span>
+                  </span>
+                  <span className="text-xs text-text-faint">
+                    {state.risk.failed_rules.length} failed rule{state.risk.failed_rules.length === 1 ? "" : "s"} ·{" "}
+                    {state.risk.warnings.length} warning{state.risk.warnings.length === 1 ? "" : "s"}
+                  </span>
                 </div>
               )
             }
@@ -254,11 +295,25 @@ export default function ResearchPage() {
             phase={phaseOf(5)}
             lockedHint="Evaluate risk first."
             onExpand={() => setExpandedStep(5)}
-            summary={
+            carryForward={
+              state.risk && (
+                <p className="text-xs text-text-muted">
+                  Building on risk verdict{" "}
+                  <span className="font-serif text-sm font-medium text-text">
+                    {state.risk.decision.replace(/_/g, " ")}
+                  </span>{" "}
+                  · score <span className="font-semibold text-text">{state.risk.risk_score}/100</span>.
+                </p>
+              )
+            }
+            strata={
               state.committee && (
-                <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                  <span className="font-semibold text-text">{state.committee.cio.decision}</span>
-                  <span>via {state.committee.selected_provider}</span>
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className="font-serif text-2xl font-medium text-text">
+                    {state.committee.cio.decision.replace(/_/g, " ")}
+                  </span>
+                  <span className="font-mono-ui text-xs text-text-faint">via {state.committee.selected_provider}</span>
+                  <span className="max-w-md truncate text-xs text-text-faint">{state.committee.cio.reason}</span>
                 </div>
               )
             }
@@ -280,7 +335,18 @@ export default function ResearchPage() {
             phase={phaseOf(6)}
             lockedHint="Run the AI committee first."
             onExpand={() => setExpandedStep(6)}
-            summary={
+            carryForward={
+              state.committee && (
+                <p className="text-xs text-text-muted">
+                  Building on committee verdict{" "}
+                  <span className="font-serif text-sm font-medium text-text">
+                    {state.committee.cio.decision.replace(/_/g, " ")}
+                  </span>
+                  .
+                </p>
+              )
+            }
+            strata={
               state.order && (
                 <div className="text-xs text-text-muted">
                   Filled <span className="font-semibold text-text">{fmtInr(state.order.fill.fill_price)}</span> ×{" "}
@@ -296,6 +362,9 @@ export default function ResearchPage() {
                 riskEvaluationId={state.risk.risk_evaluation_id ?? ""}
                 riskApproved={state.risk.approved}
                 riskDecision={state.risk.decision}
+                riskFailedRules={state.risk.failed_rules}
+                riskWarnings={state.risk.warnings}
+                riskReasons={state.risk.reasons}
                 result={state.order}
                 onSuccess={onOrderSuccess}
               />

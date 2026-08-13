@@ -109,7 +109,7 @@ function CardShell({
   );
 }
 
-function BulletList({ items, tone = "muted" }: { items: string[]; tone?: "muted" | "negative" | "warning" }) {
+export function BulletList({ items, tone = "muted" }: { items: string[]; tone?: "muted" | "negative" | "warning" }) {
   if (items.length === 0) return <p className="text-xs text-text-faint">None.</p>;
   const toneClass = tone === "negative" ? "text-negative" : tone === "warning" ? "text-warning" : "text-text-muted";
   return (

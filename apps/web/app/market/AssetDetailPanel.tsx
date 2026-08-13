@@ -6,10 +6,10 @@ import { Button } from "@/app/components/ui/Button";
 import { CollapsibleSection } from "@/app/components/ui/CollapsibleSection";
 import { DataTable, type DataTableColumn } from "@/app/components/ui/DataTable";
 import { ErrorState } from "@/app/components/ui/ErrorState";
-import { MetricCard } from "@/app/components/ui/MetricCard";
 import { Section } from "@/app/components/ui/Section";
 import { Skeleton, SkeletonTable } from "@/app/components/ui/Skeleton";
 import { PriceChart } from "@/app/components/ui/charts/PriceChart";
+import { VARIANT_STYLES, type StatusVariant } from "@/app/components/ui/variants";
 import { ApiError, getIndicators, getOhlcv } from "@/app/lib/api";
 import { fmtDate, fmtInr, fmtInt, fmtNum, fmtPct } from "@/app/lib/format";
 import type { IndicatorRow, OhlcvBar } from "@/app/lib/types";
@@ -123,11 +123,11 @@ export function AssetDetailPanel({ symbol, onClose }: AssetDetailPanelProps) {
             <div className="surface rounded-2xl p-5">
               <PriceChart data={chartData} height={260} />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <MetricCard label="Last close" value={fmtInr(stats?.lastClose)} />
-              <MetricCard label="Period high" value={fmtInr(stats?.periodHigh)} accent="positive" />
-              <MetricCard label="Period low" value={fmtInr(stats?.periodLow)} accent="negative" />
-              <MetricCard label="Bars" value={fmtInt(stats?.bars)} subtext="last ~6 months" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <IndicatorStat label="Last close" value={stats?.lastClose ?? null} formatter={fmtInr} />
+              <IndicatorStat label="Period high" value={stats?.periodHigh ?? null} formatter={fmtInr} accent="positive" />
+              <IndicatorStat label="Period low" value={stats?.periodLow ?? null} formatter={fmtInr} accent="negative" />
+              <IndicatorStat label="Bars" value={stats?.bars ?? null} formatter={fmtInt} />
             </div>
             <div>
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-text-muted">
@@ -175,15 +175,20 @@ function IndicatorStat({
   label,
   value,
   formatter,
+  accent,
 }: {
   label: string;
   value: number | null;
   formatter: (value: number | null) => string;
+  accent?: StatusVariant;
 }) {
+  const style = accent ? VARIANT_STYLES[accent] : null;
   return (
     <div className="surface rounded-xl p-3">
       <div className="text-[11px] font-medium uppercase tracking-wide text-text-muted">{label}</div>
-      <div className="mt-1 font-mono-ui text-sm font-semibold tabular-nums text-text">
+      <div
+        className={`mt-1 font-mono-ui text-sm font-semibold tabular-nums ${style ? style.text : "text-text"}`}
+      >
         {formatter(value)}
       </div>
     </div>

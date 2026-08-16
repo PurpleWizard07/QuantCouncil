@@ -10,6 +10,11 @@ venv
 node_modules
 apps/web/node_modules
 apps/web/.next
-data
+# Keep the whole `data` dir out (raw/processed datasets, backtest artifacts)
+# except nifty50_symbols.json, which data_connectors.universe needs at
+# runtime -- excluding contents (data/*) rather than the dir itself is what
+# lets the negation below re-include a single file.
+data/*
+!data/nifty50_symbols.json
 docs
 .env

@@ -16,7 +16,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -63,6 +63,19 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg2://quant:quant@localhost:5432/quantcouncil"
     )
+
+    @field_validator("database_url")
+    @classmethod
+    def _normalize_database_url(cls, value: str) -> str:
+        """Rewrite hosted-Postgres URLs (Render/Railway/Heroku hand out
+        ``postgres://`` or plain ``postgresql://``) to the psycopg2 driver
+        scheme SQLAlchemy needs here."""
+        if value.startswith("postgres://"):
+            return "postgresql+psycopg2://" + value[len("postgres://") :]
+        if value.startswith("postgresql://"):
+            return "postgresql+psycopg2://" + value[len("postgresql://") :]
+        return value
+
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     # Raw comma-separated origins string (env var CORS_ORIGINS); consumed via

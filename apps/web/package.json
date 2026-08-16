@@ -13,7 +13,7 @@
     "github-slugger": "^2.0.0",
     "katex": "^0.18.4",
     "motion": "^12.42.2",
-    "next": "15.1.6",
+    "next": "15.5.23",
     "next-mdx-remote": "^6.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",

@@ -34,6 +34,16 @@ services:
       CORS_ORIGINS: http://localhost:3000
     ports:
       - "8000:8000"
+    volumes:
+      # Bind-mount the repo's data/ dir into the container's WORKDIR (/app),
+      # matching apps/api/app/core/config.py's default resolution
+      # (<repo_root>/data/backtests, <repo_root>/data/processed/ohlcv):
+      # without this, backtest artifacts and the yfinance/Parquet cache live
+      # only on the container's own filesystem and are lost every time this
+      # container is recreated (`up --build`, `down` + `up`, etc). A local
+      # bind mount is free (unlike a cloud provider's persistent disk) since
+      # it's just this machine's own disk.
+      - ../data:/app/data
     depends_on:
       postgres:
         condition: service_healthy

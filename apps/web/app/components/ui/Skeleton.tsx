@@ -17,7 +17,7 @@ export interface SkeletonCardProps {
 /** Loading placeholder matching MetricCard's shape. */
 export function SkeletonCard({ className = "" }: SkeletonCardProps) {
   return (
-    <div className={`glass rounded-2xl p-5 ${className}`}>
+    <div className={`surface rounded-2xl p-5 ${className}`}>
       <Skeleton className="mb-3 h-3 w-24" />
       <Skeleton className="mb-2 h-7 w-32" />
       <Skeleton className="h-3 w-20" />
@@ -34,7 +34,7 @@ export interface SkeletonTableProps {
 /** Loading placeholder matching DataTable's shape. */
 export function SkeletonTable({ rows = 5, cols = 4, className = "" }: SkeletonTableProps) {
   return (
-    <div className={`glass space-y-3 rounded-xl p-4 ${className}`}>
+    <div className={`surface space-y-3 rounded-xl p-4 ${className}`}>
       {Array.from({ length: rows }).map((_, r) => (
         <div key={r} className="flex gap-4">
           {Array.from({ length: cols }).map((_, c) => (

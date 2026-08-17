@@ -308,16 +308,26 @@ def _calculate_paper_nav(db: Session, portfolio: PaperPortfolio) -> float:
     return total
 
 
-def _apply_nav_update(db: Session, portfolio: PaperPortfolio) -> None:
-    """Recompute NAV from the portfolio's current (already-updated) cash,
-    update ``peak_nav`` (running max), and commit. Does not touch risk_off
-    (only ``mark_to_market`` decides risk-off transitions)."""
+def _apply_nav_update(db: Session, portfolio: PaperPortfolio, *, commit: bool = True) -> None:
+    """Recompute NAV from the portfolio's current (already-updated) cash and
+    update ``peak_nav`` (running max). Does not touch risk_off (only
+    ``mark_to_market`` decides risk-off transitions).
+
+    ``commit`` defaults to True (commit and refresh immediately). A fill
+    pipeline that needs this update to land atomically with sibling writes
+    (order/position/journal) passes ``commit=False``: this only
+    ``flush()``-es (so the new NAV is visible to any later query in the same
+    transaction) and the caller commits once, later, for the whole batch.
+    """
     nav = _calculate_paper_nav(db, portfolio)
     portfolio.nav = _round2(nav)
     peak = float(portfolio.peak_nav) if portfolio.peak_nav is not None else portfolio.nav
     portfolio.peak_nav = _round2(max(peak, portfolio.nav))
-    db.commit()
-    db.refresh(portfolio)
+    if commit:
+        db.commit()
+        db.refresh(portfolio)
+    else:
+        db.flush()
 
 
 # ---------------------------------------------------------------------------
@@ -433,6 +443,11 @@ def _persist_buy_rejection(
     everywhere -- steps 8/10/11 of the design's validation order, per the
     module docstring's "order_id" contract. Pure input errors (steps 1-7)
     never call this.
+
+    The REJECTED order and its RISK_EVENT journal entry are flushed (not
+    committed) individually and then committed together in one
+    ``db.commit()`` -- so a mid-write crash or DB error can never leave a
+    REJECTED order persisted with no journal entry documenting why.
     """
     order = repositories.create_paper_order(
         db,
@@ -446,6 +461,7 @@ def _persist_buy_rejection(
         status=OrderStatus.REJECTED.value,
         limit_price=price_reference,
         stop_loss=stop_loss_price,
+        commit=False,
     )
     repositories.create_journal_entry(
         db,
@@ -463,7 +479,10 @@ def _persist_buy_rejection(
             "thesis": thesis,
             "rejection_reason": reason,
         },
+        commit=False,
     )
+    db.commit()
+    db.refresh(order)
     raise exception_cls(reason, order_id=order.id)
 
 
@@ -699,7 +718,14 @@ def _execute_buy(
             exception_cls=InsufficientCash,
         )
 
-    # -- 12. fill --
+    # -- 12. fill -- everything below is ONE atomic transaction: the order,
+    # the position (new or add-on), the cash/NAV update, and the FILL
+    # journal entry are each flushed (not committed) individually and then
+    # committed together in a single db.commit() at the end (mirrors
+    # mark_to_market's atomic commit-once pattern). A crash or DB error
+    # partway through this block therefore can never leave a FILLED order
+    # persisted without its matching position/cash update/journal entry --
+    # either the whole fill lands, or none of it does.
     order = repositories.create_paper_order(
         db,
         portfolio_id=portfolio.id,
@@ -714,6 +740,7 @@ def _execute_buy(
         fill_price=_round4(fill),
         stop_loss=_round4(stop_loss_price),
         filled_at=utcnow(),
+        commit=False,
     )
 
     if existing_position is not None:
@@ -729,8 +756,10 @@ def _execute_buy(
         existing_position.stop_loss = _round4(stop_loss_price)
         if existing_position.strategy_id is None:
             existing_position.strategy_id = backtest.strategy_id
-        db.commit()
-        db.refresh(existing_position)
+        # Flush (not commit) so the updated quantity/avg_entry_price is
+        # visible to _apply_nav_update's own query below, without ending
+        # this transaction early.
+        db.flush()
         position = existing_position
     else:
         position = repositories.create_paper_position(
@@ -741,10 +770,11 @@ def _execute_buy(
             quantity=quantity,
             avg_entry_price=_round4(fill),
             stop_loss=_round4(stop_loss_price),
+            commit=False,
         )
 
     portfolio.cash = _round2(cash - total_debit)
-    _apply_nav_update(db, portfolio)
+    _apply_nav_update(db, portfolio, commit=False)
 
     journal = repositories.create_journal_entry(
         db,
@@ -772,7 +802,14 @@ def _execute_buy(
             "fill_price": _round4(fill),
             "cost": _round2(cost),
         },
+        commit=False,
     )
+
+    db.commit()
+    db.refresh(order)
+    db.refresh(position)
+    db.refresh(portfolio)
+    db.refresh(journal)
 
     return {
         "order": order_dict(order),
@@ -825,6 +862,8 @@ def _execute_sell(
     held = position.quantity if position is not None else 0
     if position is None or held < quantity:
         reason = f"cannot sell {quantity}; holding {held}."
+        # Flushed (not committed) individually, then committed together --
+        # same atomic-audit-trail reasoning as _persist_buy_rejection.
         order = repositories.create_paper_order(
             db,
             portfolio_id=portfolio.id,
@@ -836,6 +875,7 @@ def _execute_sell(
             quantity=quantity,
             status=OrderStatus.REJECTED.value,
             limit_price=price_reference,
+            commit=False,
         )
         repositories.create_journal_entry(
             db,
@@ -854,7 +894,10 @@ def _execute_sell(
                 "exit_reason": exit_reason,
                 "rejection_reason": reason,
             },
+            commit=False,
         )
+        db.commit()
+        db.refresh(order)
         raise InsufficientPosition(reason, order_id=order.id)
 
     ref = price_reference if price_reference is not None else latest_close_fn(asset.symbol)
@@ -864,6 +907,12 @@ def _execute_sell(
     proceeds = quantity * fill
     cost = proceeds * TRANSACTION_COST_PCT
 
+    # Everything below is ONE atomic transaction -- same reasoning as
+    # _execute_buy's step 12: each write is flushed (not committed)
+    # individually and all of them are committed together in a single
+    # db.commit() at the end, so a mid-fill crash or DB error can never
+    # leave a FILLED SELL order persisted without its matching
+    # position/cash update/journal entry.
     order = repositories.create_paper_order(
         db,
         portfolio_id=portfolio.id,
@@ -877,6 +926,7 @@ def _execute_sell(
         limit_price=price_reference,
         fill_price=_round4(fill),
         filled_at=utcnow(),
+        commit=False,
     )
 
     avg_entry = float(position.avg_entry_price)
@@ -891,11 +941,13 @@ def _execute_sell(
         position.status = PositionStatus.CLOSED.value
         position.closed_at = utcnow()
         position.unrealized_pnl = None
-    db.commit()
-    db.refresh(position)
+    # Flush (not commit) so the updated quantity/status is visible to
+    # _apply_nav_update's own query below (a CLOSED position must drop out
+    # of the OPEN-positions NAV sum), without ending this transaction early.
+    db.flush()
 
     portfolio.cash = _round2(float(portfolio.cash) + proceeds - cost)
-    _apply_nav_update(db, portfolio)
+    _apply_nav_update(db, portfolio, commit=False)
 
     journal = repositories.create_journal_entry(
         db,
@@ -929,7 +981,14 @@ def _execute_sell(
             "realized_pnl": _round2(realized_this_sale),
             "position_closed": position_closed,
         },
+        commit=False,
     )
+
+    db.commit()
+    db.refresh(order)
+    db.refresh(position)
+    db.refresh(portfolio)
+    db.refresh(journal)
 
     return {
         "order": order_dict(order),

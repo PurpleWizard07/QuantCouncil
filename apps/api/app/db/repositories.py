@@ -3,9 +3,16 @@
 Thin, deliberately boring data access for Phase 3.5. Every function takes an
 explicit ``Session`` and performs persistence only -- no business logic
 beyond what is required to keep writes idempotent and lifecycle transitions
-legal. Callers own the transaction: every function COMMITS its own work (the
-functions here are the transaction boundary for the CLIs and routers that
-use them).
+legal. Callers own the transaction: by default every function COMMITS its
+own work (the functions here are the transaction boundary for the CLIs and
+routers that use them). ``create_paper_order``, ``create_paper_position``,
+and ``create_journal_entry`` are the exception: they accept a ``commit: bool
+= True`` flag so a caller with several of these writes to make atomically
+(e.g. the paper engine's order+position+cash/NAV+journal fill pipeline) can
+pass ``commit=False`` on each one (which only ``flush()``-es -- populating
+Python-side defaults like ``id`` and making the row visible to later queries
+in the same transaction) and issue one ``db.commit()`` itself once every
+write for the batch has been made.
 
 Portability note: everything here must work identically on PostgreSQL and
 SQLite (the test vehicle), so no dialect-specific constructs (e.g. postgres
@@ -546,8 +553,19 @@ def create_paper_position(
     avg_entry_price: float,
     stop_loss: float,
     strategy_id: Optional[uuid.UUID] = None,
+    commit: bool = True,
 ) -> PaperPosition:
-    """Persist a new OPEN position (a fresh entry, not an add-on)."""
+    """Persist a new OPEN position (a fresh entry, not an add-on).
+
+    ``commit`` defaults to True (this function's original, still-default
+    behavior: commit and refresh immediately). Callers that need this write
+    to land atomically alongside sibling writes (e.g. the paper engine's
+    order+position+cash/NAV+journal fill sequence) pass ``commit=False``:
+    the row is only ``flush()``-ed (so its Python-side defaults -- ``id``,
+    ``opened_at`` -- are populated and visible to later queries in the same
+    transaction) and it is the caller's job to ``db.commit()`` once, later,
+    for the whole batch of writes.
+    """
     row = PaperPosition(
         portfolio_id=portfolio_id,
         asset_id=asset_id,
@@ -558,8 +576,11 @@ def create_paper_position(
         status=PositionStatus.OPEN.value,
     )
     db.add(row)
-    db.commit()
-    db.refresh(row)
+    if commit:
+        db.commit()
+        db.refresh(row)
+    else:
+        db.flush()
     return row
 
 
@@ -584,12 +605,21 @@ def create_paper_order(
     backtest_run_id: Optional[uuid.UUID] = None,
     risk_evaluation_id: Optional[uuid.UUID] = None,
     filled_at: Optional[dt.datetime] = None,
+    commit: bool = True,
 ) -> PaperOrder:
     """Persist a paper order row (any terminal ``status``: FILLED/REJECTED).
 
     Low-level: callers (the paper engine) decide the status and every field;
     this function performs persistence only, matching the rest of this
     module's split between "decide" (service) and "persist" (repository).
+
+    ``commit`` defaults to True (commit and refresh immediately, this
+    function's original behavior). Pass ``commit=False`` when this write is
+    one step of a larger atomic sequence (e.g. the paper engine's fill
+    pipeline) -- the row is only ``flush()``-ed (populating its Python-side
+    defaults, ``id``/``created_at``, so later steps and queries in the same
+    transaction can see it) and the caller commits once, later, for the
+    whole batch.
     """
     row = PaperOrder(
         portfolio_id=portfolio_id,
@@ -607,8 +637,11 @@ def create_paper_order(
         filled_at=filled_at,
     )
     db.add(row)
-    db.commit()
-    db.refresh(row)
+    if commit:
+        db.commit()
+        db.refresh(row)
+    else:
+        db.flush()
     return row
 
 
@@ -644,8 +677,16 @@ def create_journal_entry(
     position_id: Optional[uuid.UUID] = None,
     strategy_id: Optional[uuid.UUID] = None,
     refs: Optional[dict[str, Any]] = None,
+    commit: bool = True,
 ) -> TradeJournalEntry:
-    """Append a trade journal entry (the journal is append-only; no updates)."""
+    """Append a trade journal entry (the journal is append-only; no updates).
+
+    ``commit`` defaults to True (commit and refresh immediately, this
+    function's original behavior). Pass ``commit=False`` when this entry
+    must land atomically with the writes it documents (e.g. the paper
+    engine's fill pipeline) -- the row is only ``flush()``-ed and the caller
+    commits once, later, for the whole batch.
+    """
     row = TradeJournalEntry(
         portfolio_id=portfolio_id,
         order_id=order_id,
@@ -657,8 +698,11 @@ def create_journal_entry(
         refs=refs if refs is not None else {},
     )
     db.add(row)
-    db.commit()
-    db.refresh(row)
+    if commit:
+        db.commit()
+        db.refresh(row)
+    else:
+        db.flush()
     return row
 
 

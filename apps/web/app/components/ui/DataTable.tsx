@@ -35,7 +35,7 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className={`glass rounded-xl ${className}`}>
+      <div className={`surface rounded-xl ${className}`}>
         {emptyState ?? <div className="p-8 text-center text-sm text-text-muted">No data yet.</div>}
       </div>
     );
@@ -45,7 +45,7 @@ export function DataTable<T>({
     col.numeric || col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left";
 
   return (
-    <div className={`glass overflow-x-auto rounded-xl ${className}`}>
+    <div className={`surface overflow-x-auto rounded-xl ${className}`}>
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-white/10">
@@ -65,8 +65,22 @@ export function DataTable<T>({
             <tr
               key={getRowKey(row, index)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? "button" : undefined}
+              onKeyDown={
+                onRowClick
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onRowClick(row);
+                      }
+                    }
+                  : undefined
+              }
               className={`border-b border-white/[0.05] transition-colors last:border-0 ${
-                onRowClick ? "cursor-pointer hover:bg-white/[0.04]" : ""
+                onRowClick
+                  ? "cursor-pointer outline-none hover:bg-white/[0.04] focus-visible:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/50"
+                  : ""
               }`}
             >
               {columns.map((col) => (

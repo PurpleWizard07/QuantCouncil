@@ -5,6 +5,15 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Predicted URL for the Render service named "quantcouncil-api" in
+  # render.yaml (Render defaults to https://<service-name>.onrender.com).
+  # NEXT_PUBLIC_* vars are inlined by Next.js at BUILD time, so this must be
+  # correct *before* a build, not patched in afterwards. Best-effort default
+  # only: verify against the actual URL shown on the service's Render
+  # dashboard page (Render appends a random suffix if "quantcouncil-api" is
+  # already taken) and update this value here -- not just in the Netlify UI --
+  # if it differs, then trigger a Netlify rebuild.
+  NEXT_PUBLIC_API_URL = "https://quantcouncil-api.onrender.com"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

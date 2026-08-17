@@ -314,8 +314,9 @@ binding, persistence, API surface — in [docs/ai-committee.md](docs/ai-committe
 A dark-only modern dashboard for the complete research and paper-trading pipeline. Built with Next.js 15
 (App Router) and React 19, no external UI libraries (Tailwind CSS v4 only).
 
-**10 routes** — `/` (overview), `/research` (6-step pipeline), `/market` (universe), `/strategies` (cards),
+**11 top-level routes** — `/` (overview), `/research` (6-step pipeline), `/market` (universe), `/strategies` (cards),
 `/backtests` (runs), `/risk` (evaluations), `/committee` (debate), `/paper` (fund), `/journal` (audit),
+`/learn` (standalone Trading Mastery curriculum: 15 modules, 50 MDX lessons, glossary, resources),
 `/settings` (config) — all live and fully functional.
 
 **The 6-step research workflow** (`/research`):
@@ -327,9 +328,17 @@ A dark-only modern dashboard for the complete research and paper-trading pipelin
 6. Create paper order (**HUMAN-ONLY** — button enabled only when risk is APPROVED; form requires thesis,
    stop-loss, quantity; exact rejection reasons shown on veto)
 
-**Design:** Glassmorphism panels, cyan/teal accents, semantic status colors (emerald for approved,
-rose for rejected, amber for warnings/risk-off, sky for watchlist), soft glows, tabular numbers, motion
-transitions. Permanent amber badge "Paper trading only — simulated" in the top bar.
+**Design — "The Chamber":** anodized-graphite surfaces under one fixed light source (solid machined
+plates with a top-edge highlight and a cast shadow, not blurred glass); a two-channel color system —
+warm (muted gold) for authority and consequence (risk verdicts, the CIO decision, the veto seal, ₹
+figures) and cool (teal) for the machine (charts, deterministic data) — layered over the semantic
+status colors (emerald approved, rose rejected, amber warning/risk-off, sky watchlist); verdicts set
+in a high-contrast serif (Fraunces), everything else in sans/mono; the AI committee rendered as an
+"opposed chamber" (CIO head, evidence row, a bull-vs-bear debate axis facing across a center line,
+risk-narrator floor); the risk veto rendered as a sealed plate (`VetoSeal`) rather than a banner;
+grouped bezel sidebar nav with a single traveling active-indicator; a command palette (`⌘K`). Permanent
+amber badge "Paper trading only — simulated" in the top bar. Full detail in
+[docs/dashboard.md](docs/dashboard.md#design-direction--the-chamber).
 
 **How to run:**
 
@@ -346,8 +355,10 @@ Then visit http://localhost:3000 (the API must be running on http://localhost:80
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-**Frontend integration:** All 10 routes render end-to-end against a seeded database. No fake data,
-no component unit tests (integration tested via API). `npm run build` produces zero TypeScript errors.
+**Frontend integration:** All 11 top-level routes render end-to-end against a seeded database. No fake
+data, no component unit tests (integration tested via API). `npm run build` produces zero TypeScript
+errors (82 static pages across 17 route entries once the Learn section's per-module and per-lesson
+pages are counted individually).
 Two new backend list endpoints support dashboard usability: `GET /backtests?limit=20` and `GET
 /risk/evaluations?limit=20`.
 
@@ -384,7 +395,7 @@ Full details in [docs/development-roadmap.md](docs/development-roadmap.md).
 
 - [docs/architecture.md](docs/architecture.md) — system architecture and component boundaries
 - [docs/development-roadmap.md](docs/development-roadmap.md) — phased build plan
-- [docs/dashboard.md](docs/dashboard.md) — web dashboard (Phase 7+8): 10 routes, 6-step research pipeline, design, API client, how to run
+- [docs/dashboard.md](docs/dashboard.md) — web dashboard: 11 top-level routes (incl. `/learn`), 6-step research pipeline, "The Chamber" design system, API client, how to run
 - [docs/data-layer.md](docs/data-layer.md) — data sources, universe, validation, cache, indicators, market-data API
 - [docs/backtesting-engine.md](docs/backtesting-engine.md) — strategy validation, signals interpreter, backtester, metrics, backtest API
 - [docs/persistence.md](docs/persistence.md) — migrations, asset seeding, ingestion CLI, strategy and backtest persistence, retrieval API

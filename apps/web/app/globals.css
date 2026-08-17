@@ -100,6 +100,20 @@ body {
   min-height: 100%;
 }
 
+html {
+  /* Single dark theme, no toggle (see header note) -- without this, native
+     controls (select dropdowns, scrollbars) default to a light UA palette,
+     rendering --color-text as near-white-on-white in the options popup. */
+  color-scheme: dark;
+}
+
+/* Chromium/Firefox honor background-color/color on <option>, so the native
+   dropdown popup can match the panel material instead of the UA default. */
+select option {
+  background-color: var(--color-panel);
+  color: var(--color-text);
+}
+
 body {
   background: var(--color-bg);
   background-image:

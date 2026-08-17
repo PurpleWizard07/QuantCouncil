@@ -252,6 +252,10 @@ def test_warn_low_trade_count_isolated() -> None:
         strategy_config=_clean_strategy_config(),
     )
     assert any("warn_low_trade_count" in w for w in result.warnings)
+    # A single non-always-review warning still resolves to APPROVED (see
+    # engine.py:394-404) -- assert the outcome, not just the warning text.
+    assert result.decision == "APPROVED"
+    assert result.approved is True
 
 
 def test_warn_low_profit_factor_isolated() -> None:
@@ -262,6 +266,9 @@ def test_warn_low_profit_factor_isolated() -> None:
         strategy_config=_clean_strategy_config(),
     )
     assert any("warn_low_profit_factor" in w for w in result.warnings)
+    # Single non-always-review warning -> still APPROVED (engine.py:394-404).
+    assert result.decision == "APPROVED"
+    assert result.approved is True
 
 
 def test_warn_high_drawdown_isolated() -> None:
@@ -272,6 +279,9 @@ def test_warn_high_drawdown_isolated() -> None:
         strategy_config=_clean_strategy_config(),
     )
     assert any("warn_high_drawdown" in w for w in result.warnings)
+    # Single non-always-review warning -> still APPROVED (engine.py:394-404).
+    assert result.decision == "APPROVED"
+    assert result.approved is True
 
 
 def test_warn_high_exposure_isolated() -> None:
@@ -282,6 +292,9 @@ def test_warn_high_exposure_isolated() -> None:
         strategy_config=_clean_strategy_config(),
     )
     assert any("warn_high_exposure" in w for w in result.warnings)
+    # Single non-always-review warning -> still APPROVED (engine.py:394-404).
+    assert result.decision == "APPROVED"
+    assert result.approved is True
 
 
 def test_warn_loss_win_asymmetry_isolated() -> None:
@@ -292,6 +305,34 @@ def test_warn_loss_win_asymmetry_isolated() -> None:
         strategy_config=_clean_strategy_config(),
     )
     assert any("warn_loss_win_asymmetry" in w for w in result.warnings)
+    # Single non-always-review warning -> still APPROVED (engine.py:394-404).
+    assert result.decision == "APPROVED"
+    assert result.approved is True
+
+
+def test_needs_review_two_warnings_drawdown_and_exposure() -> None:
+    """Two simultaneous non-always-review warnings flip APPROVED -> NEEDS_REVIEW.
+
+    Complements test_needs_review_two_warnings (which pairs
+    warn_low_trade_count + warn_low_profit_factor) with a different pair
+    (warn_high_drawdown + warn_high_exposure), directly exercising the
+    len(warnings) >= 2 boundary at engine.py:394 -- a regression to a >= 1
+    threshold would flip the single-warning isolated tests above to
+    NEEDS_REVIEW, and a regression the other way (e.g. requiring > 2) would
+    leave this case at APPROVED.
+    """
+    result = evaluate(
+        metrics=_metrics(max_drawdown=0.12, exposure_time=0.9),
+        strategy=_strategy(),
+        policy=POLICY,
+        strategy_config=_clean_strategy_config(),
+    )
+    assert result.failed_rules == []
+    assert any("warn_high_drawdown" in w for w in result.warnings)
+    assert any("warn_high_exposure" in w for w in result.warnings)
+    assert len(result.warnings) == 2
+    assert result.decision == "NEEDS_REVIEW"
+    assert result.approved is False
 
 
 def test_warn_best_trade_concentration_isolated() -> None:
@@ -347,6 +388,74 @@ def test_profit_factor_none_high_trade_count_no_reject_no_small_sample_warning()
     assert "bt_min_profit_factor" not in result.failed_rules
     assert not any("warn_profit_factor_infinite_small_sample" in w for w in result.warnings)
     assert result.decision == "APPROVED"
+
+
+# --- metric unavailable (None) handling: hard gate skipped, advisory warning fires ---
+#
+# Per the module docstring (engine.py, "None handling"), when one of these
+# four metrics is None the corresponding hard gate is skipped entirely (not
+# treated as a failure) and a warn_metric_unavailable_<field> advisory
+# warning is emitted instead. Each test below sets exactly one metric to
+# None, keeps every other metric at an otherwise-clean (base) value, and
+# asserts all three documented consequences: the hard gate did not fire, the
+# specific advisory warning did fire, and the overall decision is still
+# APPROVED (a single advisory warning does not force NEEDS_REVIEW).
+
+
+def test_num_trades_none_skips_gate_warns_and_approves() -> None:
+    result = evaluate(
+        metrics=_metrics(num_trades=None),
+        strategy=_strategy(),
+        policy=POLICY,
+        strategy_config=_clean_strategy_config(),
+    )
+    assert "bt_min_trades" not in result.failed_rules
+    assert result.failed_rules == []
+    assert any("warn_metric_unavailable_num_trades" in w for w in result.warnings)
+    assert result.decision == "APPROVED"
+    assert result.approved is True
+
+
+def test_max_drawdown_none_skips_gate_warns_and_approves() -> None:
+    result = evaluate(
+        metrics=_metrics(max_drawdown=None),
+        strategy=_strategy(),
+        policy=POLICY,
+        strategy_config=_clean_strategy_config(),
+    )
+    assert "bt_max_drawdown" not in result.failed_rules
+    assert result.failed_rules == []
+    assert any("warn_metric_unavailable_max_drawdown" in w for w in result.warnings)
+    assert result.decision == "APPROVED"
+    assert result.approved is True
+
+
+def test_total_return_none_skips_gate_warns_and_approves() -> None:
+    result = evaluate(
+        metrics=_metrics(total_return=None),
+        strategy=_strategy(),
+        policy=POLICY,
+        strategy_config=_clean_strategy_config(),
+    )
+    assert "bt_min_total_return" not in result.failed_rules
+    assert result.failed_rules == []
+    assert any("warn_metric_unavailable_total_return" in w for w in result.warnings)
+    assert result.decision == "APPROVED"
+    assert result.approved is True
+
+
+def test_sharpe_none_skips_gate_warns_and_approves() -> None:
+    result = evaluate(
+        metrics=_metrics(sharpe=None),
+        strategy=_strategy(),
+        policy=POLICY,
+        strategy_config=_clean_strategy_config(),
+    )
+    assert "bt_min_sharpe" not in result.failed_rules
+    assert result.failed_rules == []
+    assert any("warn_metric_unavailable_sharpe" in w for w in result.warnings)
+    assert result.decision == "APPROVED"
+    assert result.approved is True
 
 
 # --- risk score clamping ------------------------------------------------------

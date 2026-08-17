@@ -316,6 +316,15 @@ Phase 2. Persistence now powers strategy storage, backtest runs, and full OHLCV 
 > **Phases 7 and 8 combined.** The original Phase 8 (MCP server) was removed from the
 > near-term roadmap by project owner decision (see "Far-Future Ideas" section below).
 > Phase 7 deliverables were all completed; Phase 8 scope was redirected.
+>
+> **Superseded by later, un-numbered work.** The route count and "Glassmorphism design" bullet
+> below describe the dashboard exactly as delivered at Phase 7+8 completion — accurate history,
+> not the current state. Two changes landed afterward, outside any numbered phase: the `/learn`
+> route (a standalone Trading Mastery curriculum: 15 modules, 50 MDX lessons, glossary,
+> resources — 11 top-level routes total now) and "The Chamber" visual re-architecture, which
+> fully replaced glassmorphism/cyan-teal with an anodized-graphite material system, a two-channel
+> warm/cool color system, serif verdict typography, and more. See
+> [dashboard.md](dashboard.md#design-direction--the-chamber) for the current design and route table.
 
 **Deliverables (as delivered)**
 
@@ -384,6 +393,8 @@ Phase 2. Persistence now powers strategy storage, backtest runs, and full OHLCV 
 
 *Phase 9 completed: stop-loss auto-monitoring (daily-close granularity), risk-off reset flow (manual/journaled), daily NAV snapshots.*
 
+*Post-Phase 9 (commit be22217): Docker image completeness — `apps/api/Dockerfile` now COPYs all four workspace packages (`quant_engine`, `risk_engine`, `agents`, `data_connectors`) plus `data/nifty50_symbols.json`; verified end-to-end against a real Postgres instance; this exact image backs the Render deployment.*
+
 - **Strategy-level P&L:** P&L shown only at portfolio level.
 - **Provider quality improvements:** Real Anthropic/Gemini/OpenRouter/Ollama refinements;
   retry-on-malformed-JSON; resilience logic beyond single-shot Phase 6 plumbing.
@@ -396,7 +407,6 @@ Phase 2. Persistence now powers strategy storage, backtest runs, and full OHLCV 
 - **Global committee-list endpoint:** No paginated list of all committee runs (only by backtest_id).
 - **Light mode:** Dark-only by design.
 - **Frontend component unit tests:** Integration tested via API; unit tests deferred.
-- **Docker image completeness:** Excludes `packages/*` (local dev only; containerized deployment deferred).
 
 ---
 

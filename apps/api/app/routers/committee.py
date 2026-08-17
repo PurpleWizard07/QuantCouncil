@@ -115,10 +115,16 @@ def evaluate_committee(
         # silent fallback to mock.
         raise HTTPException(status_code=503, detail=str(exc)) from None
     except (ProviderResponseError, ProviderError) as exc:
+        # Log the full exception (with traceback) server-side for debugging,
+        # but NEVER put its text in the client-facing response: a provider's
+        # exception message can carry sensitive request detail (e.g. the
+        # Gemini provider's underlying URL embeds GEMINI_API_KEY as a query
+        # parameter, which httpx's own error formatting does not redact).
+        # The client gets only a generic, static message.
         logger.exception("POST /committee/evaluate: provider failure")
         raise HTTPException(
             status_code=502,
-            detail=f"AI committee provider {provider_name!r} failed: {exc}",
+            detail=f"AI committee provider {provider_name!r} failed. See server logs for details.",
         ) from None
     except OperationalError:
         logger.exception("POST /committee/evaluate: database unavailable")

@@ -2,9 +2,13 @@
 # Deploy: on render.com, "New +" -> "Blueprint" -> connect this repo -> it
 # reads this file and provisions the web service + database together.
 #
-# NEXT_PUBLIC_API_URL on the Netlify site must be set to this service's URL
-# (shown on its Render dashboard page) after the first deploy, then Netlify
-# needs a rebuild since Next.js inlines NEXT_PUBLIC_ vars at build time.
+# NEXT_PUBLIC_API_URL on the Netlify site is pre-set in netlify.toml to the
+# predicted https://quantcouncil-api.onrender.com URL (derived from this
+# service's `name` below). Verify it against the actual URL shown on this
+# service's Render dashboard page after the first deploy -- Render appends a
+# random suffix if the name collides with an existing service -- and update
+# netlify.toml (then trigger a Netlify rebuild) if it differs, since Next.js
+# inlines NEXT_PUBLIC_ vars at build time.
 
 databases:
   - name: quantcouncil-db
@@ -31,3 +35,14 @@ services:
         fromDatabase:
           name: quantcouncil-db
           property: connectionString
+    # KNOWN LIMITATION, accepted for now (free tier only, no paid add-ons):
+    # backtest artifacts (equity_curve.json / trades.json, written by
+    # apps/api/app/routers/backtests.py) live on this container's ephemeral
+    # filesystem, while the Postgres row pointing at them survives restarts
+    # and redeploys. Every restart/redeploy therefore orphans every
+    # previously-persisted backtest's artifacts, and the next read 500s with
+    # the code's own "artifact missing on disk" error. The fix is a Render
+    # persistent disk (a `disk:` block on this service, mounted at the same
+    # path backtests.py writes to) -- but persistent disks require a paid
+    # plan, so this is deliberately left unfixed rather than upgrading.
+    # Revisit if/when the plan changes.

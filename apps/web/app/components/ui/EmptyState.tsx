@@ -13,7 +13,7 @@ export interface EmptyStateProps {
 /** Standard "nothing here yet" panel: icon, title, hint, optional action button. */
 export function EmptyState({ icon, title, hint, action, className = "" }: EmptyStateProps) {
   return (
-    <div className={`glass flex flex-col items-center justify-center gap-3 rounded-2xl p-10 text-center ${className}`}>
+    <div className={`surface flex flex-col items-center justify-center gap-3 rounded-2xl p-10 text-center ${className}`}>
       {icon && <div className="text-text-faint">{icon}</div>}
       <div className="text-sm font-medium text-text">{title}</div>
       {hint && <p className="max-w-sm text-xs text-text-muted">{hint}</p>}

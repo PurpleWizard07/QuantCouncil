@@ -86,8 +86,12 @@ From universe to dashboard, one full research cycle:
 9. **CIO decision** — the CIO agent synthesizes the debate into `PAPER_TRADE`, `NO_TRADE`, or
    `WATCHLIST`, structurally bound by the risk veto.
 10. **Paper order creation and simulated fill** — an approved decision creates a paper order,
-    filled at the next trading day's open with zero slippage (v1 assumption); see
-    [paper-trading-design.md](paper-trading-design.md).
+    filled **immediately** at the price reference (or latest close), with the backtester's
+    slippage and transaction-cost defaults applied for comparability. The original design called
+    for a next-trading-day open fill with zero slippage; this is a deliberate, versioned **Phase 5
+    deviation** documented in [paper-trading-engine.md](paper-trading-engine.md#limitations-phase-5phase-9)
+    (see also [paper-trading-design.md](paper-trading-design.md)). Phase 6+ may restore
+    next-open-fill semantics.
 11. **Portfolio tracking** — positions, cash, NAV, realized/unrealized P&L, drawdown, and
     risk-off mode are updated deterministically; journal entries are written to `trade_journal`.
 12. **Dashboard reporting** — `apps/web` renders market data, backtest reports, the committee
@@ -106,7 +110,7 @@ flowchart TD
     S7 -- APPROVED --> S8[8. AI committee debate: 5 analyst agents]
     S8 --> S9{9. CIO decision}
     V --> S9
-    S9 -- PAPER_TRADE --> S10[10. Paper order + simulated fill at next open]
+    S9 -- PAPER_TRADE --> S10[10. Paper order + immediate simulated fill w/ slippage - Phase 5 deviation]
     S9 -- NO_TRADE / WATCHLIST --> S12
     S10 --> S11[11. Positions, NAV, P&L, drawdown, risk-off]
     S11 --> S12[12. Dashboard + trade journal]

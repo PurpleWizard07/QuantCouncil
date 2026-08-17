@@ -10,7 +10,7 @@ export interface CollapsibleSectionProps {
   className?: string;
 }
 
-/** A glass panel whose body animates open/closed. Used for dense, optional detail. */
+/** A surface panel whose body animates open/closed. Used for dense, optional detail. */
 export function CollapsibleSection({
   title,
   defaultOpen = false,
@@ -20,7 +20,7 @@ export function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`glass overflow-hidden rounded-2xl ${className}`}>
+    <div className={`surface overflow-hidden rounded-2xl ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}

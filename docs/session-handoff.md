@@ -52,7 +52,10 @@ linked docs; this file is the "where were we?" entry point. Update it at the end
   amber override banner if code-level veto fires. Two new backend list endpoints: `GET /backtests?limit=20`
   and `GET /risk/evaluations?limit=20`. Frontend: `npm run build` passes, 13 routes live, zero TypeScript
   errors. Full design in [dashboard.md](dashboard.md). MCP removed from near-term roadmap (see far-future
-  note in [development-roadmap.md](development-roadmap.md)).
+  note in [development-roadmap.md](development-roadmap.md)). **This paragraph describes Phase 7+8 as
+  delivered at the time; two un-numbered changes landed afterward — the `/learn` route (11 top-level
+  routes now) and "The Chamber" visual re-architecture, which replaced this glassmorphism design. See
+  the "Web dashboard" row in the table below and [dashboard.md](dashboard.md) for current state.**
 - **Phase 9 (Daily Ops + Hardening): complete (2026-07-11).** Daily operations loop via
   `POST /paper/portfolios/{id}/daily-cycle`: (1) fetch all prices first (502 on any miss, zero state change);
   (2) stop-loss sweep — auto-exit any position with close ≤ stop_loss at the breaching close (full quantity,
@@ -105,7 +108,7 @@ linked docs; this file is the "where were we?" entry point. Update it at the end
 | Backtest list endpoint | `apps/api/app/routers/backtests.py` (`GET /backtests?limit=20`) | Live (Phase 7+8) |
 | Risk evaluations list endpoint | `apps/api/app/routers/risk.py` (`GET /risk/evaluations?limit=20`) | Live (Phase 7+8) |
 | API | `apps/api` — health, market-data endpoints (`/assets`, `/assets/{symbol}/ohlcv`, `/assets/{symbol}/indicators`), strategy endpoints (`GET /strategies`, `POST /strategies`), backtest endpoints (`POST /backtests/run` with persist flag, `GET /backtests/{id}`, `GET /backtests?limit=20`), risk endpoints (Phase 4), risk evaluations list (Phase 7+8), paper endpoints (`/paper/*` including daily-ops: `POST /daily-cycle`, `GET /nav-history`, `POST /risk-off/reset`, Phase 5 + Phase 9), committee endpoints (`/committee/*`, Phase 6) | Live (Phase 9 added daily-ops endpoints) |
-| Web dashboard | `apps/web` (10 routes: `/`, `/research`, `/market`, `/strategies`, `/backtests`, `/risk`, `/committee`, `/paper` with NAV chart + daily-cycle action + risk-off reset, `/journal`, `/settings`; dark-only, Next.js 15 App Router, React 19, no shadcn, Tailwind v4 + recharts + motion) | Live (Phase 9 updated `/paper`) |
+| Web dashboard | `apps/web` (11 top-level routes: `/`, `/research`, `/market`, `/strategies`, `/backtests`, `/risk`, `/committee`, `/paper` with NAV chart + daily-cycle action + risk-off reset, `/journal`, `/learn` (standalone Trading Mastery curriculum, 15 modules/50 lessons — added post-Phase-9, not tied to a numbered phase), `/settings`; dark-only, Next.js 15 App Router, React 19, no shadcn, Tailwind v4 + recharts + motion; "The Chamber" visual re-architecture (post-Phase-9) replaced the original glassmorphism/cyan-teal design — see [dashboard.md](dashboard.md)) | Live (Phase 9 updated `/paper`; Learn and The Chamber added afterward) |
 
 ## How to Run Everything
 
@@ -179,10 +182,6 @@ For complete backlog, see [development-roadmap.md](development-roadmap.md#backlo
 
 ## Open Threads
 
-- **Docker image excludes the data layer and quant engine:** `apps/api/Dockerfile` installs
-  only the API's own requirements and copies only `apps/api/`, so `packages/*` and
-  `data/nifty50_symbols.json` are missing in the container. All post-Phase-1 endpoints work in
-  local dev only; fix the image when containerized runs matter.
 - **No lookback pre-fetch on `GET /assets/{symbol}/indicators`:** warm-up `null`s appear at
   the start of every response range. Candidate refinement: fetch extra history before
   `start_date` and trim. The same warm-up applies to backtests — a strategy needing SMA(50)
@@ -210,3 +209,10 @@ deterministic inputs. The "committee never creates paper orders" guarantee is en
 (committee calls are manual `POST /committee/evaluate`; paper order creation is a separate manual
 `POST /paper/orders` endpoint where the veto is enforced a second time). All 502 tests passing
 (+85 agents tests +14 committee API tests).
+
+Resolved since (Docker/Render deployment work, commit `be22217`): **Docker image completeness.**
+`apps/api/Dockerfile` now `COPY`s all four workspace packages (`quant_engine`, `risk_engine`,
+`agents`, `data_connectors`) plus `data/nifty50_symbols.json`, pip-installs them editable, and
+copies `infra/alembic.ini` + `infra/migrations/`, with a `start.sh` entrypoint that runs
+migrations before starting `uvicorn`. Verified end-to-end against a real Postgres instance; Render
+now deploys this exact image. Containerized runs are no longer local-dev-only.

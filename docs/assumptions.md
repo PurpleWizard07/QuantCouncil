@@ -512,3 +512,23 @@ date; do not rewrite history. Cross-references:
     confirmed the gate functions as designed; lowering the threshold for daily-bar strategies is a
     future policy refinement, not a bug. Rationale: the policy is conservative by design; tuning gates
     to historical data will be done when the next tranche of backtests matures.
+
+## Post-Phase-9 — Un-numbered dashboard work (Learn section + "The Chamber" redesign)
+
+77. **Entry 65 (2026-07-09, "Dark-only UI design") describes the dashboard's original look, since
+    superseded.** Two changes shipped after Phase 9 closed, outside any numbered phase: (1) the
+    `/learn` route, a standalone "Trading Mastery" curriculum (15 modules, 50 MDX lessons, a
+    searchable glossary, a resources page, localStorage-backed lesson-completion tracking) bringing
+    the dashboard to 11 top-level routes; and (2) "The Chamber," a full visual re-architecture
+    (git history: "The Chamber, Phase 1-2" and "Phase 3-4") that replaced the glassmorphism/cyan-teal
+    look entry 65 describes with anodized-graphite surfaces under one fixed light source, a
+    two-channel warm/cool color system (warm for authority/consequence — verdicts, CIO, veto, ₹
+    figures; cool for the machine — charts, deterministic data), a high-contrast serif reserved for
+    verdict typography, the AI committee rendered as an "opposed chamber" (bull vs. bear across a
+    shared axis), the risk veto rendered as a sealed plate (`VetoSeal`) instead of a banner, grouped
+    bezel nav with a single traveling active-indicator, and a command palette. Entry 65 is left
+    unedited per this log's append-only convention; [dashboard.md](dashboard.md) is the current
+    source of truth for the shipped design. Rationale: the redesign and the Learn section were
+    project-owner-directed additions delivered between sessions, outside the phase-gated roadmap;
+    logging them here (rather than silently letting entry 65 go stale) keeps the assumptions log
+    itself honest about what it does and doesn't still describe.

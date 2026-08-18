@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.routers import assets
-from data_connectors import DataFetchError, DataValidationError
+from data_connectors import DataFetchError, DataValidationError, RawFundamentals
 
 client = TestClient(app)
 
@@ -266,3 +266,110 @@ def test_indicators_data_fetch_error_returns_502():
         assert "Upstream data source" in response.json()["detail"]
     finally:
         app.dependency_overrides.pop(assets.get_ohlcv_service, None)
+
+
+# --- GET /assets/{symbol}/fundamentals -----------------------------------------
+
+
+def _fundamentals_bundle(symbol: str = "RELIANCE") -> RawFundamentals:
+    """Deterministic fundamentals bundle satisfying the connector's shape."""
+    periods = pd.to_datetime(["2025-03-31", "2024-03-31"])
+    info = {
+        "longName": "Test Co Ltd",
+        "sector": "Energy",
+        "industry": "Oil & Gas",
+        "currency": "INR",
+        "marketCap": 1_000_000.0,
+        "trailingPE": 20.0,
+        "dividendYield": 2.5,
+        "profitMargins": 0.15,
+        "debtToEquity": 9.5,
+    }
+    income_stmt = pd.DataFrame(
+        {periods[0]: [900.0, 70.0], periods[1]: [800.0, 60.0]},
+        index=["Total Revenue", "Net Income"],
+    )
+    balance_sheet = pd.DataFrame(
+        {periods[0]: [200.0, 100.0, 500.0], periods[1]: [180.0, 90.0, 450.0]},
+        index=["Current Assets", "Current Liabilities", "Stockholders Equity"],
+    )
+    cashflow = pd.DataFrame({periods[0]: [120.0], periods[1]: [110.0]}, index=["Operating Cash Flow"])
+    return RawFundamentals(
+        symbol=symbol, info=info, income_stmt=income_stmt, balance_sheet=balance_sheet, cashflow=cashflow
+    )
+
+
+class FakeFundamentalsService:
+    """Counting fake implementing the fetch_fundamentals interface."""
+
+    def __init__(self, bundle: RawFundamentals | None = None, error: Exception | None = None) -> None:
+        self.bundle = bundle if bundle is not None else _fundamentals_bundle()
+        self.error = error
+        self.calls: list[str] = []
+
+    def fetch_fundamentals(self, symbol):
+        self.calls.append(symbol)
+        if self.error is not None:
+            raise self.error
+        return self.bundle
+
+
+@pytest.fixture
+def fake_fundamentals_service():
+    fake = FakeFundamentalsService()
+    app.dependency_overrides[assets.get_fundamentals_service] = lambda: fake
+    yield fake
+    app.dependency_overrides.pop(assets.get_fundamentals_service, None)
+
+
+def test_fundamentals_unknown_symbol_returns_404(fake_fundamentals_service):
+    response = client.get("/assets/NOTASYMBOL/fundamentals")
+    assert response.status_code == 404
+    assert fake_fundamentals_service.calls == []
+
+
+def test_fundamentals_happy_path_returns_expected_shape(fake_fundamentals_service):
+    response = client.get("/assets/RELIANCE/fundamentals")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["symbol"] == "RELIANCE"
+    assert set(body.keys()) == {
+        "symbol",
+        "profile",
+        "valuation",
+        "per_share",
+        "dividends",
+        "profitability",
+        "growth",
+        "financial_health",
+        "annual_history",
+        "as_of",
+    }
+    assert body["profile"]["name"] == "Test Co Ltd"
+    assert body["valuation"]["trailing_pe"] == 20.0
+    assert body["dividends"]["dividend_yield_pct"] == 2.5
+    assert body["financial_health"]["current_ratio"] == pytest.approx(2.0)
+    assert len(body["annual_history"]) == 2
+    assert body["annual_history"][0]["fiscal_year_end"] == "2025-03-31"
+    assert fake_fundamentals_service.calls == ["RELIANCE"]
+
+
+def test_fundamentals_symbol_lookup_is_case_insensitive(fake_fundamentals_service):
+    response = client.get("/assets/reliance/fundamentals")
+    assert response.status_code == 200
+    assert response.json()["symbol"] == "RELIANCE"
+    assert fake_fundamentals_service.calls == ["RELIANCE"]
+
+
+def test_fundamentals_data_fetch_error_returns_502():
+    fake = FakeFundamentalsService(error=DataFetchError("provider exploded: secret details"))
+    app.dependency_overrides[assets.get_fundamentals_service] = lambda: fake
+    try:
+        response = client.get("/assets/RELIANCE/fundamentals")
+        assert response.status_code == 502
+        detail = response.json()["detail"]
+        assert "Upstream data source" in detail
+        assert "secret details" not in detail
+    finally:
+        app.dependency_overrides.pop(assets.get_fundamentals_service, None)

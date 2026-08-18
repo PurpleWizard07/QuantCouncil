@@ -160,6 +160,7 @@ plain NSE symbols, unadjusted prices):
 GET /assets                                    # the 50-symbol universe
 GET /assets/RELIANCE/ohlcv?start_date=2024-01-01&end_date=2024-12-31
 GET /assets/RELIANCE/indicators                # sma_20/50, ema_20, rsi_14, atr_14, ...
+GET /assets/RELIANCE/fundamentals              # valuation, profitability, health, 5y statements
 ```
 
 Fetched data is cached locally as one Parquet file per symbol under
@@ -167,6 +168,24 @@ Fetched data is cached locally as one Parquet file per symbol under
 provider. The universe itself lives in `data/nifty50_symbols.json` (manual NSE
 snapshot). Full details — validation rules, cache behavior, indicator
 conventions, limitations — in [docs/data-layer.md](docs/data-layer.md).
+
+## Fundamental analysis
+
+Alongside price data, the API serves company fundamentals so an idea can be examined
+qualitatively — not just technically. Same free-data rule as everywhere else: **yfinance
+only, no paid provider**.
+
+`GET /assets/{symbol}/fundamentals` returns valuation (P/E, P/B, EV/EBITDA, market cap),
+per-share figures, dividends, profitability (margins, ROE, ROA), growth, financial health
+(debt/equity, current and quick ratios), and up to **five fiscal years** of income-statement,
+balance-sheet, and cash-flow history — currently through FY2026 with quarterly data as recent
+as June 2026.
+
+The split follows the project's source-of-truth rule: `data_connectors.fundamentals` fetches raw
+data only, and every ratio is computed deterministically in `quant_engine.fundamentals`. Ratio
+units differ by field (some are fractions, some percentage points) and some nulls are expected
+and correct — banks legitimately have no current ratio, for instance. Both are documented in
+[docs/data-layer.md](docs/data-layer.md#fundamentals-post-phase-9-addition).
 
 ## Strategy Lab (Phase 3 + Phase 3.5)
 

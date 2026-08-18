@@ -188,6 +188,64 @@ Conventions (see [assumptions.md](assumptions.md) for rationale):
 `signals`, `backtest`, and `metrics` in `quant_engine` were implemented in Phase 3 — see
 [backtesting-engine.md](backtesting-engine.md).
 
+## Fundamentals (post-Phase-9 addition)
+
+Fundamental company data is served alongside price data, so a strategy idea can be examined
+qualitatively (valuation, profitability, balance-sheet health) and not only technically. Same
+free-data rule as everything else: **yfinance only, no paid provider, no new dependency**.
+
+Split across two packages, following the project's source-of-truth rule:
+
+| Layer | Module | Responsibility |
+|---|---|---|
+| Fetch | `data_connectors/fundamentals.py` (`YFinanceFundamentalsConnector`) | Raw fetch only: yfinance's `.info` dict plus the annual income statement, balance sheet, and cash flow. Returns a `RawFundamentals` dataclass. No math. |
+| Compute | `quant_engine/fundamentals.py` | All ratio math and response shaping (`build_snapshot`). Pure, deterministic, no network. |
+
+`YFinanceFundamentalsConnector` deliberately does **not** implement `OHLCVConnector`:
+fundamentals are not a `[date, OHLCV]` bar series, so forcing that contract onto them would
+misrepresent the data. It mirrors the OHLCV connector's *conventions* (`.NS` symbol mapping via
+`to_yfinance_symbol`, provider failures wrapped in `DataFetchError`) without inheriting its shape.
+
+### Unit conventions (verified, not assumed)
+
+yfinance is inconsistent about ratio units, so these were cross-checked against raw
+balance-sheet arithmetic (`Total Debt / Stockholders Equity`) for RELIANCE, INFY, and ITC:
+
+| Field group | Unit |
+|---|---|
+| `profit_margin`, `operating_margin`, `return_on_assets`, `return_on_equity`, `revenue_growth`, `earnings_growth`, `payout_ratio` | Fraction (`0.066` = 6.6%) |
+| `dividend_yield_pct`, `debt_to_equity_pct` | **Percentage points** (`36.65` = a D/E ratio of ~0.37, *not* 36.65×) |
+| `current_ratio`, `quick_ratio` | Plain ratio (`1.86` = 1.86×) |
+
+### Ratio sourcing and expected nulls
+
+- **`current_ratio` / `quick_ratio` are always computed here** — yfinance never populates them
+  for NSE symbols. Both are `null` for banks and similar financials, which do not report a
+  classified (current vs. non-current) balance sheet. That is a correct absence, not missing
+  data. A company with no `Inventory` line (e.g. IT services) is treated as zero-inventory, so
+  its quick ratio correctly equals its current ratio.
+- **`return_on_equity` / `return_on_assets` prefer `.info`** (a TTM figure, likely more precise)
+  and fall back to computing `Net Income / Stockholders Equity` (or `/ Total Assets`) from the
+  statements only when `.info` omits them. Yahoo populates these inconsistently per company —
+  an artifact of its own aggregation, not a sector pattern.
+- **`annual_history` is driven by the income statement's columns.** The three statements can
+  report different period counts for the same company (observed: HDFCBANK with 5 income-statement
+  years but 4 balance-sheet years), so a period missing from one statement yields `null` for that
+  statement's fields rather than dropping the row.
+- **Every value is JSON-safe:** unreported line items arrive from pandas as `NaN`, which is
+  invalid JSON, so they are converted to `null` before leaving `quant_engine`.
+
+### Two known caveats
+
+1. **Not cached.** Unlike OHLCV, every request re-fetches from yfinance. Fundamentals change at
+   most quarterly, so this is a v1 simplification rather than an oversight — a cache mirroring
+   `data_connectors.cache` can be added if request volume warrants it.
+2. **`.info` can return partially populated.** yfinance assembles `.info` from several upstream
+   Yahoo modules, and under rate limiting a field present on one call can be absent on the next
+   for the same symbol (observed with `priceToSalesTrailing12Months` on RELIANCE). A `null`
+   therefore means "not in this response" — usually, but not always, "the company doesn't report
+   it." Re-request before concluding a field is permanently unavailable.
+
 ## API Endpoints
 
 The Phase 2 market-data surface in `apps/api` (port 8000):
@@ -197,6 +255,7 @@ The Phase 2 market-data surface in `apps/api` (port 8000):
 | `GET /assets` | The universe from `get_universe()`: `{"count": 50, "assets": [...]}`. Served from the JSON file — no database dependency; Postgres asset seeding is deferred to Phase 3. |
 | `GET /assets/{symbol}/ohlcv` | Daily OHLCV for one symbol. Query params: `start_date` (default: end minus 365 days), `end_date` (default: today), `timeframe` (default `"1d"`; anything else → `400`). Unknown symbol (case-insensitive lookup against the universe) → `404`; provider failure (`DataFetchError`) → `502`. Served through `CachedConnector`, so repeat calls hit the Parquet cache. |
 | `GET /assets/{symbol}/indicators` | Same params and error semantics as the OHLCV endpoint. Returns a fixed default indicator set: `sma_20`, `sma_50`, `ema_20`, `rsi_14`, `atr_14`, `volume_sma_20`, `rolling_high_20`, `rolling_low_20`, `daily_returns`, `volatility_20`. NaN warm-up values are serialized as `null`. |
+| `GET /assets/{symbol}/fundamentals` | Fundamentals snapshot for one symbol — no query params (a company snapshot has no date range). Response groups: `profile`, `valuation`, `per_share`, `dividends`, `profitability`, `growth`, `financial_health`, `annual_history` (up to 5 fiscal years, newest first), `as_of`. Unknown symbol → `404`; provider failure → `502`. Not cached — see [Fundamentals](#fundamentals-post-phase-9-addition) for unit conventions and expected nulls. |
 
 **No lookback pre-fetch (v1):** the indicators endpoint computes over exactly the requested
 date range, so the warm-up region at the start of the response is `null` (e.g. the first 49

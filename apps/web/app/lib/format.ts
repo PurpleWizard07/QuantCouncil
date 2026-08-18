@@ -57,6 +57,36 @@ export function fmtInt(value: Num): string {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value);
 }
 
+/**
+ * Large INR figures (revenue, total assets, market cap) in a single fixed
+ * unit, ₹ Crore (1 Cr = 1,00,00,000) -- the standard unit Indian company
+ * financials are reported in, and the only way to keep trillion-rupee
+ * large-cap figures readable in a table cell. `Intl`'s built-in compact
+ * notation for en-IN was tried and rejected: it produces non-standard
+ * abbreviations ("10.57LCr") rather than the convention readers expect.
+ * Deliberately one unit throughout (never switching to Lakh Crore for
+ * bigger numbers) so a column of figures stays visually comparable.
+ */
+export function fmtInrCrore(value: Num, opts: { decimals?: number } = {}): string {
+  if (!isFiniteNumber(value)) return PLACEHOLDER;
+  const decimals = opts.decimals ?? 0;
+  const crore = value / 1e7;
+  return `₹${new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(crore)} Cr`;
+}
+
+/** A "multiple" ratio (P/E, P/B, current ratio, ...) -> "23.92×"; null-safe. */
+export function fmtMultiple(value: Num, opts: { decimals?: number } = {}): string {
+  if (!isFiniteNumber(value)) return PLACEHOLDER;
+  const decimals = opts.decimals ?? 2;
+  return `${new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value)}×`;
+}
+
 /** ISO date ("YYYY-MM-DD" or full ISO datetime) -> "09 Jul 2026". */
 export function fmtDate(value: string | null | undefined): string {
   if (!value) return PLACEHOLDER;

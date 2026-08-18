@@ -25,6 +25,7 @@ from __future__ import annotations
 from data_connectors.base import OHLCVConnector
 from data_connectors.cache import CachedConnector, OHLCVCache
 from data_connectors.exceptions import CacheError, DataFetchError
+from data_connectors.fundamentals import RawFundamentals, YFinanceFundamentalsConnector
 from data_connectors.openbb_connector import OpenBBConnector
 from data_connectors.registry import get_connector
 from data_connectors.universe import (
@@ -56,6 +57,8 @@ __all__ = [
     "DataValidationError",
     "validate_ohlcv",
     "validate_ohlcv_report",
+    "RawFundamentals",
+    "YFinanceFundamentalsConnector",
 ]
 
 __version__ = "0.1.0"

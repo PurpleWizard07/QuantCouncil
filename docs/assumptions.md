@@ -532,3 +532,63 @@ date; do not rewrite history. Cross-references:
     project-owner-directed additions delivered between sessions, outside the phase-gated roadmap;
     logging them here (rather than silently letting entry 65 go stale) keeps the assumptions log
     itself honest about what it does and doesn't still describe.
+
+## Post-Phase-9 — Fundamental analysis
+
+78. **Fundamentals were added on yfinance rather than OpenBB, after an empirical data-quality
+    spike.** The project owner asked whether in-depth fundamental analysis was possible, and
+    whether OpenBB should replace yfinance for it. OpenBB was rejected: it is an aggregator, and
+    its stronger fundamentals providers are both paid and US-market-focused with thin NSE
+    coverage — so with paid data permanently off the table (entry below), the only usable OpenBB
+    backend for NIFTY-50 names is its own yfinance connector, i.e. identical data behind a much
+    heavier dependency tree. `OpenBBConnector` therefore remains the inactive placeholder it has
+    been since Phase 2. A spike against five deliberately different NIFTY-50 names (RELIANCE
+    conglomerate, HDFCBANK bank, INFY IT services, ITC FMCG, ETERNAL young internet company)
+    found free yfinance fundamentals substantially better than expected: 4–5 years of annual
+    income statement / balance sheet / cash flow (41–92 line items each), 5–7 quarters of
+    quarterly data, current through FY2026 and Q1 FY2027. Rationale: the decision rested on
+    measured coverage for actual NSE symbols rather than on OpenBB's general reputation, since
+    the aggregator's breadth is irrelevant when every non-free backend is out of scope.
+
+79. **Ratio math lives in `quant_engine`, not in the connector, and prefers `.info` over
+    recomputation.** `data_connectors.fundamentals` fetches raw data only; all ratios are
+    computed in `quant_engine.fundamentals`, preserving the rule that quant_engine is the sole
+    source of truth for numbers. Where yfinance's `.info` already reports a ratio (ROE, ROA),
+    that value is used and statement-based computation is only a fallback — `.info` is TTM-based
+    and likely more precise than an annual approximation. Current and quick ratios are always
+    computed locally because yfinance never populates them for NSE symbols. yfinance's ratio
+    units are inconsistent (`debtToEquity` and `dividendYield` are percentage points while
+    margins and growth are fractions), which was verified by cross-checking `debtToEquity`
+    against raw `Total Debt / Stockholders Equity` for RELIANCE/INFY/ITC rather than assumed from
+    field naming. Rationale: silent unit errors in valuation ratios are the kind of bug that
+    survives a passing test suite, so the units are pinned by measurement and documented in
+    [data-layer.md](data-layer.md#fundamentals-post-phase-9-addition).
+
+80. **Some fundamentals nulls are correct absences, not missing data, and `.info` can return
+    partially populated.** Banks and similar financials report no classified (current vs.
+    non-current) balance sheet, so `current_ratio`/`quick_ratio` are legitimately `null` for
+    HDFCBANK — verified live. A company with no `Inventory` line (IT services) is treated as
+    zero-inventory so its quick ratio correctly equals its current ratio, rather than being
+    reported as unavailable. Separately, yfinance assembles `.info` from several upstream Yahoo
+    modules and under rate limiting can return it partially populated: during live testing
+    `priceToSalesTrailing12Months` came back `null` for RELIANCE from the running API while the
+    same field returned 1.58 on a direct call moments later. A `null` therefore means "absent
+    from this response," which is usually but not always "not reported." Rationale: recorded
+    because a reader debugging a `null` field would otherwise reasonably suspect the extraction
+    code, which was verified correct via the real code path.
+
+81. **Fundamentals are not cached, unlike OHLCV.** Every request re-fetches from yfinance.
+    Company fundamentals change at most quarterly, so the Parquet/DuckDB caching layer built for
+    daily bars was not extended here. Rationale: a deliberate v1 simplification — the cache
+    exists to avoid re-hitting the provider for long historical bar ranges, a pressure that does
+    not apply to a single per-company snapshot; adding a cache mirroring `data_connectors.cache`
+    remains straightforward if request volume ever warrants it.
+
+82. **No paid data or paid services, ever — stronger than the "v1" framing in non-goals.md.** The
+    project owner stated that never paying is the most important rule of the project.
+    [non-goals.md](non-goals.md) #11 ("No premium or paid data in v1") is phrased as a v1-scoped
+    decision, which understates this: it is permanent and not something a v2 revisits. Rationale:
+    recorded explicitly because several non-goals are deliberately marked "v1" to signal they are
+    amendable, and this one must not be read that way — it constrains every future data-source,
+    hosting, and dependency decision, and it is why OpenBB's paid backends were never weighed
+    against yfinance on quality grounds (entry 78).

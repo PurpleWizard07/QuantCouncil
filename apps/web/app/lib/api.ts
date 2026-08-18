@@ -15,6 +15,7 @@ import type {
   CreateOrderResponse,
   CreateStrategyResponse,
   DailyCycleResponse,
+  FundamentalsResponse,
   HealthDbResponse,
   HealthResponse,
   IndicatorsResponse,
@@ -163,6 +164,11 @@ export function getIndicators(
   return get<IndicatorsResponse>(
     `/assets/${encodeURIComponent(symbol)}/indicators${toQueryString(params)}`,
   );
+}
+
+/** GET /assets/{symbol}/fundamentals -- no query params (a company snapshot, not a range). */
+export function getFundamentals(symbol: string): Promise<FundamentalsResponse> {
+  return get<FundamentalsResponse>(`/assets/${encodeURIComponent(symbol)}/fundamentals`);
 }
 
 // ---------------------------------------------------------------------------

@@ -19,7 +19,7 @@ override them without rewriting this constitution first.
 | 8 | **No intraday scalping** | The system operates on the daily timeframe only; intraday data, latency, and microstructure modeling are out of scope. |
 | 9 | **No reinforcement learning in v1** | Strategies are explicit, auditable rule trees (see [strategy-format.md](strategy-format.md)); RL policies are opaque and defeat the audit-first design. |
 | 10 | **No short selling in v1** | Long-only keeps position accounting, risk sizing, and the fill model simple and verifiable. |
-| 11 | **No premium or paid data in v1** | Local-first principle: free yfinance data only; no data subscriptions. |
+| 11 | **No paid data, paid APIs, or paid services — permanently** | Free/open sources only (yfinance today). Unlike the "v1" items in this table, this one is **not** a versioned scope decision to be revisited later: it is a permanent constraint on every data-source, dependency, and hosting choice. Where free data is insufficient for a feature, the feature is scoped down — never upgraded to a paid provider. |
 | 12 | **No hosted deployment requirement in v1** | Everything runs on the local machine via Docker Compose and local dev servers; no cloud infrastructure is required. |
 
 ## Disallowed Execution Actions (Verbatim)

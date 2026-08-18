@@ -1,8 +1,10 @@
-"""Asset endpoints: the NIFTY 50 universe, OHLCV bars, and indicators.
+"""Asset endpoints: the NIFTY 50 universe, OHLCV bars, indicators, and fundamentals.
 
 GET /assets                       -- the NIFTY 50 universe with metadata.
 GET /assets/{symbol}/ohlcv        -- daily OHLCV bars over a date range.
 GET /assets/{symbol}/indicators   -- a fixed default indicator set over a range.
+GET /assets/{symbol}/fundamentals -- valuation, profitability, financial health,
+                                      and a 5-year statement history.
 
 The universe is served straight from ``data_connectors.get_universe()`` (the
 ``data/nifty50_symbols.json`` snapshot) with NO database dependency: seeding
@@ -21,6 +23,12 @@ never hand-roll calculations). Leading ``null`` values in the indicator
 response are the indicator warm-up window over the requested range: v1 does
 not pre-fetch extra lookback history before ``start_date``, so e.g. ``sma_50``
 is null for the first 49 rows of whatever range was requested.
+
+Fundamentals are fetched fresh from yfinance on every request (not yet
+cached -- see ``data_connectors.fundamentals`` module docstring) and shaped
+into a stable response by ``quant_engine.fundamentals`` (ratio computation
+and unit conventions documented there); missing individual fields (not every
+company reports every line item) are ``null``, not an error.
 
 Error mapping:
     400 -- bad date strings, start_date > end_date, or timeframe != "1d".
@@ -44,9 +52,12 @@ from data_connectors import (
     DataFetchError,
     DataValidationError,
     OHLCVCache,
+    RawFundamentals,
+    YFinanceFundamentalsConnector,
     get_connector,
     get_universe,
 )
+from quant_engine import fundamentals as fundamentals_engine
 from quant_engine import indicators
 
 logger = logging.getLogger(__name__)
@@ -78,6 +89,23 @@ def get_ohlcv_service() -> OHLCVService:
     touches the network or the real cache directory.
     """
     return CachedConnector(get_connector("yfinance"), OHLCVCache())
+
+
+class FundamentalsService(Protocol):
+    """The slice of the fundamentals connector interface this router depends on."""
+
+    def fetch_fundamentals(self, symbol: str) -> RawFundamentals: ...
+
+
+def get_fundamentals_service() -> FundamentalsService:
+    """FastAPI dependency providing the fundamentals connector.
+
+    Not cached (see ``data_connectors.fundamentals`` module docstring):
+    every request re-fetches from yfinance. Tests override this dependency
+    with a fake returning deterministic data, so no endpoint test ever
+    touches the network.
+    """
+    return YFinanceFundamentalsConnector()
 
 
 def _universe_by_upper_symbol() -> dict[str, dict[str, Any]]:
@@ -190,6 +218,28 @@ def _fetch_ohlcv(
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
 
+def _fetch_fundamentals(service: FundamentalsService, symbol: str) -> RawFundamentals:
+    """Fetch fundamentals through the service, mapping errors to HTTP responses.
+
+    Raises:
+        HTTPException: 502 if the upstream data source fails (invalid/
+            delisted symbol, or a Yahoo Finance outage).
+    """
+    try:
+        return service.fetch_fundamentals(symbol)
+    except DataFetchError:
+        logger.exception("Upstream fundamentals fetch failed for %s", symbol)
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                f"Upstream data source error while fetching fundamentals for "
+                f"{symbol!r}. The symbol may have been delisted or renamed "
+                "since the last universe refresh, or the data source may be "
+                "unavailable; see server logs for details."
+            ),
+        ) from None
+
+
 def _nan_to_none(value: Any) -> Any:
     """JSON-safe scalar: NaN/NaT become None (JSON cannot represent NaN)."""
     if value is None or pd.isna(value):
@@ -295,3 +345,25 @@ def get_indicators(
         "rows": len(frame),
         "indicators": _records(frame),
     }
+
+
+@router.get("/{symbol}/fundamentals")
+def get_fundamentals(
+    symbol: str,
+    service: FundamentalsService = Depends(get_fundamentals_service),
+) -> dict[str, Any]:
+    """A fundamentals snapshot for one NIFTY 50 symbol: valuation,
+    profitability, financial health, and a 5-year annual statement history.
+
+    All ratios are computed by ``quant_engine.fundamentals`` (unit
+    conventions and the ``.info``-vs-computed fallback rule are documented
+    there). Missing fields are ``null`` -- not every company reports every
+    line item (e.g. banks have no current ratio; a company with no
+    inventory has quick ratio == current ratio).
+    """
+    canonical = _resolve_symbol(symbol)
+    raw = _fetch_fundamentals(service, canonical)
+    snapshot = fundamentals_engine.build_snapshot(
+        raw.info, raw.income_stmt, raw.balance_sheet, raw.cashflow
+    )
+    return {"symbol": canonical, **snapshot}

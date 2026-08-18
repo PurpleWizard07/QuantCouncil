@@ -93,6 +93,93 @@ export interface IndicatorsResponse {
   indicators: IndicatorRow[];
 }
 
+/**
+ * Fundamentals response groups. Unit conventions (verified against yfinance,
+ * see docs/data-layer.md#fundamentals-post-phase-9-addition): margins,
+ * growth, payout_ratio, return_on_assets/equity are fractions (0.066 =
+ * 6.6%); dividend_yield_pct and debt_to_equity_pct are ALREADY percentage
+ * points (36.65 = a 0.37 ratio, not 36.65x); current_ratio/quick_ratio are
+ * plain multiples. Any field can be null -- not every company reports every
+ * line item, and that is expected, not an error (e.g. banks have no
+ * current/quick ratio).
+ */
+export interface FundamentalsProfile {
+  name: string | null;
+  sector: string | null;
+  industry: string | null;
+  currency: string | null;
+}
+
+export interface FundamentalsValuation {
+  market_cap: number | null;
+  trailing_pe: number | null;
+  forward_pe: number | null;
+  price_to_book: number | null;
+  price_to_sales_ttm: number | null;
+  ev_to_ebitda: number | null;
+}
+
+export interface FundamentalsPerShare {
+  trailing_eps: number | null;
+  forward_eps: number | null;
+  book_value_per_share: number | null;
+}
+
+export interface FundamentalsDividends {
+  dividend_rate: number | null;
+  dividend_yield_pct: number | null;
+  payout_ratio: number | null;
+}
+
+export interface FundamentalsProfitability {
+  profit_margin: number | null;
+  operating_margin: number | null;
+  return_on_assets: number | null;
+  return_on_equity: number | null;
+}
+
+export interface FundamentalsGrowth {
+  revenue_growth: number | null;
+  earnings_growth: number | null;
+}
+
+export interface FundamentalsHealth {
+  debt_to_equity_pct: number | null;
+  current_ratio: number | null;
+  quick_ratio: number | null;
+  total_cash: number | null;
+  total_debt: number | null;
+}
+
+export interface FundamentalsHistoryRow {
+  fiscal_year_end: IsoDate;
+  total_revenue: number | null;
+  net_income: number | null;
+  total_assets: number | null;
+  total_liabilities: number | null;
+  stockholders_equity: number | null;
+  operating_cash_flow: number | null;
+  free_cash_flow: number | null;
+}
+
+export interface FundamentalsAsOf {
+  last_fiscal_year_end: IsoDate | null;
+  most_recent_quarter: IsoDate | null;
+}
+
+export interface FundamentalsResponse {
+  symbol: string;
+  profile: FundamentalsProfile;
+  valuation: FundamentalsValuation;
+  per_share: FundamentalsPerShare;
+  dividends: FundamentalsDividends;
+  profitability: FundamentalsProfitability;
+  growth: FundamentalsGrowth;
+  financial_health: FundamentalsHealth;
+  annual_history: FundamentalsHistoryRow[];
+  as_of: FundamentalsAsOf;
+}
+
 // ---------------------------------------------------------------------------
 // strategies
 // ---------------------------------------------------------------------------
